@@ -1,6 +1,6 @@
 # CRbeam
 
-Monte Carlo simulation of the the cosmic ray and EM cascade beam propagation.
+Monte Carlo simulation of the cosmic ray and EM cascade beam propagation.
 
 ### Authors:
    Oleg Kalashev and Alexander Korochkin
