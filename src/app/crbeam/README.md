@@ -154,9 +154,17 @@ default value:	3
 		Extragalactic magnetic field in Gauss
 		default value:	1e-15
 
--mfl or --lEGMF
-		Extragalactic magnetic field correlation length in Mpc at z=0
-		default value:	1
+-mflmin or --lminEGMF
+		Extragalactic magnetic field minimum scale in Mpc at z=0
+		default value:	0.05
+
+-mflmax or --lmaxEGMF
+		Extragalactic magnetic field maximum scale in Mpc at z=0
+		default value:	5
+		
+-mfnm or --nmodesEGMF
+		Number of modes in magnetic field spectrum
+		default value:	300
 
 -mfr or --randomEGMF
 		randomize EGMF (use different EGMF configurations for different initial particles)
