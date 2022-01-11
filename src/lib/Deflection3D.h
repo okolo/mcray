@@ -106,12 +106,13 @@ namespace Interactions {
     class TurbulentMF : public MagneticField{
 
     public:
-        TurbulentMF(Randomizer &aRandomizer, double aLcor_Mpc, double aVariance_Gauss, double aMultK=2./* steps in K */);
+        TurbulentMF(Randomizer &aRandomizer, double aLmin_Mpc, double aLmax_Mpc, double aVariance_Gauss, int aNmodes);
         virtual void GetValueGauss(const double *x, const CosmoTime &aTime, std::vector<double> &outValue) const;
         virtual double MinVariabilityScale(const CosmoTime &aTime) const;
         static int UnitTest();
     private:
-        double fLc;
+        double fLmin;
+        double fLmax;
         std::vector<SafePtr<MonochromaticMF> > fWaves;
     };
 

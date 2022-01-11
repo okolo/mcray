@@ -78,7 +78,7 @@ enum ClineParams
     PNparticles,PBatchSize,
     PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
-	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFL,PRandomEGMF,PTurbulentEGMF,PTauPrint,POutputSuffix
+	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PTauPrint,POutputSuffix
 };
 #define xstr(s) str(s)
 #define str(s) #s
@@ -145,7 +145,9 @@ static CmdInfo commands[] = {
 		{ PRescalePPP,    CmdInfo::FLAG_ARGUMENT,   "-pt",   "--ppp-thinning",   "10",   "PPP Rescale Coefficient (double > 0, actual number of secondaries per interaction)" },
 
 		{ PEGMF,    CmdInfo::FLAG_ARGUMENT, "-mf",   "--EGMF",   "1e-15",    "Extragalactic magnetic field in Gauss" },
-		{ PEGMFL,    CmdInfo::FLAG_ARGUMENT, "-mfl",   "--lEGMF",   "1",    "Extragalactic magnetic field correlation length in Mpc at z=0" },
+		{ PEGMFLmin,    CmdInfo::FLAG_ARGUMENT, "-mflmin",   "--lminEGMF",   "0.05",    "Extragalactic magnetic field minimum scale in Mpc at z=0" },
+		{ PEGMFLmax,    CmdInfo::FLAG_ARGUMENT, "-mflmax",   "--lmaxEGMF",   "5.0",    "Extragalactic magnetic field maximum scale in Mpc at z=0" },
+		{ PEGMFNmodes,    CmdInfo::FLAG_ARGUMENT, "-mfnm",   "--nmodesEGMF",   "300",    "Number of modes in magnetic field spectrum" },
 		{ PRandomEGMF,    CmdInfo::FLAG_NULL,     "-mfr",   "--randomEGMF",   NULL,   "randomize EGMF (use different EGMF configurations for different initial particles)" },
 		{ PTurbulentEGMF,    CmdInfo::FLAG_NULL,     "-mft",   "--turbulentEGMF",   NULL,   "use turbulent EGMF with Kolmogorov spectrum" },
         { PTauPrint,    CmdInfo::FLAG_NULL,     "-ptau",   "--print-tau",   NULL,   "print tau" },
@@ -217,7 +219,9 @@ CRbeam::CRbeam(int argc, char** argv):
 		fOverwriteOutput(false),
 		fFixedCmb(false),
 		fEGMF(0.),
-		fLcorEGMF(1.),
+		fLminEGMF(0.),
+		fLmaxEGMF(0.),
+		fNmodesEGMF(0),
 		fRandomizeEGMF(false),
 		fTurbulentEGMF(false),
 		//fMaxDeflection(0.5/180.*M_PI),
@@ -249,7 +253,9 @@ CRbeam::CRbeam(int argc, char** argv):
 	fPPPrescaleCoef = cmd(PRescalePPP);
 
 	fEGMF = cmd(PEGMF);
-	fLcorEGMF = cmd(PEGMFL);
+	fLminEGMF = cmd(PEGMFLmin);
+	fLmaxEGMF = cmd(PEGMFLmax);
+	fNmodesEGMF = cmd(PEGMFNmodes);
 	fRandomizeEGMF = cmd(PRandomEGMF);
 	fTurbulentEGMF = cmd(PTurbulentEGMF);
 	//fMaxDeflection = cmd(PMaxDeflection);
@@ -316,8 +322,8 @@ int CRbeam::run()
 			if(fTurbulentEGMF)
 				outputDir += "Turb";
 			outputDir += ToString(fEGMF);
-            outputDir += "_Lc";
-            outputDir += ToString(fLcorEGMF);
+            outputDir += "_Lmax";
+            outputDir += ToString(fLmaxEGMF);
 		}
 		else
 		{
@@ -495,8 +501,8 @@ int CRbeam::run()
 			pe.AddInteraction(defl);
 		}
 		else {
-			mf = fTurbulentEGMF ? ((MagneticField*) new TurbulentMF(rand, fLcorEGMF, fEGMF)) :
-								((MagneticField*) new MonochromaticMF(fLcorEGMF, fEGMF, Beta, Alpha, Theta, Phi));
+			mf = fTurbulentEGMF ? ((MagneticField*) new TurbulentMF(rand, fLminEGMF, fLmaxEGMF, fEGMF, fNmodesEGMF)) :
+								((MagneticField*) new MonochromaticMF(fLmaxEGMF, fEGMF, Beta, Alpha, Theta, Phi));
 			pe.AddInteraction(new Deflection3D(mf));
 		}
 	}
@@ -587,8 +593,8 @@ int CRbeam::run()
 
 		if(fRandomizeEGMF)
 		{
-            MagneticField* mf = fTurbulentEGMF ? ((MagneticField*) new TurbulentMF(rand, fLcorEGMF, fEGMF)) :
-						((MagneticField*) new MonochromaticMF(rand, fLcorEGMF, fEGMF));
+            MagneticField* mf = fTurbulentEGMF ? ((MagneticField*) new TurbulentMF(rand, fLminEGMF, fLmaxEGMF, fEGMF, fNmodesEGMF)) :
+						((MagneticField*) new MonochromaticMF(rand, fLmaxEGMF, fEGMF));
             fields[i%fBatchSize] = mf; //store till the end of current batch
 			particle.interactionData[Bslot] = mf;
 		}

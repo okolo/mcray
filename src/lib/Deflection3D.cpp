@@ -260,28 +260,34 @@ namespace Interactions {
         for(std::vector<SafePtr<MonochromaticMF> >::const_iterator pw = fWaves.begin(); pw!=fWaves.end(); pw++){
             (*pw)->GetValueGauss(x, aTime, wave);
             for(uint i=0; i<3; i++)
-                outValue[i] += (wave[i]);
+                outValue[i] += std::sqrt(2)*(wave[i]);
         }
     }
 
     double TurbulentMF::MinVariabilityScale(const CosmoTime &aTime) const {
-        return fLc*0.1;
+        return fLmax*0.02;
     }
 
-    TurbulentMF::TurbulentMF(Randomizer &aRandomizer, double aLcor_Mpc, double aVariance_Gauss, double aMultK):
-            fLc(aLcor_Mpc*units.Mpc)
+    TurbulentMF::TurbulentMF(Randomizer &aRandomizer, double aLmin_Mpc, double aLmax_Mpc, double aVariance_Gauss, int aNmodes):
+            fLmin(aLmin_Mpc*units.Mpc),
+            fLmax(aLmax_Mpc*units.Mpc)
     {
-        ASSERT(aMultK>1.);
+        ASSERT(aNmodes>1.);
+        ASSERT(aLmax_Mpc>aLmin_Mpc);
         const double gamma = 11./3.;
         std::vector<double> norms;
         std::vector<double> Ks;
         double sumNorm = 0;
-        for(double k = 1./fLc/16.; k*fLc < 4e4; k*=aMultK){//here we limit the range of waves by condition normK>~1e-3
+        double aMultK = pow(aLmax_Mpc/aLmin_Mpc, 1./(aNmodes-1.));
+        double k = 2*M_PI/fLmax;
+        // std::cout << aLmin_Mpc << '\t' << aLmax_Mpc << '\t' << aNmodes << '\t' << aMultK << '\n';
+        for(uint i=0; i<aNmodes; i++){
             Ks.push_back(k);
-            double normK = k*k*k/(1.+pow(k*fLc,gamma));
+            double normK = (k*fLmax)*(k*fLmax)*(k*fLmax)*pow(k*fLmax,-gamma);
             norms.push_back(normK);
             sumNorm += normK;
             fWaves.push_back(0);
+            k *= aMultK;
         }
         for(uint i=0; i<norms.size(); i++){
             fWaves[i] = new MonochromaticMF(aRandomizer, 2.*M_PI/Ks[i]/units.Mpc, aVariance_Gauss*sqrt(norms[i]/sumNorm));
@@ -297,7 +303,7 @@ namespace Interactions {
         Randomizer r;
         double lambdaMpc = 1;
         double Bgauss = 1e-15;
-        SmartPtr<MagneticField> mf = new TurbulentMF(r, lambdaMpc, Bgauss);
+        SmartPtr<MagneticField> mf = new TurbulentMF(r, lambdaMpc/20, lambdaMpc*5, Bgauss, 100);
         Deflection3D defl(mf);
         std::ofstream outB("TurbulentMF_B.txt");
         mf->Print(lambdaMpc, outB);

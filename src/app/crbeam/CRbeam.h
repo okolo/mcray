@@ -90,7 +90,9 @@ private:
 	bool 			fOverwriteOutput;
 	bool			fFixedCmb;
 	double			fEGMF;
-	double			fLcorEGMF;
+	double			fLminEGMF;
+	double			fLmaxEGMF;
+	double			fNmodesEGMF;
 	bool 			fRandomizeEGMF;
 	bool 			fTurbulentEGMF;
 	bool            fLogging;
