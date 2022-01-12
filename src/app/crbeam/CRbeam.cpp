@@ -484,9 +484,11 @@ int CRbeam::run()
 		pe.AddInteraction(new Interactions::GammaPP(backgrI));
 		pe.AddInteraction(new PPP(backgrI, fPPPrescaleCoef));//secondaries only
 	}
-	pe.AddInteraction(new GZK(backgrI));
-	pe.AddInteraction(new NeutronDecay());
-	pe.AddInteraction(new ProtonPPcel(backgrI));
+	if (fPrimary >= Neutron) {
+        pe.AddInteraction(new GZK(backgrI));
+        pe.AddInteraction(new NeutronDecay());
+        pe.AddInteraction(new ProtonPPcel(backgrI));
+    }
 
 	double Beta = 0.1;
 	double Alpha = M_PI / 4;
