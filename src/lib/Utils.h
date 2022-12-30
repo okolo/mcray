@@ -228,6 +228,8 @@ private:
   T* iPointee;
 };
 
+int omp_thread_count();
+
 }//end of namespace Utils
 
 #endif	/* UTILS_H */

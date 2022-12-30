@@ -45,7 +45,6 @@
 #include "SteckerEBL.h"
 #include "CmdLine.h"
 #include "Stecker16Background.h"
-#include <omp.h>
 #include <stdlib.h>
 #include "MathUtils.h"
 
@@ -68,6 +67,7 @@ using namespace cors::cmdline;
  * the function should be provided by end user
  */
 int user_main(int argc, char** argv) {
+    std::cout << "Number of available threads: " << omp_thread_count() << std::endl;
 	CRbeam prog(argc, argv);
 	return prog.run();
 }

@@ -27,6 +27,15 @@
 
 
 #include "Utils.h"
+#include <omp.h>
 
+namespace Utils {
 
+    int omp_thread_count() {
+        int n = 0;
+#pragma omp parallel reduction(+:n)
+        n += 1;
+        return n;
+    }
 
+} // end of namespace Utils
