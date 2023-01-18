@@ -95,6 +95,7 @@ private:
 	double			fNmodesEGMF;
 	bool 			fRandomizeEGMF;
 	bool 			fTurbulentEGMF;
+	uint            fDeflectionAccuracy;
 	bool            fLogging;
 	bool 			fTrajectoryLogging;
 	int             fLogThread;

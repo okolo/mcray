@@ -44,6 +44,10 @@ namespace Interactions {
         virtual double MinVariabilityScale(const CosmoTime &aTime) const = 0;
 
         int Print(double lambdaMpc, std::ostream& aOutput=std::cout);
+
+        double CorrelationLength(std::vector<double> x, std::vector<double> aDirection, const CosmoTime &aTime,
+                                         double aMaxValMpc=10000);
+
     };
 
     class Deflection3D : public DeflectionInteraction {
@@ -110,6 +114,8 @@ namespace Interactions {
         virtual void GetValueGauss(const double *x, const CosmoTime &aTime, std::vector<double> &outValue) const;
         virtual double MinVariabilityScale(const CosmoTime &aTime) const;
         static int UnitTest();
+        static double MeanCorLength(Randomizer &aRandomizer, double aLmin_Mpc, double aLmax_Mpc, double aVariance_Gauss,
+                                    int aNmodes, const CosmoTime &aTime, int aNsamples=1000, double aMaxValMpc=10000);
     private:
         double fLmin;
         double fLmax;

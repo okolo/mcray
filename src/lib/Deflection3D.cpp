@@ -27,7 +27,6 @@
 #include "Deflection3D.h"
 #include "Test.h"
 
-
 namespace Interactions {
     using namespace mcray;
     using namespace Utils;
@@ -213,6 +212,33 @@ namespace Interactions {
         return 0;
     }
 
+    double MagneticField::CorrelationLength(std::vector<double> x, std::vector<double> aDirection, const CosmoTime &aTime,
+                                            double aMaxValMpc) {
+        double step = 0.1*MinVariabilityScale(aTime);
+        int max_steps = (int)(aMaxValMpc*units.Mpc/step + 0.5);
+        if (max_steps == 0)
+            return step/units.Mpc;
+        auto norm = sqrt(aDirection[0]*aDirection[0] + aDirection[1]*aDirection[1] + aDirection[2]*aDirection[2]);
+        for(int dim_i=0; dim_i<3; dim_i++)
+            aDirection[dim_i] *= (step/norm);
+
+        auto iniB = std::vector<double>(3);
+        auto curB = std::vector<double>(3);
+        GetValueGauss(x.data(), aTime, iniB);
+        for(int step_i=0; step_i<max_steps; step_i++){
+            for(int dim_i=0; dim_i<3; dim_i++)
+                x[dim_i] += aDirection[dim_i];
+            GetValueGauss(x.data(), aTime, curB);
+            double sc_product = 0.;
+            for(int dim_i=0; dim_i<3; dim_i++)
+                sc_product += curB[dim_i]*iniB[dim_i];
+            if (sc_product < 0)
+                return step*(step_i+1)/units.Mpc;
+        }
+        return aMaxValMpc;
+    }
+
+
     int MonochromaticMF::UnitTest() {
         std::vector<double> B(3);
         CosmoTime t(0);
@@ -292,6 +318,18 @@ namespace Interactions {
         for(uint i=0; i<norms.size(); i++){
             fWaves[i] = new MonochromaticMF(aRandomizer, 2.*M_PI/Ks[i]/units.Mpc, aVariance_Gauss*sqrt(norms[i]/sumNorm));
         }
+    }
+
+    double TurbulentMF::MeanCorLength(Randomizer &aRandomizer, double aLmin_Mpc, double aLmax_Mpc, double aVariance_Gauss,
+                                      int aNmodes, const CosmoTime &aTime, int aNsamples, double aMaxValMpc){
+        double l_cor_sum = 0.;
+        auto x = std::vector<double>({0.,0.,0.});
+        auto dx = std::vector<double>({0.,0.,1.});
+        for(int i=0; i<aNsamples; i++){
+            TurbulentMF B(aRandomizer, aLmin_Mpc, aLmax_Mpc, aVariance_Gauss, aNmodes);
+            l_cor_sum += B.CorrelationLength(x, dx, aTime, aMaxValMpc);
+        }
+        return l_cor_sum/aNsamples;
     }
 
     int TurbulentMF::UnitTest() {
