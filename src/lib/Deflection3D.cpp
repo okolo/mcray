@@ -52,7 +52,7 @@ namespace Interactions {
     {
         //dn/dt = qeB/E, where q is charge in units of electron charge; e=sqrt(alpha)-electron charge
         double mult = aParticle.ElectricCharge()*units.Gauss*units.e/aParticle.Energy;
-        const double* N = aParticle.Pdir;
+        const coord_type* N = aParticle.Pdir;
         ASSERT(outRate.size()==3);
         outRate[0] = (N[1]* aBgauss[2]- aBgauss[1]*N[2])*mult;
         outRate[1] = (N[2]* aBgauss[0]- aBgauss[2]*N[0])*mult;
@@ -88,28 +88,28 @@ namespace Interactions {
         dx = deltaT/nSteps;
         std::vector<double> deflRate(3);
         std::vector<double> curB(3);
-        double newPdir[3];
+        coord_type newPdir[3];
         int totSteps=0;//debug info
 
         for(u_int stepB = 0; stepB<nSteps; stepB++){
             pB->GetValueGauss(aParticle.X, aParticle.Time, curB);
             GetRotationRate(aParticle, curB, deflRate);
-            double absRate = sqrt(deflRate[0]*deflRate[0]+deflRate[1]*deflRate[1]+deflRate[2]*deflRate[2]);
+            cosmo_time absRate = sqrt(deflRate[0]*deflRate[0]+deflRate[1]*deflRate[1]+deflRate[2]*deflRate[2]);
             cosmo_time maxStep = 0.05*M_PI/absRate/fAccuracy;//max step corresponds to 9/fAccuracy degrees turn
             u_int nSubSteps = (u_int)(dx/maxStep+1.);
             cosmo_time dXsubStep = dx/nSubSteps;
             for(u_int substep=0; substep<nSubSteps; substep++){
                 if(substep)
                     GetRotationRate(aParticle, curB, deflRate);
-                double absPdir = 0.;
+                cosmo_time absPdir = 0.;
                 for(int i=0; i<3; i++){
-                    double val = aParticle.Pdir[i] + deflRate[i]*dXsubStep;
+                    coord_type val = aParticle.Pdir[i] + deflRate[i]*dXsubStep;
                     newPdir[i] = val;
                     absPdir += val*val;
                 }
                 absPdir = sqrt(absPdir);//norm of new vector
                 for(int i=0; i<3; i++){
-                    double val = newPdir[i]/absPdir;//make sure rotated vector has unit norm
+                    coord_type val = newPdir[i]/absPdir;//make sure rotated vector has unit norm
                     aParticle.X[i] += 0.5*(aParticle.Pdir[i] + val)*beta*dXsubStep;
                     aParticle.Pdir[i] = val;
                 }
@@ -175,7 +175,7 @@ namespace Interactions {
         fAmplitude[2] = std::complex<double>(-cosAlpha* fSinTheta, 0)* fAbsBgauss;
     }
 
-    void MonochromaticMF::GetValueGauss(const double *x, const CosmoTime &aTime,
+    void MonochromaticMF::GetValueGauss(const coord_type *x, const CosmoTime &aTime,
                                                std::vector<double> &outValue) const
     {
         ASSERT(outValue.size()==3);
@@ -194,12 +194,12 @@ namespace Interactions {
     int MagneticField::Print(double lambdaMpc, std::ostream& aOutput) {
         std::vector<double> B(3);
         CosmoTime t(0);
-        double step=lambdaMpc*units.Mpc/20.;
-        double L=lambdaMpc*units.Mpc*3;
-        for(double x=0.; x<=L; x+=step) {
-            for (double y = 0.; y <= L; y+=step) {
-                for (double z = 0.; z <= L; z += step) {
-                    const double r[] = {x, y, z};
+        coord_type step=lambdaMpc*units.Mpc/20.;
+        coord_type L=lambdaMpc*units.Mpc*3;
+        for(coord_type x=0.; x<=L; x+=step) {
+            for (coord_type y = 0.; y <= L; y+=step) {
+                for (coord_type z = 0.; z <= L; z += step) {
+                    const coord_type r[] = {x, y, z};
                     GetValueGauss(r, t, B);
                     aOutput << x / units.Mpc << "\t" << y / units.Mpc << "\t" << z / units.Mpc << "\t"
                               << B[0] << "\t" << B[1] << "\t" << B[2] << "\n";
@@ -212,7 +212,7 @@ namespace Interactions {
         return 0;
     }
 
-    double MagneticField::CorrelationLength(std::vector<double> x, std::vector<double> aDirection, const CosmoTime &aTime,
+    double MagneticField::CorrelationLength(std::vector<coord_type> x, std::vector<coord_type> aDirection, const CosmoTime &aTime,
                                             double aMaxValMpc) {
         double step = 0.1*MinVariabilityScale(aTime);
         int max_steps = (int)(aMaxValMpc*units.Mpc/step + 0.5);
@@ -280,7 +280,7 @@ namespace Interactions {
         return 0;
     }
 
-    void TurbulentMF::GetValueGauss(const double *x, const CosmoTime &aTime, std::vector<double> &outValue) const {
+    void TurbulentMF::GetValueGauss(const coord_type *x, const CosmoTime &aTime, std::vector<double> &outValue) const {
         std::vector<double> wave(3, 0.);
         outValue.assign(3, 0.);
         for(std::vector<SafePtr<MonochromaticMF> >::const_iterator pw = fWaves.begin(); pw!=fWaves.end(); pw++){
@@ -323,8 +323,8 @@ namespace Interactions {
     double TurbulentMF::MeanCorLength(Randomizer &aRandomizer, double aLmin_Mpc, double aLmax_Mpc, double aVariance_Gauss,
                                       int aNmodes, const CosmoTime &aTime, int aNsamples, double aMaxValMpc){
         double l_cor_sum = 0.;
-        auto x = std::vector<double>({0.,0.,0.});
-        auto dx = std::vector<double>({0.,0.,1.});
+        auto x = std::vector<coord_type>({0.,0.,0.});
+        auto dx = std::vector<coord_type>({0.,0.,1.});
         for(int i=0; i<aNsamples; i++){
             TurbulentMF B(aRandomizer, aLmin_Mpc, aLmax_Mpc, aVariance_Gauss, aNmodes);
             l_cor_sum += B.CorrelationLength(x, dx, aTime, aMaxValMpc);

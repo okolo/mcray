@@ -39,13 +39,13 @@ namespace Interactions {
 
     class MagneticField : public SmartReferencedObj{
     public:
-        virtual void GetValueGauss(const double *x, const CosmoTime &aTime, std::vector<double>& outValue) const = 0;
+        virtual void GetValueGauss(const coord_type *x, const CosmoTime &aTime, std::vector<double>& outValue) const = 0;
 
         virtual double MinVariabilityScale(const CosmoTime &aTime) const = 0;
 
         int Print(double lambdaMpc, std::ostream& aOutput=std::cout);
 
-        double CorrelationLength(std::vector<double> x, std::vector<double> aDirection, const CosmoTime &aTime,
+        double CorrelationLength(std::vector<coord_type> x, std::vector<coord_type> aDirection, const CosmoTime &aTime,
                                          double aMaxValMpc=10000);
 
     };
@@ -84,7 +84,7 @@ namespace Interactions {
         MonochromaticMF(double aLamdbaMpc, double aAmplitudeGauss, double aBetaK,
                         double aAlphaK, double aTheta, double aPhi);
 
-        virtual void GetValueGauss(const double *x, const CosmoTime &aTime,
+        virtual void GetValueGauss(const coord_type *x, const CosmoTime &aTime,
                                    std::vector<double> &outValue) const;
         virtual double MinVariabilityScale(const CosmoTime &aTime) const;
 
@@ -111,7 +111,7 @@ namespace Interactions {
 
     public:
         TurbulentMF(Randomizer &aRandomizer, double aLmin_Mpc, double aLmax_Mpc, double aVariance_Gauss, int aNmodes);
-        virtual void GetValueGauss(const double *x, const CosmoTime &aTime, std::vector<double> &outValue) const;
+        virtual void GetValueGauss(const coord_type *x, const CosmoTime &aTime, std::vector<double> &outValue) const;
         virtual double MinVariabilityScale(const CosmoTime &aTime) const;
         static int UnitTest();
         static double MeanCorLength(Randomizer &aRandomizer, double aLmin_Mpc, double aLmax_Mpc, double aVariance_Gauss,

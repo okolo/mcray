@@ -108,6 +108,9 @@ namespace mcray
         EndNuclei,
         ParticleTypeEOF = EndNuclei //must be the last
     };
+
+    typedef cosmo_time coord_type;
+
 #define ParticleCustomDataSize 16
     class Particle
     {
@@ -132,8 +135,11 @@ namespace mcray
     	inline Particle& operator=(const Particle& aParticle) {
             memcpy(this, &aParticle, sizeof(Particle)); return *this;
         }
-    	inline double beta() const {
-            double m=Mass(); return sqrt(1.-m*m/Energy/Energy);
+    	inline coord_type beta() const {
+            coord_type m=Mass();
+            coord_type gamma_1 = m/Energy;
+            coord_type beta2 = 1. - gamma_1*gamma_1;
+            return sqrt(beta2);
         }
 
         inline void SetParent(const Particle& aParticle){
@@ -152,8 +158,8 @@ namespace mcray
         CosmoTime Time;
         double Energy;
         long Ninteractions;//number of interactions in the interaction chain
-        double X[3];//comoving coordinates, source location: (0,0,0)
-        double Pdir[3];//momentum direction, initial value: (0,0,1)
+        coord_type X[3];//comoving coordinates, source location: (0,0,0)
+        coord_type Pdir[3];//momentum direction, initial value: (0,0,1)
         unsigned long long id;
         unsigned long long fPrevId;
 

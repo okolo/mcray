@@ -234,6 +234,7 @@ CRbeam::CRbeam(int argc, char** argv):
         fTauPrint(false),
 		cmd(argc,argv,commands)
 {
+    std::cout << "sizeof(coord_type) = " << sizeof(coord_type) << std::endl;
 	if( cmd.has_param("-h") )
 	{
 		cmd.printHelp(std::cerr);

@@ -144,7 +144,7 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
     void Particle::PropagateFreely(cosmo_time dt)
     {
         Time += dt;
-        double b=beta();
+        coord_type b=beta();
         for(int i=0; i<3; i++)
             X[i]+=(b*Pdir[i]*dt);
     }
