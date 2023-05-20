@@ -253,6 +253,9 @@ void RawOutput::LookForRepetitions(std::vector<Particle>* aParticles)
 		if(fSaveId){
 			aOut << "\t" << aParticle.id;
 		}
+        if(fSaveZprod){
+            aOut << "\t" << aParticle.fProductionTime.z();
+        }
 	}
 
 	void RawOutput3D::WriteHeader(std::ostream& aOut, const Particle& aFirstParticle){
@@ -273,6 +276,9 @@ void RawOutput::LookForRepetitions(std::vector<Particle>* aParticles)
 		}
 		if(fSaveId){
 			aOut << "\tId";
+		}
+		if(fSaveZprod){
+            aOut << "\tz_prod";
 		}
 	}
 
