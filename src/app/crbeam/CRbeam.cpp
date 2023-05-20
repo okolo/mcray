@@ -499,7 +499,6 @@ int CRbeam::run()
 	int Bslot = -1;
     SmartPtr<MagneticField> mf;
 	if(fEGMF>0.) {
-        std::cerr << "fDeflectionAccuracy " << fDeflectionAccuracy << std::endl;
 	    if (fTurbulentEGMF){
             CosmoTime t0;
             auto l_cor = TurbulentMF::MeanCorLength(rand, fLminEGMF, fLmaxEGMF, fEGMF, fNmodesEGMF, t0);
