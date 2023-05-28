@@ -126,7 +126,10 @@ SteckerEBL.h
 Stecker16Background.cpp
 Stecker16Background.h
 Logger.cpp
-Logger.h)
+Logger.h
+CmdLine.cpp
+CmdLine.h
+)
 
 add_link_options(-fopenmp)
 add_library(mcray ${SOURCE_FILES})

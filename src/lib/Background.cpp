@@ -633,37 +633,42 @@ double ContinuousBackgroundIntegral::RateKKernZ::f(double k) const
 	return result;
 }
 
+Function* ContinuousBackgroundIntegral::GetRateDistributionS(const Function& aSigma, const Particle& aParticle, double& aSmin, double& aSmax)
+{
+    double SminSigma = aSigma.Xmin();
+    ASSERT_VALID_NO(SminSigma);
+    double beta = aParticle.beta();
+    double m=aParticle.Mass();
+    aSmax = m*m+2.*aParticle.Energy*fMaxK*(1.+beta);
+    double SminKinematic = m*m+2.*aParticle.Energy*fMinK*(1.-beta);
+    aSmin = SminKinematic<SminSigma ? SminSigma : SminKinematic;
+    if(aSigma.Xmax()<aSmax)
+        aSmax=aSigma.Xmax();
+    if(aSmax<=aSmin)
+        return NULL;
+
+    double z = aParticle.Time.z();
+    int iZ= fStepZ>0 ? ((int)(z/fStepZ)):0;
+    //int maxIntervals = (int)(0.1/fEpsRel + 10.5);
+
+    //int nStepsS = (int)(log10(Smax/Smin)/log10(fLogStepK)+0.5);
+    //if(nStepsS<5)
+    //	nStepsS = 5;
+    //double stepS = pow(Smax/Smin,1./nStepsS);
+    double totalRate = 0.;//rate times 8*E*beta
+
+    bool zDependenceExists = (iZ<(int)fIntegrals.size()-1);
+
+    if(zDependenceExists)
+        return new RateSKernZ(*fIntegrals[iZ], *fIntegrals[iZ + 1], iZ * fStepZ, (iZ + 1) * fStepZ, aSigma, aParticle);
+    else
+        return new RateSKern(*fIntegrals[iZ], aSigma, aParticle);
+}
+
 double ContinuousBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, const Particle& aParticle, double aRand, double& aS, double aAbsError)
 {
-	ASSERT(aRand>0 || aRand<1);
-	double SminSigma = aSigma.Xmin();
-	ASSERT_VALID_NO(SminSigma);
-	double beta = aParticle.beta();
-	double m=aParticle.Mass();
-	double Smax = m*m+2.*aParticle.Energy*fMaxK*(1.+beta);
-	double SminKinematic = m*m+2.*aParticle.Energy*fMinK*(1.-beta);
-	double Smin = SminKinematic<SminSigma ? SminSigma : SminKinematic;
-	if(aSigma.Xmax()<Smax)
-		Smax=aSigma.Xmax();
-	if(Smax<=Smin)
-		return 0.;
-
-	double z = aParticle.Time.z();
-	int iZ= fStepZ>0 ? ((int)(z/fStepZ)):0;
-	//int maxIntervals = (int)(0.1/fEpsRel + 10.5);
-
-	//int nStepsS = (int)(log10(Smax/Smin)/log10(fLogStepK)+0.5);
-	//if(nStepsS<5)
-	//	nStepsS = 5;
-	//double stepS = pow(Smax/Smin,1./nStepsS);
-	double totalRate = 0.;//rate times 8*E*beta
-
-	bool zDependenceExists = (iZ<(int)fIntegrals.size()-1);
-	SafePtr<RateSKern> kern;
-	if(zDependenceExists)
-		kern = new RateSKernZ(*fIntegrals[iZ], *fIntegrals[iZ + 1], iZ * fStepZ, (iZ + 1) * fStepZ, aSigma, aParticle);
-	else
-		kern = new RateSKern(*fIntegrals[iZ], aSigma, aParticle);
+    double Smin, Smax, totalRate;
+    SafePtr<Utils::Function> kern = GetRateDistributionS(aSigma, aParticle, Smin, Smax);
 	if(MathUtils::SampleLogDistribution(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
@@ -934,33 +939,46 @@ double MonochromaticBackgroundIntegral::RateKKern::f(double k) const
 	return fSigma(k)*k;
 }
 
+Function* MonochromaticBackgroundIntegral::GetRateDistributionS(const Function& aSigma, const Particle& aParticle, double& aSmin, double& aSmax)
+{
+    double SminSigma = aSigma.Xmin();
+    ASSERT_VALID_NO(SminSigma);
+    double beta = aParticle.beta();
+    double m=aParticle.Mass();
+
+    double z = aParticle.Time.z();
+    double n=fConcentration.f(z);
+    if(n<=0.)
+        return NULL;
+    double k=fEnergy.f(z);
+
+    aSmax = m*m+2.*aParticle.Energy*k*(1.+beta);
+    double SminKinematic = m*m+2.*aParticle.Energy*k*(1.-beta);
+    aSmin = SminKinematic<SminSigma ? SminSigma : SminKinematic;
+    if(aSigma.Xmax()<aSmax)
+        aSmax=aSigma.Xmax();
+    if(aSmax<=aSmin)
+        return NULL;
+
+    return new RateSKern(aSigma, aParticle);
+}
+
 double MonochromaticBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, const Particle& aParticle, double aRand, double& aS, double aAbsError)
 {
 	ASSERT(aRand>0 || aRand<1);
 	aS=0;
-	double z = aParticle.Time.z();
-	double n=fConcentration.f(z);
-	if(n<=0.)
-		return 0.;
-	double k=fEnergy.f(z);
-
-	double SminSigma = aSigma.Xmin();
-	ASSERT_VALID_NO(SminSigma);
-	double beta = aParticle.beta();
-	double m=aParticle.Mass();
-
-	double Smax = m*m+2.*aParticle.Energy*k*(1.+beta);
-	double SminKinematic = m*m+2.*aParticle.Energy*k*(1.-beta);
-	double Smin = SminKinematic<SminSigma ? SminSigma : SminKinematic;
-	if(aSigma.Xmax()<Smax)
-		Smax=aSigma.Xmax();
-	if(Smax<=Smin)
-		return 0.;
-
+    double z = aParticle.Time.z();
+    double n=fConcentration.f(z);
+    if(n<=0.)
+        return NULL;
+    double k=fEnergy.f(z);
+    double Smin, Smax;
 	double totalRate = 0.;//rate times 8*E*beta
-	RateSKern kern(aSigma, aParticle);
+	SafePtr<Function> kern = GetRateDistributionS(aSigma, aParticle, Smin, Smax);
+    if (kern == NULL)
+        return 0;
 
-	if(MathUtils::SampleLogDistribution(kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
+	if(MathUtils::SampleLogDistribution(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate*n/k/k/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
 	}

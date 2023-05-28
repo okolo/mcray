@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project (CRbeam)
+project (savecoef)
 # uncomment the line below for verbose output
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 add_definitions(-DUSE_GSL)
@@ -9,7 +9,7 @@ include_directories ("../../lib" "../../OS/include")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG -O0")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG -O0 -pg")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O2")
 set(CMAKE_PREFIX_PATH "external")
 
@@ -25,11 +25,8 @@ FIND_LIBRARY(GSLCBLAS_LIBRARY gslcblas)
 add_subdirectory (../../lib mcray)
 
 set(SOURCE_FILES
-CRbeam.cpp
-CRbeam.h
+savecoef.cpp savecoef.h
 )
 add_link_options(-fopenmp)
-add_executable(CRbeam ${SOURCE_FILES})
-target_link_libraries(CRbeam mcray ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})
-
-
+add_executable(savecoef ${SOURCE_FILES})
+target_link_libraries(savecoef mcray ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})

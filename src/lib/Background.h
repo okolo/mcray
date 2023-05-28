@@ -215,6 +215,7 @@ private:
 class BackgroundIntegral : public SmartReferencedObj
 {
 public:
+    virtual Function* GetRateDistributionS(const Function& aSigmaS, const Particle& aParticle, double& aSmin, double& aSmax) = 0;
 	///calculate rates using sigma(s) where s - total energy squared in center of mass frame
 	virtual double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, Randomizer& aRandomizer, double& aS, double aAbsError=0) = 0;//todo: make use of aAbsError parameter in propagation engine
 	virtual double GetRateS(const Function &aSigmaS, const Particle &aParticle, double aAbsError = 0) = 0;//todo: make use of aAbsError parameter in propagation engine
@@ -260,7 +261,7 @@ public:
 		fLogStepE(aLogStepE),
 		fEpsRel(aEpsRel){};
 	MonochromaticBackgroundIntegral(const MonochromaticBackgroundIntegral& aBackgroundIntegral);
-
+    Function* GetRateDistributionS(const Function& aSigmaS, const Particle& aParticle, double& aSmin, double& aSmax);
 
     double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, Randomizer& aRandomizer, double& aS, double aAbsError=0){
         return GetRateAndSampleS(aSigmaS, aParticle, aRandomizer.Rand(), aS, aAbsError);
@@ -361,6 +362,7 @@ public:
 	double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, Randomizer& aRandomizer, double& aS, double aAbsError = 0){
         return GetRateAndSampleS(aSigmaS, aParticle, aRandomizer.Rand(), aS, aAbsError);
     }
+    Function* GetRateDistributionS(const Function& aSigmaS, const Particle& aParticle, double& aSmin, double& aSmax);
 	double GetRateS(const Function &aSigmaS, const Particle &aParticle, double aAbsError = 0);
 
 	double GetRateAndSampleK(const Function& aSigmaK, const Particle& aParticle, Randomizer& aRandomizer, double& aK, double aAbsError = 0){

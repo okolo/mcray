@@ -228,6 +228,49 @@ private:
   T* iPointee;
 };
 
+template<typename T = double >
+        class IDataStorageX{
+public:
+    virtual void save_array(const std::vector<T>& data, const char* name) = 0;
+    virtual std::vector<T> load_array(const char* name) = 0;
+};
+
+typedef IDataStorageX<double> IDataStorage;
+
+template<typename T = double >
+    class BinaryDataStorageX : public IDataStorageX<T>{
+    public:
+        BinaryDataStorageX(const char* folder):fFolder(folder){};
+        void save_array(const std::vector<T>& data, const char* name){
+            std::ofstream ofs;
+            std::string file = fFolder + "/" + name;
+            std::cout << "writing to " << file << std::endl;
+            ofs.open(file, std::ios::out | std::ios::binary);
+            ofs.write((const char*)data.data(), sizeof(T)*data.size());
+            ofs.close();
+        }
+        std::vector<T> load_array(const char* name){
+            std::ifstream ifs;
+            std::string file = fFolder + "/" + name;
+            std::cout << "reading from " << file << std::endl;
+            ifs.open(file, std::ios::in | std::ios::binary);
+            //get length of file
+            ifs.seekg(0, std::ios::end);
+            size_t length = ifs.tellg();
+            ifs.seekg(0, std::ios::beg);
+            if (length%sizeof(T) != 0)
+                Exception::Throw("unexpected size of data");
+            std::vector<T> result(length/sizeof(T), 0);
+            ifs.read((char*)result.data(), length);
+            ifs.close();
+            return result;
+        }
+    private:
+        std::string fFolder;
+    };
+
+typedef BinaryDataStorageX<double> BinaryDataStorage;
+
 int omp_thread_count();
 
 }//end of namespace Utils

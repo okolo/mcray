@@ -88,6 +88,81 @@ bool GammaPP::SampleS(const Particle& aParticle, double& aS, Randomizer& aRandom
 	return (fBackground->GetRateAndSampleS(fSigma, aParticle, aRandomizer, aS)!=0);
 }
 
+void GammaPP::SaveCoefficients(Utils::IDataStorage& output, double aMinE, double aMaxE, double aMinFracE, double aLogStep, cosmo_time aZ) const
+{
+    Particle photon(Photon, aZ);
+    photon.Energy = aMaxE;
+    double SminGlobal, SmaxGlobal;
+    // calculate range of S
+    SafePtr<Function> kern = fBackground->GetRateDistributionS(fSigma, photon, SminGlobal, SmaxGlobal);
+
+    double mult = pow(10, aLogStep);
+    std::cout << "Smin = " << SminGlobal*mult << "\t\t Smax = " << SmaxGlobal << std::endl;
+
+    double n_steps_S = (int)(log10(SmaxGlobal/SminGlobal)/aLogStep);
+    std::cout << n_steps_S << " points in S" << std::endl;
+
+    double n_steps_E = (int)(log10(aMaxE/aMinE)/aLogStep + 1);
+    aMaxE = aMinE * pow(10, n_steps_E-1);
+    std::cout << "Emin = " << aMinE << "\t\t Emax = " << aMaxE << std::endl;
+    std::cout << n_steps_E << " points in E" << std::endl;
+
+    double n_steps_sec_E = (int)(log10(0.5/aMinFracE)/aLogStep + 1);
+    std::cout << "FracMin = " << aMinFracE << std::endl;
+    std::cout << "FracMax = 0.5" << std::endl;
+    std::cout << n_steps_sec_E << " points in frac" << std::endl;
+
+    std::vector<double> rate_array(n_steps_E, 0);
+    std::vector<double> s_array(n_steps_S * n_steps_E, 0);
+
+    photon.Energy = aMinE*mult;
+    for(int iE=0; iE<n_steps_E; iE++, photon.Energy *= mult){
+        rate_array[iE] = fBackground->GetRateS(fSigma, photon);
+        double Smin, Smax;
+        kern = fBackground->GetRateDistributionS(fSigma, photon, Smin, Smax);
+        if (kern == NULL)
+            continue;
+        double s = SminGlobal*mult;
+        double sum = 0.;
+        for(int iS=0; iS < n_steps_S && s <= SmaxGlobal; iS++, s *= mult){
+            double p = s*(*kern)(s);  // \Int_s kern(s) ds = \Int s*kern(s) d log(s) \propto \Int s*kern(s) d log10(s)
+            sum += p;
+            s_array[iE*n_steps_S+iS] = p;
+        }
+        // normalizing to 1
+        if (sum > 0)
+            for(int iS=0; iS < n_steps_S && s <= SmaxGlobal; iS++, s *= mult){
+                s_array[iE*n_steps_S+iS] /= sum;
+            }
+        else
+            ASSERT(sum==0);
+    }
+    output.save_array(rate_array, "rate");
+    output.save_array(s_array, "s");
+    s_array.clear();
+    rate_array.clear();
+
+    std::vector<double> sec_distr_array(n_steps_S * n_steps_sec_E, 0);
+    double s = SminGlobal*mult;
+    for(int iS=0; iS < n_steps_S && s <= SmaxGlobal; iS++, s *= mult){
+        double beta = sqrt(1.-4./s);
+        double rMin = 0.5*(1.0 - beta);
+        double I0 = DifSigmaIntegralUnnorm(rMin, s);
+
+        double r = aMinFracE;
+        double prevI = I0;
+        double tot_I = DifSigmaIntegralUnnorm(0.5, s) - I0;
+        for(int iF=0; iF<n_steps_sec_E; iF++, r *= mult){
+            if(r<=rMin)
+                continue;
+            double I = DifSigmaIntegralUnnorm(r, s);
+            sec_distr_array[iS*n_steps_sec_E+iF] = (I - prevI)/tot_I;
+            prevI = I;
+        }
+    }
+    output.save_array(sec_distr_array, "secondary");
+}
+
 void GammaPP::SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const
 {
 	ASSERT(aParticle.Type == Photon);

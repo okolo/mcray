@@ -28,6 +28,7 @@
 #ifndef GAMMAPP_H_
 #define GAMMAPP_H_
 
+#include "Utils.h"
 #include "Interaction.h"
 #include "Background.h"
 
@@ -59,6 +60,7 @@ public:
 	static void UnitTestSampling(double aE, double aZ);
 	virtual ~GammaPP();
 	double Rate(const Particle& aParticle) const;
+	void SaveCoefficients(Utils::IDataStorage& output, double aMinE, double aMaxE, double aMinFracE, double aLogStep, cosmo_time aZ=0) const;
 	bool SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer) const;
 	void SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const;
 
