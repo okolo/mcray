@@ -347,7 +347,7 @@ int CRbeam::run()
 	}
     std::cout << "output dir: " << outputDir << std::endl;
     bool saveZprod = true;
-    SmartPtr<RawOutput3D> pOutput = new RawOutput3D(outputDir, fOverwriteOutput, fMz!=M_POINT_SOURCE, fPowerLaw>0, fTrajectoryLogging, saveZprod);//this creates folder outputDir, later we will set output to outputDir/z0
+    SmartPtr<RawOutput3D> pOutput = new RawOutput3D(outputDir, fOverwriteOutput, true, true, fTrajectoryLogging, saveZprod);//this creates folder outputDir, later we will set output to outputDir/z0
 	if(fLogging){
 		debug.SetOutputFile(outputDir + "/log.txt");
 		debug.EnableTimestamp();
