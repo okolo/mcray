@@ -1,0 +1,16 @@
+13      ! incident particle (13 - p, 14 - n)
+s       ! sample nucleon energy with range (s - range, n - fixed energy)
+1.e+8   ! lower boundary of nucleon energy range (GeV)
+1.e+10  ! upper boundary of nucleon energy range (GeV)
+10      ! number of steps to scan energy range
+n       ! target photon spectrum (y - black body, n - power-law)
+n       ! power law (y - straight, n - broken)
+1.5     ! spectral index of power law below the break energy
+2.      ! spectral index of power law above the break energy
+1.      ! break energy of photon spectrum (eV)
+1.e-5   ! lower boundary of photon energy range (eV)
+1.e+2   ! upper boundary of photon energy range (eV)
+10000   ! number of interactions per energy step
+100     ! number of bins for output spectra
+0.2     ! bin width of output spectra
+testBP  ! generic file name for output tables
