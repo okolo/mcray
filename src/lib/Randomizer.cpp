@@ -32,6 +32,7 @@
 #include "gsl/gsl_errno.h"
 #include "gsl/gsl_math.h"
 #include "gsl/gsl_rng.h"
+#include "gsl/gsl_randist.h"
 
 namespace mcray
 {

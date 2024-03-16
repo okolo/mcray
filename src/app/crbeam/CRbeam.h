@@ -102,6 +102,7 @@ private:
 	LogLevel        fLogLevel;
 	double			fEBLMaxE;
     bool            fTauPrint;
+    int             fRandSeed;
 	//double			fMaxDeflection;
 	cors::cmdline::CmdLine 		cmd;
 };
