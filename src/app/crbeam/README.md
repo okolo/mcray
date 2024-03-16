@@ -182,3 +182,19 @@ default value:	3
 -rseed or --random-seed
 		Specify random seed for randomizer
 		default value:	getting from current time
+
+-srcx or --source-x
+		Source X coord in kpc
+		default value:	0
+
+-srcy or --source-y
+		Source X coord in kpc
+		default value:	0
+
+-srcy or --source-y
+		Source Y coord in kpc
+		default value:	0
+
+-srcz or --source-z
+		Source Z coord in kpc
+		default value:	0

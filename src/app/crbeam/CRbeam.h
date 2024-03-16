@@ -103,6 +103,9 @@ private:
 	double			fEBLMaxE;
     bool            fTauPrint;
     int             fRandSeed;
+	double			fSourceX;
+	double			fSourceY;
+	double			fSourceZ;
 	//double			fMaxDeflection;
 	cors::cmdline::CmdLine 		cmd;
 };
