@@ -17,8 +17,7 @@ Framework for Monte Carlo simulation of ultra-high energy cosmic rays and electr
 - Install [GSL](https://packages.debian.org/sid/libgsl-dev)
 - Install required libraries to [external](src/external) folder
 - Build code:
-<pre><code>
-cd bin
+<pre><code>cd bin
 cmake -S ../src/app/crbeam -B .
 make
 </code></pre>
