@@ -12,4 +12,5 @@ cd ../
 rm -r 'Monte Carlo simulations of photohadronic processes in astrophysics'
 rm pkx5j87mgn-1.zip
 </code></pre>
-- download Numerical Recipes 3rd ed. C++ source code from http://numerical.recipes/com/storefront.html and extract to **nr** folder. TODO: fix this link
+- download Numerical Recipes 3rd ed. C++ source code from http://numerical.recipes/com/storefront.html and extract to **nr** folder.
+TODO: fix this link, probably, we can get some code from [this](https://github.com/blackstonep/Numerical-Recipes)?
