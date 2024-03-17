@@ -14,7 +14,7 @@ Monte Carlo simulation of the cosmic ray and EM cascade beam propagation.
 
 ### Usage example:
 
-    ./CRbeam -z 0.43 --emax 1e18 --emin 3e11 -N 100000 -p 10 -b 12 -mf 1e-17 -mft -mfr --backgr-mult 3.35 --lEGMF 0.01
+    ./CRbeam -z 0.43 --emax 1e18 --emin 3e11 -N 100000 -p 10 -b 12 -mf 1e-17 -mft -mfr --backgr-mult 3.35 --lminEGMF 0.06283 --lmaxEGMF 6.283 --nmodesEGMF 463
 
 ### Command line parameters:
 
@@ -198,3 +198,22 @@ default value:	3
 -srcz or --source-z
 		Source Z coord in kpc
 		default value:	0
+
+-jet or --jet-angle
+		jet scan angle of cone from 0 (|| Oz) to Pi (isotropic emission).
+		Note: this param uses as cut off for non-cone jet types
+
+-jett or --jet-theta
+		jet angle between Oz and mean jet direction
+
+-jetp or --jet-phi
+		jet angle between Ox and mean jet direction
+
+-jettp or --jet-type
+		jet type:
+			0 - cone type
+			1 - Gauss type
+			2 - von Miser-Fisher (vMF) type
+
+-jetprm or --jet-param
+		jet distribution param: 1-sigma for Gauss or kappa for vMF

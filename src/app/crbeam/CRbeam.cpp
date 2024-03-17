@@ -80,7 +80,8 @@ enum ClineParams
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,
 	PRandSeed,
-	PSourceX,PSourceY,PSourceZ
+	PSourceX,PSourceY,PSourceZ,
+	PJetAngle,PJetTheta,PJetPhi,PJetType,PJetParam
 };
 #define xstr(s) str(s)
 #define str(s) #s
@@ -159,6 +160,15 @@ static CmdInfo commands[] = {
         { PSourceX,    CmdInfo::FLAG_ARGUMENT,     "-srcx",   "--source-x",   "0",   "source X coord, check redshift, kpc" },
         { PSourceY,    CmdInfo::FLAG_ARGUMENT,     "-srcy",   "--source-y",   "0",   "source Y coord, check redshift, kpc" },
         { PSourceZ,    CmdInfo::FLAG_ARGUMENT,     "-srcz",   "--source-z",   "0",   "source Z coord, check redshift, kpc"},
+        { PJetAngle,    CmdInfo::FLAG_ARGUMENT,     "-jet",   "--jet-angle",   "0",   "jet scan angle of cone from 0 (|| Oz) to Pi (isotropic emission). Note: this param uses as cut off for non-cone jet types" },
+        { PJetTheta,    CmdInfo::FLAG_ARGUMENT,     "-jett",   "--jet-theta",   "0",   "jet angle between Oz and mean jet direction" },
+        { PJetPhi,    CmdInfo::FLAG_ARGUMENT,     "-jetp",   "--jet-phi",   "0",   "jet angle between Ox and mean jet direction" },
+        { PJetType,    CmdInfo::FLAG_ARGUMENT,     "-jettp",   "--jet-type",   "0",   "jet type:\n"
+        																						"0 - cone type\n"
+        																						"1 - Gauss type\n"
+        																						"2 - von Miser-Fisher (vMF) type\n"
+        																						},
+        { PJetParam,    CmdInfo::FLAG_ARGUMENT,     "-jetprm",   "--jet-param",   "0",   "jet distribution param: 1-sigma for Gauss or kappa for vMF" },
 		{ 0 },
 };
 
@@ -242,6 +252,11 @@ CRbeam::CRbeam(int argc, char** argv):
 		fSourceX(0),
 		fSourceY(0),
 		fSourceZ(0),
+        fJetAngle(0),
+        fJetTheta(0),
+        fJetPhi(0),
+        fJetType(0),
+        fJetParam(0),
 		cmd(argc,argv,commands)
 {
     std::cout << "sizeof(coord_type) = " << sizeof(coord_type) << std::endl;
@@ -297,6 +312,11 @@ CRbeam::CRbeam(int argc, char** argv):
 	fSourceX = cmd(PSourceX);
 	fSourceY = cmd(PSourceY);
 	fSourceZ = cmd(PSourceZ);
+    fJetAngle = cmd(PJetAngle);
+    fJetTheta = cmd(PJetTheta);
+    fJetPhi = cmd(PJetPhi);
+    fJetType = cmd(PJetType);
+    fJetParam = cmd(PJetParam);
 
 	if(fOutputDir[0]=='\0')
 		fOutputDir = 0;
@@ -623,6 +643,37 @@ int CRbeam::run()
 		particle.X[1]=fSourceY*units.kpc;
 		particle.X[2]=fSourceZ*units.kpc;
 
+		if(fJetAngle>1.e-14){// Customize source direction
+			double cos_theta_max = cos(fJetAngle);
+			double rndval = rand.RandZero();
+			double cos_theta = 1.-rndval*(1.-cos_theta_max); // Random from cos=1...maxcos
+			if(fJetType==1){ // TODO: Bad codestyle, rewrite it
+				cos_theta = 1.-fabs(rand.RandGauss(fJetParam));
+				if(cos_theta<-1.){
+					cos_theta+=2.; // Hot fix
+					cerr<<"Warning: bad random fix for Gauss distribution"<<endl;
+				}
+			}
+			double sin_theta = sqrt(1.-cos_theta*cos_theta);
+			double phi = rand.Rand()*2.*M_PI; // Random from 0 to 2pi
+			double Px = cos(phi)*sin_theta;
+			double Py = sin(phi)*sin_theta;
+			double Pz = cos_theta;
+			// Now rotate it:
+			// By theta:
+			particle.Pdir[0] = Px;
+			particle.Pdir[1] = cos(fJetTheta)*Py-sin(fJetTheta)*Pz;
+			particle.Pdir[2] = sin(fJetTheta)*Py+cos(fJetTheta)*Pz;
+			// By phi:
+			fJetPhi+=M_PI/2.;
+			particle.Pdir[0] = cos(fJetPhi)*Px-sin(fJetPhi)*particle.Pdir[1];
+			particle.Pdir[1] = sin(fJetPhi)*Px+cos(fJetPhi)*particle.Pdir[1];
+			fJetPhi-=M_PI/2.;
+			// Copy to start direction, this place don't need high speed
+			particle.PdirStart[0] = particle.Pdir[0];
+			particle.PdirStart[1] = particle.Pdir[1];
+			particle.PdirStart[2] = particle.Pdir[2];
+		}
 		if(fRandomizeEGMF)
 		{
             MagneticField* mf = fTurbulentEGMF ? ((MagneticField*) new TurbulentMF(rand, fLminEGMF, fLmaxEGMF, fEGMF, fNmodesEGMF)) :

@@ -116,7 +116,7 @@ namespace mcray
     {
     private:
     	inline void Reset() {
-            memset(this,0,sizeof(Particle));Weight=1.; LastB = -1.; Pdir[2]=1.;
+            memset(this,0,sizeof(Particle));Weight=1.; LastB = -1.; Pdir[2]=1.; PdirStart[2]=1.;
         }
         void GenerateId();
     public:
@@ -160,6 +160,7 @@ namespace mcray
         long Ninteractions;//number of interactions in the interaction chain
         coord_type X[3];//comoving coordinates, source location: (0,0,0)
         coord_type Pdir[3];//momentum direction, initial value: (0,0,1)
+        coord_type PdirStart[3];//momentum direction, initial value: (0,0,1)
         unsigned long long id;
         unsigned long long fPrevId;
 
@@ -226,4 +227,3 @@ namespace mcray
     };
 }
 #endif	/* PARTICLE_H */
-

@@ -106,6 +106,11 @@ private:
 	double			fSourceX;
 	double			fSourceY;
 	double			fSourceZ;
+	double			fJetAngle;
+	double			fJetTheta;
+	double			fJetPhi;
+	double			fJetParam;
+	int				fJetType;
 	//double			fMaxDeflection;
 	cors::cmdline::CmdLine 		cmd;
 };
