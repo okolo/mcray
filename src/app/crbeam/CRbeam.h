@@ -65,6 +65,7 @@ public:
 	void Test();
 	int run();
 private:
+	double			fNumThreads;
 	double			fEmin_eV;
 	double			fEmax_eV;
 	double			fPowerLaw;
@@ -111,6 +112,8 @@ private:
 	double			fJetPhi;
 	double			fJetParam;
 	int				fJetType;
+	bool            fSaveMagnetic;
+	const char*		fPMFFile;
 	//double			fMaxDeflection;
 	cors::cmdline::CmdLine 		cmd;
 };

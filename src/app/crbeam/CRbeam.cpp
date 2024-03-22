@@ -75,13 +75,14 @@ int user_main(int argc, char** argv) {
 enum ClineParams
 {
 	PHelp = 1,PLog,PLogFilterThread,PLogLevel,PTrajectoryLog,
-    PNparticles,PBatchSize,
+    PNparticles,PBatchSize,PNumThreads,
     PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,
 	PRandSeed,
 	PSourceX,PSourceY,PSourceZ,
-	PJetAngle,PJetTheta,PJetPhi,PJetType,PJetParam
+	PJetAngle,PJetTheta,PJetPhi,PJetType,PJetParam,
+	PSaveMagnetic,PMFFile
 };
 #define xstr(s) str(s)
 #define str(s) #s
@@ -100,6 +101,7 @@ static CmdInfo commands[] = {
         { PTrajectoryLog,     CmdInfo::FLAG_NULL,     "-tlog",   "--tlog",       NULL,   "Log particle trajectories" },
         { PNparticles,    CmdInfo::FLAG_ARGUMENT, "-N",   "--nparticles",   "10000",     "Number of particles" },
         { PBatchSize,    CmdInfo::FLAG_ARGUMENT, "-bN",   "--batch",   "0",     "Number of particles in minibatch (0=auto)" },
+		{ PNumThreads,     CmdInfo::FLAG_ARGUMENT,     "-nth",   "--nthreads",       "0",   "Number of threads; 0=Max available" },
 
 		{ PRedshift,    CmdInfo::FLAG_ARGUMENT, "-z",   "--z",       NULL,   "Source z (or maximal z if --m_z par is given)" },
         { PFilamentZ,    CmdInfo::FLAG_ARGUMENT, "-zf",   "--z-filament",       "0.",   "Filament z (kill protons with z less than this value)" },
@@ -169,6 +171,8 @@ static CmdInfo commands[] = {
         																						"2 - von Miser-Fisher (vMF) type\n"
         																						},
         { PJetParam,    CmdInfo::FLAG_ARGUMENT,     "-jetprm",   "--jet-param",   "0",   "jet distribution param: 1-sigma for Gauss or kappa for vMF" },
+        { PSaveMagnetic,    CmdInfo::FLAG_NULL,     "-omf",   "--outmagnetic",   NULL,   "write magnetic field to file" },
+		{ PMFFile,    CmdInfo::FLAG_ARGUMENT, "-mffile",   "--mf-file",   NULL,    "Input magnetic field file. Cancel turbulent MF configuration." },
 		{ 0 },
 };
 
@@ -214,6 +218,7 @@ cosmo_time CRbeam::FilamentFilter::GetMinTravelTimeLeft(const Particle& aParticl
 }
 
 CRbeam::CRbeam(int argc, char** argv):
+		fNumThreads(0),
 		fEmin_eV(0),
 		fEmax_eV(0),
 		fPowerLaw(0),
@@ -257,6 +262,8 @@ CRbeam::CRbeam(int argc, char** argv):
         fJetPhi(0),
         fJetType(0),
         fJetParam(0),
+        fSaveMagnetic(false),
+        fPMFFile(0),
 		cmd(argc,argv,commands)
 {
     std::cout << "sizeof(coord_type) = " << sizeof(coord_type) << std::endl;
@@ -265,6 +272,7 @@ CRbeam::CRbeam(int argc, char** argv):
 		cmd.printHelp(std::cerr);
 		exit(255);//enable binary_check
 	}
+	fNumThreads = cmd(PNumThreads);
 	fLogging = cmd(PLog);
     fTrajectoryLogging = cmd(PTrajectoryLog);
 	fLogThread = cmd(PLogFilterThread);
@@ -317,6 +325,8 @@ CRbeam::CRbeam(int argc, char** argv):
     fJetPhi = cmd(PJetPhi);
     fJetType = cmd(PJetType);
     fJetParam = cmd(PJetParam);
+    fSaveMagnetic = cmd(PSaveMagnetic);
+    fPMFFile = cmd(PMFFile);
 
 	if(fOutputDir[0]=='\0')
 		fOutputDir = 0;
@@ -538,13 +548,17 @@ int CRbeam::run()
 	double Phi = 0;
 	int Bslot = -1;
     SmartPtr<MagneticField> mf;
-	if(fEGMF>0.) {
+	if(fEGMF>0. || strlen(fPMFFile)>0) {
 	    if (fTurbulentEGMF){
             CosmoTime t0;
             auto l_cor = TurbulentMF::MeanCorLength(rand, fLminEGMF, fLmaxEGMF, fEGMF, fNmodesEGMF, t0);
             std::cerr << "l_cor estimate: " << l_cor << " Mpc" << std::endl;
 	    }
-        if (fRandomizeEGMF) {
+	    if( strlen(fPMFFile)>0 ){ // Load MF from file: x y z Bx By Bz columns
+		    std::cout<<"Usage input magnetic field from file: "<<fPMFFile<<std::endl;
+			mf = ((MagneticField*) new SavedMF(fPMFFile));
+			pe.AddInteraction(new Deflection3D(mf, fDeflectionAccuracy));
+		}else if (fRandomizeEGMF) {
 			Deflection3D* defl = new Deflection3D(fDeflectionAccuracy);
 			Bslot = defl->MFSlot();
 			pe.AddInteraction(defl);
@@ -567,6 +581,18 @@ int CRbeam::run()
 	tStart.setZ(fZmax);
 	double dt = tEnd.t()-tStart.t();
 	double t0 = tStart.t();
+
+	if(fSaveMagnetic){ // Dump MF to file
+	 	cout<<"Save magnetic field to file..."<<endl;
+		std::ofstream mfout((outputDir + "/magneticField.out").c_str());
+		double stepScale = mf->MinVariabilityScale(tEnd)/units.Mpc;
+		//stepScale = 0.2*fLcorEGMF;
+		// std::cout << "Old scale: " << 0.2*fLcorEGMF << std::endl;
+		std::cout << "Step: " << stepScale << " Mpc" << std::endl;
+		std::cout << "Region size: " << dt/units.Mpc << " Mpc" << std::endl;
+		mf->Print(dt/units.Mpc, mfout, stepScale);
+		mfout.close();
+	}
 
 	double normW = 1.;
 	if(fPowerLaw>0 && fPowerLaw!=1.){//make sure total weight is roughly equal to number of particles
@@ -619,6 +645,7 @@ int CRbeam::run()
         }
         out_tau.close();
     }
+    double start_calc_time = omp_get_wtime();
 	for(int i=0; i<fNoParticles;)
 	{
 		CosmoTime tSource(fZmax);
@@ -684,8 +711,22 @@ int CRbeam::run()
 		particles.AddPrimary(particle);
         i++;
         if(i%fBatchSize==0 || i==fNoParticles){
-            std::cerr << "batch " << (i-1)/fBatchSize + 1 << " of " << ceil(fNoParticles/(double)fBatchSize) << std::endl;
-            pe.RunMultithread();
+        	double end_calc_time = omp_get_wtime()-start_calc_time;
+            std::cerr << "batch " << (i-1)/fBatchSize + 1 << " of " << ceil(fNoParticles/(double)fBatchSize);
+            if( (i-1)/fBatchSize > 1){
+	            std::cerr << " time elapsed: ";
+	            if(end_calc_time>3600)std::cerr << int(end_calc_time/3600) << "h";
+	            if(end_calc_time>60)std::cerr << int(end_calc_time/60)%60 << "m";
+	            std::cerr << int(end_calc_time)%60 << "s";
+	            std::cerr<< ", left: ";
+	            double leftSeconds = double((fNoParticles-i)/i)*1.01*end_calc_time;
+	            if( (i-1)/fBatchSize + 1 < 10 )leftSeconds*=1.13;
+	            if(leftSeconds>3600)std::cerr << int(leftSeconds/3600.) << "h";
+	            if(leftSeconds>60)std::cerr << int(leftSeconds/60.)%60 << "m";
+	            std::cerr << int(leftSeconds)%60 << "s";
+	        }
+	        std::cerr << std::endl;
+            pe.RunMultithread(0, fNumThreads);
             result.Flush();
             if(result.AbortRequested())
                 break; //handling Ctrl-C
