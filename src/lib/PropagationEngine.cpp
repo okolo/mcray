@@ -168,7 +168,7 @@ void PropagationEngine::move(Particle &aParticle, cosmo_time aDt, double aElossR
     bool deflected = false;
     for(vector<PDeflectionInteraction>::iterator it = fDeflectionInteractions.begin(); it != fDeflectionInteractions.end(); it++)
     {
-        if((*it)->Propagate(aDt, aParticle, fRandomizer))//should not modify aParticle.Energy and aParticle.Time
+        if((*it)->Propagate(aDt, aParticle, fRandomizer, fLogger))//should not modify aParticle.Energy and aParticle.Time
         {
             if(deflected)
                 Exception::Throw("Particle treated by more than one deflection interaction");
@@ -192,7 +192,7 @@ double PropagationEngine::GetInteractionRate(const Particle &aParticle) const {
     return totRate;
 }
 
-void PropagationEngine::RunParticle(Particle& aParticle) 
+void PropagationEngine::RunParticle(Particle& aParticle)
 {
     while((!fResult.AbortRequested()) && fResult.ContinuePropagation(aParticle))
     {

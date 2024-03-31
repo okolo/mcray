@@ -160,9 +160,10 @@ namespace mcray
         long Ninteractions;//number of interactions in the interaction chain
         coord_type X[3];//comoving coordinates, source location: (0,0,0)
         coord_type Pdir[3];//momentum direction, initial value: (0,0,1)
-        coord_type PdirStart[3];//momentum direction, initial value: (0,0,1)
+        coord_type PdirStart[3];//initial momentum direction, initial value: (0,0,1)
         unsigned long long id;
         unsigned long long fPrevId;
+    //    void updateTracer();
 
     // TODO: interaction specific attributes should be stored separately in custom structures which can
     // be accessed via pointers stored in interactionData field

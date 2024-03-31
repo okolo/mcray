@@ -720,10 +720,10 @@ int CRbeam::run()
 	            std::cerr << int(end_calc_time)%60 << "s";
 	            std::cerr<< ", left: ";
 	            double leftSeconds = double((fNoParticles-i)/i)*1.01*end_calc_time;
-	            if( (i-1)/fBatchSize + 1 < 10 )leftSeconds*=1.13;
-	            if(leftSeconds>3600)std::cerr << int(leftSeconds/3600.) << "h";
-	            if(leftSeconds>60)std::cerr << int(leftSeconds/60.)%60 << "m";
-	            std::cerr << int(leftSeconds)%60 << "s";
+//	            if( (i-1)/fBatchSize + 1 < 10 )leftSeconds*=1.13;
+//	            if(leftSeconds>3600)std::cerr << int(leftSeconds/3600.) << "h";
+//	            if(leftSeconds>60)std::cerr << int(leftSeconds/60.)%60 << "m";
+	            std::cerr << int(leftSeconds) << "s";
 	        }
 	        std::cerr << std::endl;
             pe.RunMultithread(0, fNumThreads);

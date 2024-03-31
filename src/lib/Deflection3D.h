@@ -93,7 +93,7 @@ namespace Interactions {
 
         virtual double Rate(const Particle &aParticle) const;
 
-        virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer) const;
+        virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer, ILogger* aLogger = nullptr) const;
 
         virtual DeflectionInteraction *Clone() const;
 

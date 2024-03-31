@@ -74,7 +74,7 @@ namespace Interactions {
         return absRate;
     }
 
-    bool Deflection3D::Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer) const {
+    bool Deflection3D::Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer, ILogger* aLogger) const {
         if(!aParticle.ElectricCharge())
             return false;
         cosmo_time initialT = aParticle.Time.t();
@@ -99,6 +99,8 @@ namespace Interactions {
             u_int nSubSteps = (u_int)(dx/maxStep+1.);
             cosmo_time dXsubStep = dx/nSubSteps;
             for(u_int substep=0; substep<nSubSteps; substep++){
+				if(aLogger && totSteps>0)
+					aLogger->log(aParticle);
                 if(substep)
                     GetRotationRate(aParticle, curB, deflRate);
                 cosmo_time absPdir = 0.;

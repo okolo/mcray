@@ -55,6 +55,7 @@ int Stecker16Background::UnitTest()
     BackgroundUtils::UnitTest(backgrUpper);
     Stecker16LowerBackground backgrLower;
     BackgroundUtils::UnitTest(backgrLower);
+    return 0; // Unwarning stub. Why was there no return statement?
 }
 
 }
