@@ -43,11 +43,43 @@ namespace Interactions {
 
         virtual double MinVariabilityScale(const CosmoTime &aTime) const = 0;
 
-        int Print(double lambdaMpc, std::ostream& aOutput=std::cout);
+        int Print(double lambdaMpc, std::ostream& aOutput=std::cout, coord_type step = -1);
 
         double CorrelationLength(std::vector<coord_type> x, std::vector<coord_type> aDirection, const CosmoTime &aTime,
                                          double aMaxValMpc=10000);
 
+    };
+
+    // Load field from file
+    class SavedMF : public MagneticField{
+    public:
+        SavedMF(const char* fname);
+        virtual void GetValueGauss(const coord_type *x, const CosmoTime &aTime,
+                                   std::vector<double> &outValue) const;
+        virtual void GetValueGauss_NEAREST(const coord_type *x, const CosmoTime &aTime,
+                                   std::vector<double> &outValue) const;
+        virtual void GetValueGauss_LINEAR(const coord_type *x, const CosmoTime &aTime,
+                                   std::vector<double> &outValue) const;
+        virtual double MinVariabilityScale(const CosmoTime &aTime) const;
+        ~SavedMF();
+    private:
+    	int coord2indexZero(double coord, double min_val, double max_val, int N) const;
+    	int coord2index(coord_type x, coord_type y, coord_type z) const;
+    	double linApprox(const double* f,
+    					int i, int j, int k,
+    					coord_type x, coord_type y, coord_type z) const;
+        double* B_X;
+        double* B_Y;
+        double* B_Z;
+        coord_type x_min;
+        coord_type y_min;
+        coord_type z_min;
+        coord_type x_max;
+        coord_type y_max;
+        coord_type z_max;
+        int Nx;
+        int Ny;
+        int Nz;
     };
 
     class Deflection3D : public DeflectionInteraction {
@@ -61,7 +93,7 @@ namespace Interactions {
 
         virtual double Rate(const Particle &aParticle) const;
 
-        virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer) const;
+        virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer, ILogger* aLogger = nullptr) const;
 
         virtual DeflectionInteraction *Clone() const;
 

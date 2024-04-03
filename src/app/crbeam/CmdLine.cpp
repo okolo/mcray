@@ -314,6 +314,7 @@ void CmdLine::printHelp(std::ostream& aOut) {
 		if (_commands[i].default_value)
 			aOut << "\t\tdefault value:\t" << _commands[i].default_value << std::endl;
 	}
+	aOut << std::endl << "Build on " << __DATE__ << " " << __TIME__ << std::endl;
 }
 
 void CmdLine::printParamValues(std::ostream& aOut)

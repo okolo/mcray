@@ -67,7 +67,7 @@ public:
 	}
 	virtual ~Deflection1D();
 
-	virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer) const;
+	virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer, ILogger* aLogger = nullptr) const;
     virtual double Rate(const Particle& aParticle) const;
     virtual DeflectionInteraction* Clone() const
     {

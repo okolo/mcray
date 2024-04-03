@@ -32,6 +32,7 @@
 #include "Particle.h"
 #include "Randomizer.h"
 #include "Utils.h"
+#include "Logger.h"
 
 namespace mcray
 {
@@ -47,7 +48,7 @@ public:
     };
     virtual ~Interaction(){};
     virtual InteractionType Type() const { return fType; };
-    
+
     ///Mean interaction rate for random processes
     ///Energy loss rate 1/E dE/dt for continuous energy loss processes
     ///Characteristic time^-1 for deflection process
@@ -89,7 +90,7 @@ public:
     DeflectionInteraction() : Interaction(IntDeflections) { }
     //increases aParticle.Time by deltaT and adjust particle position and momentum direction
     // Return false and leave aParticle fields unchanged if particle is subjected to the interaction
-    virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer) const = 0;
+    virtual bool Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer, ILogger* aLogger = nullptr) const = 0;
     virtual DeflectionInteraction* Clone() const = 0;
 };
 typedef Utils::SmartPtr<DeflectionInteraction> PDeflectionInteraction;
@@ -122,4 +123,3 @@ public:
 
 }
 #endif	/* INTERACTION_H */
-

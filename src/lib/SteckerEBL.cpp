@@ -161,6 +161,7 @@ int Stecker2005EBL::UnitTest()
     //Kneiske1001EBL backgr;
     //CuttedBackground backgr(new Stecker2005EBL(), 0, 0.5*units.eV);
     BackgroundUtils::UnitTest(backgr);
+    return 0; // Unwarning stub. Why was there no return statement?
 }
 
 }

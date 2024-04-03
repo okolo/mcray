@@ -35,6 +35,8 @@ endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 add_definitions(-DUSE_GSL)
 include_directories(../OS/include ../../OS/include ../external)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG -O0")

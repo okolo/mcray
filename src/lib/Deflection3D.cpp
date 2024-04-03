@@ -74,7 +74,7 @@ namespace Interactions {
         return absRate;
     }
 
-    bool Deflection3D::Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer) const {
+    bool Deflection3D::Propagate(cosmo_time deltaT, Particle &aParticle, Randomizer &aRandomizer, ILogger* aLogger) const {
         if(!aParticle.ElectricCharge())
             return false;
         cosmo_time initialT = aParticle.Time.t();
@@ -99,6 +99,8 @@ namespace Interactions {
             u_int nSubSteps = (u_int)(dx/maxStep+1.);
             cosmo_time dXsubStep = dx/nSubSteps;
             for(u_int substep=0; substep<nSubSteps; substep++){
+				if(aLogger && totSteps>0)
+					aLogger->log(aParticle);
                 if(substep)
                     GetRotationRate(aParticle, curB, deflRate);
                 cosmo_time absPdir = 0.;
@@ -191,14 +193,18 @@ namespace Interactions {
         return fLambda;
     }
 
-    int MagneticField::Print(double lambdaMpc, std::ostream& aOutput) {
+    int MagneticField::Print(double lambdaMpc, std::ostream& aOutput, coord_type step) {
         std::vector<double> B(3);
         CosmoTime t(0);
-        coord_type step=lambdaMpc*units.Mpc/20.;
+        if(step<0)step=lambdaMpc*units.Mpc/20.; // Default step -- 1/20
+        else step*=units.Mpc;
         coord_type L=lambdaMpc*units.Mpc*3;
-        for(coord_type x=0.; x<=L; x+=step) {
-            for (coord_type y = 0.; y <= L; y+=step) {
-                for (coord_type z = 0.; z <= L; z += step) {
+        aOutput << "#x,Mpc" << "\t" << "y,Mpc" << "\t" << "z,Mpc" << "\t" << "Bx" << "\t" << "By" << "\t" << "Bz" << "\n";
+        for(coord_type x=-L; x<=L; x+=step) {
+        	std::cerr<<"Saved " << double(int( (L+x)/(2*L) * 1000))/10. << "%...\r";
+        	std::cerr.flush();
+            for (coord_type y = -L; y <= L; y+=step) {
+                for (coord_type z = -L; z <= L; z += step) {
                     const coord_type r[] = {x, y, z};
                     GetValueGauss(r, t, B);
                     aOutput << x / units.Mpc << "\t" << y / units.Mpc << "\t" << z / units.Mpc << "\t"
@@ -208,7 +214,8 @@ namespace Interactions {
             }
             aOutput << "\n\n";
         }
-        aOutput << "# use gnuplot command \"set pm3d at b; splot 'B' i 0 u 2:3:col\"  where col=4,5 or 6 to view the data\n";
+        aOutput << "# use gnuplot command \"set pm3d at b; splot 'magneticField.out' i 0 u 2:3:col\"  where col=4,5 or 6 to view the data\n";
+        std::cerr<<"Saved 100%   "<<std::endl;
         return 0;
     }
 
@@ -247,6 +254,7 @@ namespace Interactions {
         double Bgauss = 10.;
         MonochromaticMF mf(r,lambdaMpc,Bgauss);
         mf.Print(lambdaMpc);
+        return 0;
     }
 
     int Deflection3D::UnitTest() {
@@ -365,5 +373,187 @@ namespace Interactions {
         }
 
         return 0;
+    }
+
+//////// MF from file
+    SavedMF::SavedMF(const char* fname)
+    {
+    	std::cerr << "Analyse file..." << std::endl;
+        std::ifstream fl(fname);
+		std::set<double> x_v;
+		std::set<double> y_v;
+		std::set<double> z_v;
+		double tmpX,tmpY,tmpZ,tmpBx,tmpBy,tmpBz;
+		std::string line;
+		std::vector<std::string> lines;
+		x_min = 0;
+		y_min = 0;
+		z_min = 0;
+		x_max = 0;
+		y_max = 0;
+		z_max = 0;
+		while (std::getline(fl, line)) {
+			if(line[0]=='#')continue; // comment line
+			lines.push_back(std::string(line));
+			std::istringstream iss(line);
+			iss >> tmpX >> tmpY >> tmpZ >> tmpBx >> tmpBy >> tmpBz;
+			x_v.insert(tmpX);
+			y_v.insert(tmpY);
+			z_v.insert(tmpZ);
+			if(tmpX > x_max)x_max = tmpX;
+			else if(tmpX < x_min)x_min = tmpX;
+			if(tmpY > y_max)y_max = tmpY;
+			else if(tmpY < y_min)y_min = tmpY;
+			if(tmpZ > z_max)z_max = tmpZ;
+			else if(tmpZ < z_min)z_min = tmpZ;
+        }
+        fl.close();
+        //fl.clear();
+		//fl.seekg(0);
+        Nx = x_v.size();
+        Ny = y_v.size();
+        Nz = z_v.size();
+        std::cerr << " Nx = " << Nx;
+        std::cerr << "; Ny = " << Ny;
+        std::cerr << "; Nz = " << Nz << std::endl;
+        std::cerr << " x_min = " << x_min;
+        std::cerr << "; y_min = " << y_min;
+        std::cerr << "; z_min = " << z_min << std::endl;
+        std::cerr << " x_max = " << x_max;
+        std::cerr << "; y_max = " << y_max;
+        std::cerr << "; z_max = " << z_max << std::endl;
+        x_min*=units.Mpc;
+        y_min*=units.Mpc;
+        z_min*=units.Mpc;
+        x_max*=units.Mpc;
+        y_max*=units.Mpc;
+        z_max*=units.Mpc;
+        B_X = new double[Nx*Ny*Nz];
+        B_Y = new double[Nx*Ny*Nz];
+        B_Z = new double[Nx*Ny*Nz];
+        std::cerr << "Reading field..." << std::endl;
+        for(int ii=0;ii<lines.size();ii++){
+        	line = lines[ii];
+		//while (std::getline(fl, line)) {
+			if(line[0]=='#')continue; // comment line
+			std::istringstream iss(line);
+			iss >> tmpX >> tmpY >> tmpZ >> tmpBx >> tmpBy >> tmpBz;
+			int ind = coord2index(tmpX*units.Mpc, tmpY*units.Mpc, tmpZ*units.Mpc);
+			B_X[ind] = tmpBx;
+			B_Y[ind] = tmpBy;
+			B_Z[ind] = tmpBz;
+        }
+        //fl.close();
+        std::cerr << "Done!" << std::endl;
+    }
+    int SavedMF::coord2index(coord_type x, coord_type y, coord_type z) const
+    {
+    	int i,j,k;
+    	if(x<=x_min)i = 0;
+    	else if(x>=x_max)i = Nx-1;
+    	else i = round( (coord_type(Nx-1))*(x-x_min)/(x_max-x_min) );
+
+    	if(y<=y_min)j = 0;
+    	else if(y>=y_max)j = Ny-1;
+    	else j = round( (coord_type(Ny-1))*(y-y_min)/(y_max-y_min) );
+
+    	if(z<=z_min)k = 0;
+    	else if(z>=z_max)k = Nz-1;
+    	else k = round( (coord_type(Nz-1))*(z-z_min)/(z_max-z_min) );
+        return i+Nx*(j+Ny*k); // (Nx-1)+Nx*(Ny-1)+Nx*Ny*(Nz-1) = Nx*Ny*Nz-1
+    }
+    int SavedMF::coord2indexZero(double coord, double min_val, double max_val, int N) const
+    {
+    	if(coord<=min_val)return 0;
+    	else if(coord>=max_val)return N-1;
+    	else return round( (double(N-1))*(coord-min_val)/(max_val-min_val) );
+    }
+    void SavedMF::GetValueGauss(const coord_type *x, const CosmoTime &aTime, std::vector<double> &outValue) const
+    {
+        ASSERT(outValue.size()==3);
+        GetValueGauss_LINEAR(x, aTime, outValue);
+        //GetValueGauss_NEAREST(x, aTime, outValue);
+    }
+    void SavedMF::GetValueGauss_NEAREST(const coord_type *x, const CosmoTime &aTime, std::vector<double> &outValue) const
+    {
+        int ind = coord2index(x[0], x[1], x[2]);
+        outValue[0] = B_X[ind];
+        outValue[1] = B_Y[ind];
+        outValue[2] = B_Z[ind];
+    }
+    double SavedMF::linApprox(const double* f,
+    					int i, int j, int k,
+    					coord_type x, coord_type y, coord_type z) const
+    {
+		coord_type x0 = x_min+coord_type(i)*(x_max-x_min)/coord_type(Nx-1);
+		coord_type x1 = x_min+coord_type(i+1)*(x_max-x_min)/coord_type(Nx-1);
+		coord_type y0 = y_min+coord_type(j)*(y_max-y_min)/coord_type(Ny-1);
+		coord_type y1 = y_min+coord_type(j+1)*(y_max-y_min)/coord_type(Ny-1);
+		coord_type z0 = z_min+coord_type(k)*(z_max-z_min)/coord_type(Nz-1);
+		coord_type z1 = z_min+coord_type(k+1)*(z_max-z_min)/coord_type(Nz-1);
+    	coord_type C000 = f[ i  +Nx*(j  +Ny*  k  ) ];
+    	coord_type C100 = f[ i+1+Nx*(j  +Ny*  k  ) ];
+    	coord_type C010 = f[ i  +Nx*(j+1+Ny*  k  ) ];
+    	coord_type C001 = f[ i  +Nx*(j  +Ny*(k+1)) ];
+    	coord_type C110 = f[ i+1+Nx*(j+1+Ny*  k  ) ];
+    	coord_type C011 = f[ i  +Nx*(j+1+Ny*(k+1)) ];
+    	coord_type C101 = f[ i+1+Nx*(j  +Ny*(k+1)) ];
+    	coord_type C111 = f[ i+1+Nx*(j+1+Ny*(k+1)) ];
+		coord_type denom = (x0-x1)*(y0-y1)*(z0-z1);
+		coord_type a0 = -C000*x1*y1*z1 + C001*x1*y1*z0 + C010*x1*y0*z1 - C011*x1*y0*z0
+					+C100*x0*y1*z1 - C101*x0*y1*z0 - C110*x0*y0*z1 + C111*x0*y0*z0;
+		coord_type a1 = C000*y1*z1 - C001*y1*z0 - C010*y0*z1 + C011*y0*z0
+					-C100*y1*z1 + C101*y1*z0 + C110*y0*z1 - C111*y0*z0;
+		coord_type a2 = C000*x1*z1 - C001*x1*z0 - C010*x1*z1 + C011*x1*z0
+					-C100*x0*z1 + C101*x0*z0 + C110*x0*z1 - C111*x0*z0;
+		coord_type a3 = C000*x1*y1 - C001*x1*y1 - C010*x1*y0 + C011*x1*y0
+					-C100*x0*y1 + C101*x0*y1 + C110*x0*y0 - C111*x0*y0;
+		coord_type a4 = -C000*z1 + C001*z0 + C010*z1 - C011*z0
+					+C100*z1 - C101*z0 - C110*z1 + C111*z0;
+		coord_type a5 = -C000*y1 + C001*y1 + C010*y0 - C011*y0
+					+C100*y1 - C101*y1 - C110*y0 + C111*y0;
+		coord_type a6 = -C000*x1 + C001*x1 + C010*x1 - C011*x1
+					+C100*x0 - C101*x0 - C110*x0 + C111*x0;
+		coord_type a7 = C000 - C001 - C010 + C011
+					-C100 + C101 + C110 - C111;
+		return (a0 + a1*x + a2*y + a3*z
+				+ a4*x*y + a5*x*z + a6*y*z + a7*x*y*z)/denom;
+    }
+    void SavedMF::GetValueGauss_LINEAR(const coord_type *x, const CosmoTime &aTime, std::vector<double> &outValue) const
+    {
+    	//I need all i,j,k coord
+    	int i,j,k;
+    	if(x[0]<=x_min){GetValueGauss_NEAREST(x, aTime, outValue);return;} // Use nearest out of the bound
+    	else if(x[0]>=x_max){GetValueGauss_NEAREST(x, aTime, outValue);return;}
+    	else i = int( (coord_type(Nx-1))*(x[0]-x_min)/(x_max-x_min) );
+
+    	if(x[1]<=y_min){GetValueGauss_NEAREST(x, aTime, outValue);return;}
+    	else if(x[1]>=y_max){GetValueGauss_NEAREST(x, aTime, outValue);return;}
+    	else j = int( (coord_type(Ny-1))*(x[1]-y_min)/(y_max-y_min) );
+
+    	if(x[2]<=z_min){GetValueGauss_NEAREST(x, aTime, outValue);return;}
+    	else if(x[2]>=z_max){GetValueGauss_NEAREST(x, aTime, outValue);return;}
+    	else k = int( (coord_type(Nz-1))*(x[2]-z_min)/(z_max-z_min) );
+
+    	// Use nearest near the bound
+    	//if( i==0 || i==Nx-1 || j==0 || j==Ny-1 || k==0 || k==Nz-1 ){GetValueGauss_NEAREST(x, aTime, outValue);return;}
+        outValue[0] = linApprox(B_X, i,j,k, x[0],x[1],x[2]);
+        outValue[1] = linApprox(B_Y, i,j,k, x[0],x[1],x[2]);
+        outValue[2] = linApprox(B_Z, i,j,k, x[0],x[1],x[2]);
+    }
+    double SavedMF::MinVariabilityScale(const CosmoTime &aTime) const
+    {
+    	double a=(x_max-x_min)/Nx;
+    	double b=(y_max-y_min)/Ny;
+    	double c=(z_max-z_min)/Nz;
+    	if (a<b && a<c) return 0.4*a;
+    	if (b<a && b<c) return 0.4*b;
+    	return 0.4*c;
+    }
+    SavedMF::~SavedMF()
+    {
+        delete [] B_X;
+        delete [] B_Y;
+        delete [] B_Z;
     }
 }

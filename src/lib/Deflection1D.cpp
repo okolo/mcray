@@ -38,7 +38,7 @@ Deflection1D::~Deflection1D() {
 
 }
 
-bool Deflection1D::Propagate(cosmo_time aDeltaT, Particle& aParticle, Randomizer& aRandomizer) const
+bool Deflection1D::Propagate(cosmo_time aDeltaT, Particle& aParticle, Randomizer& aRandomizer, ILogger* aLogger) const
 {
 	double Lcor = fLcor->f(aParticle.Time.z());
 

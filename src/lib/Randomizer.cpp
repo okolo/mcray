@@ -32,6 +32,7 @@
 #include "gsl/gsl_errno.h"
 #include "gsl/gsl_math.h"
 #include "gsl/gsl_rng.h"
+#include "gsl/gsl_randist.h"
 
 namespace mcray
 {
@@ -80,6 +81,15 @@ double Randomizer::Rand()
 {
 	return gsl_rng_uniform_pos ((gsl_rng*)fRand);
 }
+double Randomizer::RandZero()
+{
+	return gsl_rng_uniform ((gsl_rng*)fRand);
+}
+double Randomizer::RandGauss(double sigma)
+{
+	return gsl_ran_gaussian ((gsl_rng*)fRand,sigma);
+}
+
 
 unsigned long int Randomizer::CreateIndependent()
 {

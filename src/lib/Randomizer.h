@@ -37,6 +37,8 @@ public:
     Randomizer(unsigned long int aSeed=0);
     virtual ~Randomizer();
     double Rand();//generate random number in the range [0,1]
+    double RandZero();//generate random number in the range [0,1) <- INCLUDE ZERO
+    double RandGauss(double sigma);
 
 	/*!
 	@param[in]  aMeanFreePath mean free path of a particle
@@ -55,4 +57,3 @@ private:
 };
 }
 #endif	/* RANDOMIZER_H */
-

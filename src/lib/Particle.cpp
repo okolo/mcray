@@ -147,6 +147,7 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
         coord_type b=beta();
         for(int i=0; i<3; i++)
             X[i]+=(b*Pdir[i]*dt);
+        //updateTracer();
     }
 
     void Particle::GenerateId(){
@@ -192,4 +193,10 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
         return 0.;
     }
 
+/*	void Particle::updateTracer(){
+		//std::cerr<<"Tracer call:"<<Tracer<<std::endl;
+		if(!Tracer)return;
+		Tracer[0]<<X[0]/units.Mpc<<"\t"<<X[1]/units.Mpc<<"\t"<<X[2]/units.Mpc<<'\t'
+					<<Pdir[0]<<'\t'<<Pdir[1]<<'\t'<<Pdir[2]<<std::endl;
+	}//*/
 }
