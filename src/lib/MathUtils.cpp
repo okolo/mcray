@@ -41,8 +41,13 @@
 #include "gsl/gsl_sf_erf.h"
 #include <gsl/gsl_math.h>
 #include "TableFunction.h"
+#include "nr/nr3.h"
+//namespace nr {
+#include "nr/stepper.h"
 #include "nr/odeint.h"
 #include "nr/stepperdopr5.h"
+//}
+
 
 
 namespace Utils {
@@ -715,7 +720,7 @@ class MathUtilsODE
 public:
 	MathUtilsODE(const Function& aDistrib):fDistrib(aDistrib)
 	{}
-	void operator() (const nr::Doub x, nr::VecDoub_I &y, nr::VecDoub_O &dydx) {
+	void operator() (const Doub x, VecDoub_I &y, VecDoub_O &dydx) {
 		double val = fDistrib(x);
 		if(val!=0)
 			dydx[0]= val;
@@ -751,12 +756,12 @@ bool MathUtils::SampleDistribution(const Function& aDistrib, double aRand, doubl
 
 	MathUtilsODE d(*distrib);
 
-	const nr::Doub atol=0.;//1.0e-3;
-	const nr::Doub hmin=0.0;//minimal step (can be zero)
-	nr::VecDoub ystart(1);
+	const Doub atol=0.;//1.0e-3;
+	const Doub hmin=0.0;//minimal step (can be zero)
+	VecDoub ystart(1);
 	ystart[0]=0.;
-	nr::Output out(-1); //output is saved at every integration step
-	nr::Odeint<nr::StepperDopr5<MathUtilsODE> > ode(ystart,xMin,xMax,atol,aRelError,initialStep,hmin,out,d);
+	Output out(-1); //output is saved at every integration step
+	Odeint<StepperDopr5<MathUtilsODE> > ode(ystart,xMin,xMax,atol,aRelError,initialStep,hmin,out,d);
 	ode.integrate();
 	aOutputIntegral = ystart[0];
 	if(aOutputIntegral<=0)
@@ -783,9 +788,9 @@ bool MathUtils::SampleDistribution(const Function& aDistrib, double aRand, doubl
 		return true;
 	ystart[0]=0.;
 	initialStep = aRelError*(aOutputX>0 ? aOutputX : (x2-x1));
-	nr::Output out2(2+(int)fabs((x2-x1)/initialStep));
+	Output out2(2+(int)fabs((x2-x1)/initialStep));
 
-	nr::Odeint<nr::StepperDopr5<MathUtilsODE> > ode2(ystart,x1,x2,atol,aRelError,initialStep,hmin,out2,d);
+	Odeint<StepperDopr5<MathUtilsODE> > ode2(ystart,x1,x2,atol,aRelError,initialStep,hmin,out2,d);
 	ode2.integrate();
 	i1=0;
 	i2=out2.count-1;
@@ -811,7 +816,7 @@ class MathUtilsLogODE
 public:
 	MathUtilsLogODE(const Function& aDistrib):fDistrib(aDistrib)
 	{}
-	void operator() (const nr::Doub x, nr::VecDoub_I &y, nr::VecDoub_O &dydx) {
+	void operator() (const Doub x, VecDoub_I &y, VecDoub_O &dydx) {
 		double xx = exp(x);
 		double val = xx*fDistrib(xx);
 		if(val!=0)
@@ -861,12 +866,12 @@ bool MathUtils::SampleLogDistributionNR(const Function& aDistrib, double aRand, 
 
 	MathUtilsLogODE d(*distrib);
 
-	const nr::Doub atol=0;
-	const nr::Doub hmin=0.0;//minimal step (can be zero)
-	nr::VecDoub ystart(1);
+	const Doub atol=0;
+	const Doub hmin=0.0;//minimal step (can be zero)
+	VecDoub ystart(1);
 	ystart[0]=0.;
-	nr::Output out(-1); //output is saved at every integration step
-	nr::Odeint<nr::StepperDopr5<MathUtilsLogODE> > ode(ystart,xMin,xMax,atol,aRelError,initialStep,hmin,out,d);
+	Output out(-1); //output is saved at every integration step
+	Odeint<StepperDopr5<MathUtilsLogODE> > ode(ystart,xMin,xMax,atol,aRelError,initialStep,hmin,out,d);
 	ode.integrate();
 	aOutputIntegral = ystart[0];
 	if(aOutputIntegral<=0)
@@ -897,8 +902,8 @@ bool MathUtils::SampleLogDistributionNR(const Function& aDistrib, double aRand, 
 	{
 		ystart[0]=0.;
 		initialStep = 0.5*(x2-x1);//aRelError;
-		nr::Output out2(2+(int)fabs((x2-x1)/initialStep));
-		nr::Odeint<nr::StepperDopr5<MathUtilsLogODE> > ode2(ystart,x1,x2,atol,aRelError,initialStep,hmin,out2,d);
+		Output out2(2+(int)fabs((x2-x1)/initialStep));
+		Odeint<StepperDopr5<MathUtilsLogODE> > ode2(ystart,x1,x2,atol,aRelError,initialStep,hmin,out2,d);
 		ode2.integrate();
 		yRand = ystart[0]*yFrac;
 		i1=0;
