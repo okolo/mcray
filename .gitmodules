@@ -1,0 +1,3 @@
+[submodule "src/external/nr"]
+	path = src/external/nr
+	url = https://github.com/okolo/nr.git
