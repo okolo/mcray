@@ -39,8 +39,11 @@
 #include <sys/types.h>
 #include "Debug.h"
 #include <algorithm>
+#include <boost/dll.hpp>
 
 namespace Utils {
+
+std::string shared_tables_path();
 
 #define DIR_DELIMITER_STR "/"
 #define TABLES_DIR "tables" DIR_DELIMITER_STR

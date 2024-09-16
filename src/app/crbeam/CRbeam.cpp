@@ -68,6 +68,8 @@ using namespace cors::cmdline;
  */
 int user_main(int argc, char** argv) {
     std::cout << "Number of available threads: " << omp_thread_count() << std::endl;
+	std::cout << "tables path: " << shared_tables_path() << std::endl;
+
 	CRbeam prog(argc, argv);
 	return prog.run();
 }

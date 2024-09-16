@@ -132,7 +132,6 @@ add_link_options(-fopenmp)
 add_library(mcray ${SOURCE_FILES})
 add_executable(mcray_test ExampleUserMain.cpp)
 add_executable(z2t z2t.cpp)
-
 target_link_libraries(mcray gfortran ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})
 target_link_libraries(mcray_test mcray)
 target_link_libraries(z2t mcray)

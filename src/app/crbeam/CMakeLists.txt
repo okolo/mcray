@@ -22,6 +22,8 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 FIND_LIBRARY(C_LIBRARY c)
 FIND_LIBRARY(GSL_LIBRARY gsl)
 FIND_LIBRARY(GSLCBLAS_LIBRARY gslcblas)
+FIND_LIBRARY(BOOST_FS_LIBRARY boost_filesystem)
+FIND_LIBRARY(BOOST_SYS_LIBRARY boost_system)
 add_subdirectory (../../lib mcray)
 
 set(SOURCE_FILES
@@ -32,6 +34,6 @@ CRbeam.h
 )
 add_link_options(-fopenmp)
 add_executable(CRbeam ${SOURCE_FILES})
-target_link_libraries(CRbeam mcray ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})
+target_link_libraries(CRbeam mcray ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})
 
 
