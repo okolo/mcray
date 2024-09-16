@@ -43,10 +43,18 @@
 
 namespace Utils {
 
-std::string shared_tables_path();
+std::string default_tables_path();
 
+
+
+#ifdef _WIN32
+#define DIR_DELIMITER_STR "\\"
+#else
 #define DIR_DELIMITER_STR "/"
-#define TABLES_DIR "tables" DIR_DELIMITER_STR
+#endif
+
+extern std::string tables_dir;
+//#define TABLES_DIR "tables" DIR_DELIMITER_STR
 
 class Exception
 {

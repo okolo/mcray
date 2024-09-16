@@ -247,6 +247,7 @@ namespace Interactions {
         double Bgauss = 10.;
         MonochromaticMF mf(r,lambdaMpc,Bgauss);
         mf.Print(lambdaMpc);
+        return 0;
     }
 
     int Deflection3D::UnitTest() {

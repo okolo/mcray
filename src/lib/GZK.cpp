@@ -51,7 +51,7 @@ GZK::GZK(BackgroundIntegral* aBackground, int aRandSeed):fBackground(aBackground
 
 Function* GZK::InitSigma(ParticleType aPrim)
 {
-    std::string tablesDir = TABLES_DIR "sophia2/";
+    std::string tablesDir = tables_dir + "sophia2/";
     Utils::TableReader reader(tablesDir+(aPrim==Proton?"p":"n"), 2);
     std::vector<double>& s = reader.getColumn(0);
     std::vector<double>& sigma = reader.getColumn(1);

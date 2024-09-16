@@ -34,6 +34,6 @@ CRbeam.h
 )
 add_link_options(-fopenmp)
 add_executable(CRbeam ${SOURCE_FILES})
-target_link_libraries(CRbeam mcray ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})
+target_link_libraries(CRbeam mcray ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${CMAKE_DL_LIBS})
 
 

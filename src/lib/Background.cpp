@@ -107,7 +107,7 @@ void TableBackground::Init(std::string aDir, const char** aFileList, bool aIsLog
 {
 	//the files should be ordered increasingly?
 	//x scale should by monotonic with increasing order
-	aDir = TABLES_DIR + aDir;
+	aDir = tables_dir + aDir;
 	double lastZ = -1;
 	for(int iZ=0; aFileList[iZ]; iZ++)
 	{
@@ -162,7 +162,7 @@ MatrixBackground::MatrixBackground(std::string aName, std::string aTableFile, bo
 	const size_t bufSize = 1048576;//1M
 	fBuffer = new char[bufSize];
 	std::istream_iterator<double> eos;
-	aTableFile = TABLES_DIR + aTableFile;
+	aTableFile = tables_dir + aTableFile;
 	std::ifstream file(aTableFile.c_str());
 
 	if(!file.good())
