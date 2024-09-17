@@ -28,9 +28,11 @@
 
 #include "Utils.h"
 #include <omp.h>
+#define BOOST_NO_CXX11_SCOPED_ENUMS
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/dll.hpp>
+#undef BOOST_NO_CXX11_SCOPED_ENUMS
 #include <sstream>
 namespace fs = boost::filesystem;
 
