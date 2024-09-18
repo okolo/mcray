@@ -47,7 +47,7 @@ namespace Utils {
         fs::path prog_path = boost::dll::program_location();
         fs::path prog_name = prog_path.stem().string();
         fs::path prog_dir = prog_path.parent_path();
-        fs::path shared_tables_dir = prog_dir.parent_path() / "shared" / prog_name / tables_folder_name;
+        fs::path shared_tables_dir = prog_dir.parent_path() / "share" / prog_name / tables_folder_name;
         fs::path exe_tables_dir = prog_dir / tables_folder_name;
 
         if(fs::is_directory(shared_tables_dir))
