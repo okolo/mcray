@@ -240,7 +240,7 @@ CRbeam::CRbeam(int argc, char** argv):
 	if( cmd.has_param("-h") )
 	{
 		cmd.printHelp(std::cerr);
-		exit(255);//enable binary_check
+		exit(0);
 	}
 	fLogging = cmd(PLog);
     fTrajectoryLogging = cmd(PTrajectoryLog);
