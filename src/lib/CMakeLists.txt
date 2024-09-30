@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.13)
 project (mcray)
 # uncomment the line below for verbose output
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -49,18 +49,18 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-FIND_LIBRARY(C_LIBRARY c)
+# FIND_LIBRARY(C_LIBRARY c)
 FIND_LIBRARY(GSL_LIBRARY gsl)
 FIND_LIBRARY(GSLCBLAS_LIBRARY gslcblas)
 FIND_LIBRARY(BOOST_FS_LIBRARY boost_filesystem)
 FIND_LIBRARY(BOOST_SYS_LIBRARY boost_system)
 
 set(SOURCE_FILES
-../external/SOPHIA/eventgen.f
-        ../external/SOPHIA/inpoutput.f
-        ../external/SOPHIA/jetset74dp.f
-        ../external/SOPHIA/rndm.f
-        ../external/SOPHIA/sampling.f
+SOPHIA/eventgen.f
+SOPHIA/inpoutput.f
+SOPHIA/jetset74dp.f
+SOPHIA/rndm.f
+SOPHIA/sampling.f
 sophia2cpp.f
 Sophia.cpp
 Sophia.h
@@ -134,6 +134,6 @@ add_link_options(-fopenmp)
 add_library(mcray ${SOURCE_FILES})
 add_executable(mcray_test ExampleUserMain.cpp)
 add_executable(z2t z2t.cpp)
-target_link_libraries(mcray gfortran ${C_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${CMAKE_DL_LIBS})
+target_link_libraries(mcray gfortran ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${CMAKE_DL_LIBS})
 target_link_libraries(mcray_test mcray)
 target_link_libraries(z2t mcray)
