@@ -33,6 +33,7 @@
 #include <iostream>
 #include "Utils.h"
 #include <limits>
+#include "Randomizer.h"
 
 namespace Utils {
 
@@ -187,14 +188,16 @@ public:
 			double epsrel,
 			size_t limit,
 			int key=GSL_INTEG_GAUSS15);
+
 	template<typename X> bool SampleLogscaleDistribution(const Function& aDistrib, double aRand, X& aOutputX, X& aOutputIntegral, int nStepsS, X xMin, X xMax, double aRelError);
 	static bool SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
-	static bool SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+    static bool SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
 
-	static bool SampleLogDistributionBoost(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
-	static bool SampleLogDistributionNR(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+//bool SampleLogDistributionNegative(const Function& aDistrib, Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral,
+//                                       double xMin, double xMax, double aRelError, size_t limit=1000, int key=GSL_INTEG_GAUSS15);
 
-	template<typename X> static void RelAccuracy(X& aOutput);
+
+    template<typename X> static void RelAccuracy(X& aOutput);
 	static void SetLogger(IFunctionCallHandlerX<double>* aLogger) { fLogger = aLogger; }
 	static int UnitTest();
 private:

@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+#define USE_BOOST
+
 #ifdef USE_BOOST
 
 #include <boost/numeric/odeint/config.hpp>
@@ -33,7 +35,14 @@
 #include <boost/numeric/odeint/stepper/bulirsch_stoer.hpp>
 #include <boost/numeric/odeint/stepper/bulirsch_stoer_dense_out.hpp>
 
-#endif
+#else
+
+#include "nr/nr3.h"
+#include "nr/stepper.h"
+#include "nr/odeint.h"
+#include "nr/stepperdopr5.h"
+
+#endif //#ifndef USE_BOOST
 
 #include "Utils.h"
 #include "MathUtils.h"
@@ -41,13 +50,6 @@
 #include "gsl/gsl_sf_erf.h"
 #include <gsl/gsl_math.h>
 #include "TableFunction.h"
-#include "nr/nr3.h"
-//namespace nr {
-#include "nr/stepper.h"
-#include "nr/odeint.h"
-#include "nr/stepperdopr5.h"
-//}
-
 
 
 namespace Utils {
@@ -547,7 +549,6 @@ namespace Utils {
 		X      fRelErr;
 		X      fAbsErr;
 	};
-
 #endif //#ifdef USE_BOOST
 
 	template<typename X = double >
@@ -555,7 +556,7 @@ namespace Utils {
 		X sample(const FunctionX<X>& f, X aTmin, X aTmax, X aRand,
 				 X & aTotRate, X aRelErr, X aAbsErr = 1e300){
 			X x;
-			MathUtils::SampleLogDistributionNR(f,aRand,x,aTotRate,aTmin,aTmax,aRelErr);
+			MathUtils::SampleLogDistribution(f,aRand,x,aTotRate,aTmin,aTmax,aRelErr);
 		}
 	};
 
@@ -715,6 +716,7 @@ MathUtils::~MathUtils()
 	return false;
 }
 
+#ifndef USE_BOOST
 class MathUtilsODE
 {
 public:
@@ -731,11 +733,24 @@ public:
 private:
 	const Function& fDistrib;
 };
+#endif
 
 IFunctionCallHandlerX<double>* MathUtils::fLogger = 0;
 
 bool MathUtils::SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
 {
+#ifdef USE_BOOST
+    Sampler<double> dil;//slower 25 sec
+    //Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
+    //Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
+    aOutputIntegral=0.;
+
+    aOutputX=dil.sample(aDistrib, xMin, xMax, aRand, aOutputIntegral, aRelError);
+
+    ASSERT_VALID_NO(aOutputX);
+    return true;
+
+#else
 	const Function* distrib = &aDistrib;
 	SafePtr<DebugFunctionX<double> > func;
 	if(fLogger)
@@ -809,8 +824,10 @@ bool MathUtils::SampleDistribution(const Function& aDistrib, double aRand, doubl
 	x2=out2.xsave[i2];
 	aOutputX = x1 + (x2-x1)/(y2-y1)*(aRand-y1);//make a linear estimate of X
 	return true;
+#endif
 }
 
+#ifndef USE_BOOST
 class MathUtilsLogODE
 {
 public:
@@ -828,20 +845,23 @@ public:
 private:
 	const Function& fDistrib;
 };
+#endif
 
 bool MathUtils::SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
 {
+    ASSERT(aRelError>0 && aRelError<=0.1);
+    ASSERT(xMin>0 && xMax>xMin);
 #ifdef USE_BOOST
-    return SampleLogDistributionBoost(aDistrib, aRand, aOutputX, aOutputIntegral, xMin, xMax, aRelError);
+    LogSampler<double> dil;//slower 25 sec
+    //Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
+    //Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
+    aOutputIntegral=0.;
+
+    aOutputX=dil.sample(aDistrib, xMin, xMax, aRand, aOutputIntegral, aRelError);
+
+    ASSERT_VALID_NO(aOutputX);
+    return true;
 #else
-	return SampleLogDistributionNR(aDistrib, aRand, aOutputX, aOutputIntegral, xMin, xMax, aRelError);
-#endif
-}
-
-bool MathUtils::SampleLogDistributionNR(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
-{
-	ASSERT(aRelError>0 && aRelError<=0.1);
-
 	const Function* distrib = &aDistrib;
 	SafePtr<DebugFunctionX<double> > func;
 	if(fLogger)
@@ -927,28 +947,40 @@ bool MathUtils::SampleLogDistributionNR(const Function& aDistrib, double aRand, 
 	aOutputX = exp(aOutputX);
 	ASSERT_VALID_NO(aOutputX);
 	return true;
+#endif
 }
 
+    /*
+bool MathUtils::SampleLogDistributionNegative(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX,
+                                              double& aOutputIntegral, double xMin, double xMax,
+                                              double aRelError, size_t limit, int key) {
+// NOTE: this implementation doesn't use aRand parameter
+    ASSERT(aRelError > 0 && aRelError <= 0.1);
 
-bool MathUtils::SampleLogDistributionBoost(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
-	{
-#ifdef USE_BOOST
-		ASSERT(aRelError>0 && aRelError<=0.1);
-		ASSERT(xMin>0 && xMax>xMin);
-		LogSampler<double> dil;//slower 25 sec
-		//Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
-		//Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
-		aOutputIntegral=0.;
 
-		aOutputX=dil.sample(aDistrib, xMin, xMax, aRand, aOutputIntegral, aRelError);
+    double distrXmin = aDistrib.Xmin();
+    if(xMin < distrXmin)
+        xMin = distrXmin;
+    double distrXmax = aDistrib.Xmax();
+    if(xMax > distrXmax)
+        xMax = distrXmax;
+    ASSERT(xMax>xMin && xMin>0);
+    xMin=log(xMin);
+    xMax=log(xMax);
 
-		ASSERT_VALID_NO(aOutputX);
-		return true;
-#else
-	Exception::Throw("MathUtils::SampleLogDistributionBoost boostlib support is disabled");
-	return false;//avoid compiler warning
-#endif
-	}
+    gsl_function_struct log_distr;
+    log_distr.function = MathUtils::GslProxySampleLogscaleDistributionFunc;
+    log_distr.params = (void*)(&aDistrib);
+
+    aOutputIntegral = Integration_qag (log_distr,xMin,xMax,0,aRelError, limit, key);
+
+    for(int attempts_left = 10000; attempts_left>0; attempts_left--){
+        double x =
+    }
+
+    return false;
+}
+*/
 
 template<typename X> void MathUtils::RelAccuracy(X& aOutput)
 {
