@@ -962,7 +962,7 @@ void print_sampling_stat(){
 
     bool MathUtils::SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
         size_t limit = 1000;
-        int sampling_limit = 1000;
+        int sampling_limit = 10000;
         ASSERT(aRelError > 0 && aRelError <= 0.1);
         if (tot_calls%10000 == 9999)
             print_sampling_stat();
