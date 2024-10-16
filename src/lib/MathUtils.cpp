@@ -950,37 +950,65 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, double aRand, do
 #endif
 }
 
-    /*
-bool MathUtils::SampleLogDistributionNegative(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX,
-                                              double& aOutputIntegral, double xMin, double xMax,
-                                              double aRelError, size_t limit, int key) {
-// NOTE: this implementation doesn't use aRand parameter
-    ASSERT(aRelError > 0 && aRelError <= 0.1);
+    bool MathUtils::SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
+        size_t limit = 1000;
+        ASSERT(aRelError > 0 && aRelError <= 0.1);
 
+        double distrXmin = aDistrib.Xmin();
+        if(xMin < distrXmin)
+            xMin = distrXmin;
+        double distrXmax = aDistrib.Xmax();
+        if(xMax > distrXmax)
+            xMax = distrXmax;
+        ASSERT(xMax>xMin);
 
-    double distrXmin = aDistrib.Xmin();
-    if(xMin < distrXmin)
-        xMin = distrXmin;
-    double distrXmax = aDistrib.Xmax();
-    if(xMax > distrXmax)
-        xMax = distrXmax;
-    ASSERT(xMax>xMin && xMin>0);
-    xMin=log(xMin);
-    xMax=log(xMax);
+        aOutputIntegral = Integration_qag (aDistrib,xMin,xMax,0,aRelError, limit);
 
-    gsl_function_struct log_distr;
-    log_distr.function = MathUtils::GslProxySampleLogscaleDistributionFunc;
-    log_distr.params = (void*)(&aDistrib);
-
-    aOutputIntegral = Integration_qag (log_distr,xMin,xMax,0,aRelError, limit, key);
-
-    for(int attempts_left = 10000; attempts_left>0; attempts_left--){
-        double x =
-    }
-
-    return false;
+// Rejection Sampling
+        for(int attempts_left = 10000; attempts_left>0; attempts_left--){
+            double x = xMin + aRandomizer.Rand()*(xMax-xMin);
+            double threshold = aRandomizer.Rand() * aOutputIntegral;
+            double f = aDistrib(x);
+            if (f >= threshold) {
+                aOutputX = x;
+                return true;
+            }
+        }
+        return false;
 }
-*/
+
+bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
+        size_t limit = 1000;
+        ASSERT(aRelError > 0 && aRelError <= 0.1);
+
+        double distrXmin = aDistrib.Xmin();
+        if(xMin < distrXmin)
+            xMin = distrXmin;
+        double distrXmax = aDistrib.Xmax();
+        if(xMax > distrXmax)
+            xMax = distrXmax;
+        ASSERT(xMax>xMin && xMin>0);
+        xMin=log(xMin);
+        xMax=log(xMax);
+
+        gsl_function_struct log_distr;
+        log_distr.function = MathUtils::GslProxySampleLogscaleDistributionFunc;
+        log_distr.params = (void*)(&aDistrib);
+
+        aOutputIntegral = Integration_qag (log_distr,xMin,xMax,0,aRelError, limit);
+
+// Rejection Sampling
+        for(int attempts_left = 10000; attempts_left>0; attempts_left--){
+            double x = xMin + aRandomizer.Rand()*(xMax-xMin);
+            double threshold = aRandomizer.Rand() * aOutputIntegral;
+            double f = log_distr.function(x, log_distr.params);
+            if (f >= threshold) {
+                aOutputX = exp(x);
+                return true;
+            }
+        }
+        return false;
+}
 
 template<typename X> void MathUtils::RelAccuracy(X& aOutput)
 {

@@ -193,6 +193,10 @@ public:
 	static bool SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
     static bool SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
 
+    bool SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+    bool SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+
+
 //bool SampleLogDistributionNegative(const Function& aDistrib, Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral,
 //                                       double xMin, double xMax, double aRelError, size_t limit=1000, int key=GSL_INTEG_GAUSS15);
 
