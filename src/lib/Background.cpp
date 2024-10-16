@@ -633,9 +633,8 @@ double ContinuousBackgroundIntegral::RateKKernZ::f(double k) const
 	return result;
 }
 
-double ContinuousBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, const Particle& aParticle, double aRand, double& aS, double aAbsError)
+double ContinuousBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, const Particle& aParticle, Randomizer& aRand, double& aS, double aAbsError)
 {
-	ASSERT(aRand>0 || aRand<1);
 	double SminSigma = aSigma.Xmin();
 	ASSERT_VALID_NO(SminSigma);
 	double beta = aParticle.beta();
@@ -664,7 +663,7 @@ double ContinuousBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, c
 		kern = new RateSKernZ(*fIntegrals[iZ], *fIntegrals[iZ + 1], iZ * fStepZ, (iZ + 1) * fStepZ, aSigma, aParticle);
 	else
 		kern = new RateSKern(*fIntegrals[iZ], aSigma, aParticle);
-	if(MathUtils::SampleLogDistribution(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
+	if(math.SampleLogDistribution(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
 	}
@@ -672,9 +671,8 @@ double ContinuousBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, c
 	return 0;
 }
 
-double ContinuousBackgroundIntegral::GetRateAndSampleK(const Function& aSigmaK, const Particle& aParticle, double aRand, double&aK, double aAbsError)
+double ContinuousBackgroundIntegral::GetRateAndSampleK(const Function& aSigmaK, const Particle& aParticle, Randomizer& aRand, double&aK, double aAbsError)
 {
-	ASSERT(aRand>0 || aRand<1);
 	double KminSigma = aSigmaK.Xmin();
 	ASSERT_VALID_NO(KminSigma);
 	double beta = aParticle.beta();
@@ -700,7 +698,7 @@ double ContinuousBackgroundIntegral::GetRateAndSampleK(const Function& aSigmaK, 
 	else
 		kern = new RateKKern(*fIntegrals[iZ], aSigmaK, aParticle);
 
-	if(MathUtils::SampleLogDistribution(*kern, aRand, aK, totalRate, Kmin, Kmax, fEpsRel))
+	if(math.SampleLogDistribution(*kern, aRand, aK, totalRate, Kmin, Kmax, fEpsRel))
 	{
 		double gamma=aParticle.Energy/m;
 		return totalRate/(2.0*gamma*gamma*aParticle.beta());
@@ -803,6 +801,7 @@ ContinuousBackgroundIntegral::~ContinuousBackgroundIntegral()
 
 void ContinuousBackgroundIntegral::UnitTest()
 {
+    Randomizer rand;
 	double zMax = 1;
 	double kStep = pow(10,0.05);
 	double cmbTemp = 2.73/Units::phTemperature_mult/units.Eunit;
@@ -842,7 +841,6 @@ void ContinuousBackgroundIntegral::UnitTest()
 		double sMin;
 		double sMax;
 	};
-
 	kMin = 1e-6*cmbTemp;
 	kMax = 1e-5*cmbTemp;
 	PlankBackground plankLow(cmbTemp, kMin, kMax, 0, zMax);
@@ -858,16 +856,16 @@ void ContinuousBackgroundIntegral::UnitTest()
 			PlankBackgroundTestRate(cmbTemp,p.Energy,ts.sMin) - kMaxI*(ts.sMax-ts.sMin)/8./p.Energy/p.Energy;
 	double S;
 	biLow.fEnableDebugOutput = true;
-	double rateSample = biLow.GetRateAndSampleS(ts, p, 0.5, S);
+	double rateSample = biLow.GetRateAndSampleS(ts, p, rand, S);
 	biLow.fEnableDebugOutput = false;
 
 	cout << "#Total rate test (z=0): rate/sample rate/thRate : " << rate << " / " << rateSample <<  " / " << thRate << "\n";
 	cout << "#<rand> <S> <Smin> <Smax>\n";
-	for(double rand=0.; rand<=1.; rand+=0.1)
-	{
+    //for(double rand=0.; rand<=1.; rand+=0.1)
+	//{
 		biLow.GetRateAndSampleS(ts, p, rand, S);
-		cout << rand << "\t" << S << "\t" << ts.sMin << "\t" << ts.sMax << "\n";
-	}
+		cout << S << "\t" << ts.sMin << "\t" << ts.sMax << "\n";
+	//}
 
 	///// Total rate and sampling test z=0.55*zMax
 
@@ -881,16 +879,16 @@ void ContinuousBackgroundIntegral::UnitTest()
 			PlankBackgroundTestRate(cmbTemp,p.Energy,ts.sMin) - kMaxI*(ts.sMax-ts.sMin)/8./p.Energy/p.Energy;
 
 	biLow.fEnableDebugOutput = true;
-	rateSample = biLow.GetRateAndSampleS(ts, p, 0.5, S);
+	rateSample = biLow.GetRateAndSampleS(ts, p, rand, S);
 	biLow.fEnableDebugOutput = false;
 
 	cout << "#Total rate test(z=" << z << ") : rate/sample rate/thRate : " << rate << " / " << rateSample <<  " / " << thRate << "\n";
 	cout << "#<rand> <S> <Smin> <Smax>\n";
-	for(double rand=0.; rand<=1.; rand+=0.1)
-	{
+	//for(double rand=0.; rand<=1.; rand+=0.1)
+	//{
 		biLow.GetRateAndSampleS(ts, p, rand, S);
-		cout << rand << "\t" << S << "\t" << ts.sMin << "\t" << ts.sMax << "\n";
-	}
+        cout << S << "\t" << ts.sMin << "\t" << ts.sMax << "\n";
+	//}
 }
 
 double ContinuousBackgroundIntegral::PlankBackgroundTestRate(double aT, double aE, double aS)
@@ -934,9 +932,9 @@ double MonochromaticBackgroundIntegral::RateKKern::f(double k) const
 	return fSigma(k)*k;
 }
 
-double MonochromaticBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, const Particle& aParticle, double aRand, double& aS, double aAbsError)
+double MonochromaticBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, const Particle& aParticle, Randomizer& aRand, double& aS, double aAbsError)
 {
-	ASSERT(aRand>0 || aRand<1);
+//ASSERT(aRand>0 || aRand<1);
 	aS=0;
 	double z = aParticle.Time.z();
 	double n=fConcentration.f(z);
@@ -960,7 +958,7 @@ double MonochromaticBackgroundIntegral::GetRateAndSampleS(const Function& aSigma
 	double totalRate = 0.;//rate times 8*E*beta
 	RateSKern kern(aSigma, aParticle);
 
-	if(MathUtils::SampleLogDistribution(kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
+	if(math.SampleLogDistribution(kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate*n/k/k/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
 	}
@@ -1098,7 +1096,7 @@ std::string CuttedBackground::Name() const {
 }
 double MonochromaticBackgroundIntegral::GetRateAndSampleK(const Function &aSigmaK, const Particle &aParticle,
 														  Randomizer &aRandomizer, double &aK, double aAbsError) {
-	double aRand = aRandomizer.Rand();
+	//double aRand = aRandomizer.Rand();
 	aK=0;
 	double z = aParticle.Time.z();
 	double n=fConcentration.f(z);
@@ -1122,7 +1120,7 @@ double MonochromaticBackgroundIntegral::GetRateAndSampleK(const Function &aSigma
 	double totalRate = 0.;
 	RateKKern kern(aSigmaK);
 
-	if(MathUtils::SampleLogDistribution(kern, aRand, aK, totalRate, Kmin, Kmax, fEpsRel))
+	if(math.SampleLogDistribution(kern, aRandomizer, aK, totalRate, Kmin, Kmax, fEpsRel))
 	{
 		double gamma = aParticle.Energy/m;
 		return 0.5*totalRate * n /(eps * eps * gamma * gamma * aParticle.beta());

@@ -361,7 +361,7 @@ int CRbeam::run()
 	double cmbTemp = 2.73/Units::phTemperature_mult/units.Eunit;
 	if(fFixedCmb)
 		cmbTemp *= (1.+fZmax);
-	IBackground* b1 = new PlankBackground(cmbTemp, 1e-3*cmbTemp, 1e3*cmbTemp, 0., fZmax + 1., fFixedCmb);
+    IBackground* b1 = new PlankBackground(cmbTemp, 1e-3*cmbTemp, 1e3*cmbTemp, 0., fZmax + 1., fFixedCmb);
 	IBackground* b2 = 0;
 	switch(fBackgroundModel)
 	{

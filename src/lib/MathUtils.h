@@ -117,6 +117,34 @@ private:
 };
 
 template<typename X = double >
+class MaxFunctionX : public FunctionX<X>
+{
+public:
+    MaxFunctionX(const FunctionX<X>& aOrigFunc, X& aMaxArg, X& aMaxValue):
+    fOrigFunc(aOrigFunc),
+    fMaxArg(aMaxArg),
+    fMaxVal(aMaxValue)
+    {};
+    virtual X f(X _x) const
+    {
+        X y = fOrigFunc.f(_x);
+        if (y > fMaxVal){
+            fMaxArg = _x;
+            fMaxVal = y;
+        }
+        return y;
+    }
+    virtual X Xmin() const {return fOrigFunc.Xmin();}
+    virtual X Xmax() const {return fOrigFunc.Xmax();}
+    virtual ~MaxFunctionX(){};
+    virtual FunctionX<X>* Clone() const { return new MaxFunctionX<X>(fOrigFunc,fMaxArg,fMaxVal); }
+private:
+    const FunctionX<X>&				fOrigFunc;
+    X&	                            fMaxArg;
+    X&	                            fMaxVal;
+};
+
+template<typename X = double >
 class FunctionCallLoggerX : public IFunctionCallHandlerX<X>
 {
 public:
@@ -135,6 +163,7 @@ private:
 
 typedef FunctionX<double> Function;
 typedef Function2X<double> Function2;
+typedef MaxFunctionX<double> MaxFunction;
 
 template<typename X = double >
 class ParamlessFunctionX : public FunctionX<X>
@@ -190,8 +219,8 @@ public:
 			int key=GSL_INTEG_GAUSS15);
 
 	template<typename X> bool SampleLogscaleDistribution(const Function& aDistrib, double aRand, X& aOutputX, X& aOutputIntegral, int nStepsS, X xMin, X xMax, double aRelError);
-	static bool SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
-    static bool SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+	static bool _SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+    static bool _SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
 
     bool SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
     bool SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);

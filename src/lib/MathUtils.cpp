@@ -556,7 +556,7 @@ namespace Utils {
 		X sample(const FunctionX<X>& f, X aTmin, X aTmax, X aRand,
 				 X & aTotRate, X aRelErr, X aAbsErr = 1e300){
 			X x;
-			MathUtils::SampleLogDistribution(f,aRand,x,aTotRate,aTmin,aTmax,aRelErr);
+            MathUtils::_SampleLogDistribution(f,aRand,x,aTotRate,aTmin,aTmax,aRelErr);
 		}
 	};
 
@@ -737,7 +737,7 @@ private:
 
 IFunctionCallHandlerX<double>* MathUtils::fLogger = 0;
 
-bool MathUtils::SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
+bool MathUtils::_SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
 {
 #ifdef USE_BOOST
     Sampler<double> dil;//slower 25 sec
@@ -847,7 +847,7 @@ private:
 };
 #endif
 
-bool MathUtils::SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
+bool MathUtils::_SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
 {
     ASSERT(aRelError>0 && aRelError<=0.1);
     ASSERT(xMin>0 && xMax>xMin);
@@ -952,6 +952,7 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, double aRand, do
 
     bool MathUtils::SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
         size_t limit = 1000;
+        int sampling_limit = 1000;
         ASSERT(aRelError > 0 && aRelError <= 0.1);
 
         double distrXmin = aDistrib.Xmin();
@@ -962,52 +963,94 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, double aRand, do
             xMax = distrXmax;
         ASSERT(xMax>xMin);
 
-        aOutputIntegral = Integration_qag (aDistrib,xMin,xMax,0,aRelError, limit);
+        double max_arg = 0;
+        double max_val = -1e-300; //will be used for sampling
+        MaxFunction pdf(aDistrib, max_arg, max_val);
 
+        aOutputIntegral = Integration_qag (pdf,xMin,xMax,0,aRelError, limit);
 // Rejection Sampling
-        for(int attempts_left = 10000; attempts_left>0; attempts_left--){
-            double x = xMin + aRandomizer.Rand()*(xMax-xMin);
-            double threshold = aRandomizer.Rand() * aOutputIntegral;
+        for(int attempts_left = sampling_limit; attempts_left>0; attempts_left--){
+            double x = xMin + aRandomizer.Rand() * (xMax-xMin);
+            double threshold = aRandomizer.Rand() * max_val;
             double f = aDistrib(x);
             if (f >= threshold) {
                 aOutputX = x;
                 return true;
             }
         }
-        return false;
+        // perhaps the distribution is very narrow return argmax of PDF
+        std::cerr << "SampleDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
+        aOutputX = max_arg;
+        return true;
 }
 
-bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
-        size_t limit = 1000;
-        ASSERT(aRelError > 0 && aRelError <= 0.1);
-
-        double distrXmin = aDistrib.Xmin();
-        if(xMin < distrXmin)
-            xMin = distrXmin;
-        double distrXmax = aDistrib.Xmax();
-        if(xMax > distrXmax)
-            xMax = distrXmax;
-        ASSERT(xMax>xMin && xMin>0);
-        xMin=log(xMin);
-        xMax=log(xMax);
-
-        gsl_function_struct log_distr;
-        log_distr.function = MathUtils::GslProxySampleLogscaleDistributionFunc;
-        log_distr.params = (void*)(&aDistrib);
-
-        aOutputIntegral = Integration_qag (log_distr,xMin,xMax,0,aRelError, limit);
-
-// Rejection Sampling
-        for(int attempts_left = 10000; attempts_left>0; attempts_left--){
-            double x = xMin + aRandomizer.Rand()*(xMax-xMin);
-            double threshold = aRandomizer.Rand() * aOutputIntegral;
-            double f = log_distr.function(x, log_distr.params);
-            if (f >= threshold) {
-                aOutputX = exp(x);
-                return true;
-            }
+class LogscaleDistr : public Function
+{
+public:
+    LogscaleDistr(const Function& aOrigFunc, double& aMaxArg, double& aMaxValue):
+            fOrigFunc(aOrigFunc),
+            fMaxArg(aMaxArg),
+            fMaxVal(aMaxValue),
+            fXmin(log(aOrigFunc.Xmin())),
+            fXmax(log(aOrigFunc.Xmax()))
+    {};
+    virtual double f(double _x) const
+    {
+        double orig_x = exp(_x);
+        double y = orig_x * fOrigFunc.f(orig_x);
+        if (y > fMaxVal){
+            fMaxArg = _x;
+            fMaxVal = y;
         }
-        return false;
+        return y;
+    }
+    virtual double Xmin() const {return fXmin;}
+    virtual double Xmax() const {return fXmax;}
+    virtual ~LogscaleDistr(){};
+    virtual Function* Clone() const { return new LogscaleDistr(fOrigFunc,fMaxArg,fMaxVal); }
+private:
+    const Function&				fOrigFunc;
+    double&	                    fMaxArg;
+    double&	                    fMaxVal;
+    double                      fXmin;
+    double                      fXmax;
+};
+
+bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
+    size_t limit = 1000;
+    int sampling_limit = 1000;
+    ASSERT(aRelError > 0 && aRelError <= 0.1);
+
+    double distrXmin = aDistrib.Xmin();
+    if(xMin < distrXmin)
+        xMin = distrXmin;
+    double distrXmax = aDistrib.Xmax();
+    if(xMax > distrXmax)
+        xMax = distrXmax;
+    ASSERT(xMax>xMin && xMin>0);
+    xMin=log(xMin);
+    xMax=log(xMax);
+
+    double max_arg = 0;
+    double max_val = -1e-300; //will be used for sampling
+    LogscaleDistr pdf(aDistrib, max_arg, max_val);
+
+    aOutputIntegral = Integration_qag (pdf,xMin,xMax,0,aRelError, limit);
+
+    // Rejection Sampling
+    for(int attempts_left = sampling_limit; attempts_left>0; attempts_left--){
+        double x = xMin + aRandomizer.Rand()*(xMax-xMin);
+        double threshold = aRandomizer.Rand() * max_val;
+        double f = pdf(x);
+        if (f >= threshold) {
+            aOutputX = exp(x);
+            return true;
+        }
+    }
+    // perhaps the distribution is very narrow return argmax of PDF
+    std::cerr << "SampleLogDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
+    aOutputX = exp(max_arg);
+    return true;
 }
 
 template<typename X> void MathUtils::RelAccuracy(X& aOutput)
