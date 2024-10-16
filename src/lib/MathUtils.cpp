@@ -964,7 +964,7 @@ void print_sampling_stat(){
         size_t limit = 1000;
         int sampling_limit = 10000;
         ASSERT(aRelError > 0 && aRelError <= 0.1);
-        if (tot_calls%10000 == 9999)
+        if (tot_calls == 9999)
             print_sampling_stat();
 
         tot_calls += 1;
@@ -995,7 +995,7 @@ void print_sampling_stat(){
         }
         // perhaps the distribution is very narrow return argmax of PDF
         failed_calls++;
-        if (failed_calls % 1000000 == 1)
+        if (failed_calls == 1)
             std::cerr << "SampleDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
         aOutputX = max_arg;
         return true;
@@ -1035,10 +1035,10 @@ private:
 
 bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
     size_t limit = 1000;
-    int sampling_limit = 1000;
+    int sampling_limit = 10000;
     ASSERT(aRelError > 0 && aRelError <= 0.1);
 
-    if (tot_calls%10000 == 9999)
+    if (tot_calls == 10000)
         print_sampling_stat();
 
     tot_calls++;
@@ -1072,7 +1072,7 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomize
     }
     // perhaps the distribution is very narrow return argmax of PDF
     failed_calls++;
-    if (failed_calls % 1000000 == 1)
+    if (failed_calls == 1)
         std::cerr << "SampleDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
     aOutputX = exp(max_arg);
     return true;
