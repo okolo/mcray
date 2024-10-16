@@ -960,7 +960,8 @@ void print_sampling_stat(){
     "\t\tfailed %: " << 100*failed_calls/tot_calls << std::endl;
 }
 
-    bool MathUtils::SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
+    bool MathUtils::SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax,
+                                       double aRelError, int max_recurse){
         size_t limit = 1000;
         int sampling_limit = 10000;
         ASSERT(aRelError > 0 && aRelError <= 0.1);
@@ -993,12 +994,22 @@ void print_sampling_stat(){
                 return true;
             }
         }
-        // perhaps the distribution is very narrow return argmax of PDF
-        failed_calls++;
-        if (failed_calls == 1)
-            std::cerr << "SampleDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
-        aOutputX = max_arg;
-        return true;
+
+        if (max_recurse <= 0){
+            // perhaps the distribution is very narrow return argmax of PDF
+            failed_calls++;
+            if (failed_calls == 1)
+                std::cerr << "SampleDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
+            aOutputX = max_arg;
+            return true;
+        }
+        // perhaps the distribution is very narrow try to sample around its maximum
+        double new_xmin = max_arg - 0.05*(xMax-xMin);
+        new_xmin = (new_xmin<xMin)?xMin:new_xmin;
+        double new_xmax = max_arg + 0.05*(xMax-xMin);
+        new_xmax = (new_xmax>xMax)?xMax:new_xmax;
+        double out_int;
+        return SampleDistribution(aDistrib, aRandomizer,  aOutputX, out_int, new_xmin, new_xmax, aRelError, max_recurse-1);
 }
 
 class LogscaleDistr : public Function
@@ -1033,7 +1044,7 @@ private:
     double                      fXmax;
 };
 
-bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError){
+bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError, int max_recurse){
     size_t limit = 1000;
     int sampling_limit = 10000;
     ASSERT(aRelError > 0 && aRelError <= 0.1);
@@ -1070,12 +1081,24 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomize
             return true;
         }
     }
-    // perhaps the distribution is very narrow return argmax of PDF
-    failed_calls++;
-    if (failed_calls == 1)
-        std::cerr << "SampleDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
-    aOutputX = exp(max_arg);
-    return true;
+
+    if (max_recurse <= 0){
+        // perhaps the distribution is very narrow return argmax of PDF
+        failed_calls++;
+        if (failed_calls == 1)
+            std::cerr << "SampleLogDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
+        aOutputX = exp(max_arg);
+        return true;
+    }
+    // perhaps the distribution is very narrow try to sample around its maximum
+    double new_xmin = max_arg - 0.05*(xMax-xMin);
+    new_xmin = (new_xmin<xMin)?xMin:new_xmin;
+    double new_xmax = max_arg + 0.05*(xMax-xMin);
+    new_xmax = (new_xmax>xMax)?xMax:new_xmax;
+    new_xmin = exp(new_xmin);
+    new_xmax = exp(new_xmax);
+    double out_int;
+    return SampleLogDistribution(aDistrib, aRandomizer,  aOutputX, out_int, new_xmin, new_xmax, aRelError, max_recurse-1);
 }
 
 template<typename X> void MathUtils::RelAccuracy(X& aOutput)
