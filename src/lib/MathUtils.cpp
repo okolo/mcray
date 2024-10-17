@@ -25,11 +25,11 @@
  * THE SOFTWARE.
  */
 
-#define USE_BOOST
+#define DISABLE_NR // don't use Numerical Recipes API
 
-#ifdef USE_BOOST
+#ifdef DISABLE_NR
 
-#include <boost/numeric/odeint/config.hpp>
+//#include <boost/numeric/odeint/config.hpp>
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/stepper/bulirsch_stoer.hpp>
@@ -42,7 +42,7 @@
 #include "nr/odeint.h"
 #include "nr/stepperdopr5.h"
 
-#endif //#ifndef USE_BOOST
+#endif //#ifndef DISABLE_NR
 
 #include "Utils.h"
 #include "MathUtils.h"
@@ -53,7 +53,7 @@
 
 
 namespace Utils {
-#ifdef USE_BOOST
+#ifdef DISABLE_NR
 	using namespace boost::numeric::odeint;
 
 	template< class Obj , class Mem >
@@ -549,7 +549,7 @@ namespace Utils {
 		X      fRelErr;
 		X      fAbsErr;
 	};
-#endif //#ifdef USE_BOOST
+#endif //#ifdef DISABLE_NR
 
 	template<typename X = double >
 	class NRSampler : public ISampler<X> {
@@ -716,7 +716,7 @@ MathUtils::~MathUtils()
 	return false;
 }
 
-#ifndef USE_BOOST
+#ifndef DISABLE_NR
 class MathUtilsODE
 {
 public:
@@ -739,7 +739,7 @@ IFunctionCallHandlerX<double>* MathUtils::fLogger = 0;
 
 bool MathUtils::_SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
 {
-#ifdef USE_BOOST
+#ifdef DISABLE_NR
     Sampler<double> dil;//slower 25 sec
     //Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
     //Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
@@ -827,7 +827,7 @@ bool MathUtils::_SampleDistribution(const Function& aDistrib, double aRand, doub
 #endif
 }
 
-#ifndef USE_BOOST
+#ifndef DISABLE_NR
 class MathUtilsLogODE
 {
 public:
@@ -851,7 +851,7 @@ bool MathUtils::_SampleLogDistribution(const Function& aDistrib, double aRand, d
 {
     ASSERT(aRelError>0 && aRelError<=0.1);
     ASSERT(xMin>0 && xMax>xMin);
-#ifdef USE_BOOST
+#ifdef DISABLE_NR
     LogSampler<double> dil;//slower 25 sec
     //Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
     //Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
