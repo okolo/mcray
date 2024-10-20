@@ -975,6 +975,7 @@ template bool MathUtils::SampleLogscaleDistribution<double>(const Function& aDis
 		//Sampler4<double> dil;
 		NRSampler<double> dil;
 		dil.UnitTest();
+		return 0;
 	}
 
 double MathUtils::Integration_qag (

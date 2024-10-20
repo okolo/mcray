@@ -246,6 +246,9 @@ void RawOutput::LookForRepetitions(std::vector<Particle>* aParticles)
 		<< aParticle.X[0]/T << "\t" << aParticle.X[1]/T << "\t" << 1.-aParticle.X[2]/T << "\t"
 		<< aParticle.Pdir[0] << "\t" << aParticle.Pdir[1] << "\t" << 1.-aParticle.Pdir[2] << "\t"
 		<< aParticle.fCascadeProductionTime.z() << "\t" << aParticle.Ninteractions;
+		if(fSaveSourceDir){
+			aOut << "\t" << aParticle.PdirStart[0] << "\t" << aParticle.PdirStart[1] << "\t" << aParticle.PdirStart[2];
+		}
 		if(fSaveSourceZ)
 			aOut << "\t" << aParticle.SourceParticle->Time.z();
 		if(fSaveSourceE)
@@ -268,6 +271,9 @@ void RawOutput::LookForRepetitions(std::vector<Particle>* aParticles)
 		}
 		aOut << "\t" << "T/Mpc = " << (aFirstParticle.Time.t()-aFirstParticle.SourceParticle->Time.t())/units.Mpc << "\n#\n";
 		aOut << "# E/eV\tweight\tx/T\ty/T\t1-(z/T)\tPx/P\tPy/P\t1-(Pz/P)\tz_cascade_production\tN_interactions";
+		if(fSaveSourceDir){
+			aOut << "\tsource_x\tsource_y\tsource_z";
+		}
 		if(fSaveSourceZ){
 			aOut << "\tz_src";
 		}

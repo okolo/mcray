@@ -79,8 +79,8 @@ private:
 
 	class RawOutput3D : public RawOutput{
 	public:
-		RawOutput3D(std::string aDir, bool aOverwriteExisting = false, bool aSaveSourceZ=false, bool aSaveSourceE=false, bool aSaveId=false, bool aSaveZprod=false):
-				RawOutput(aDir, false, aOverwriteExisting),fSaveSourceZ(aSaveSourceZ), fSaveSourceE(aSaveSourceE), fSaveId(aSaveId), fSaveZprod(aSaveZprod){ }
+		RawOutput3D(std::string aDir, bool aOverwriteExisting = false, bool aSaveSourceZ=false, bool aSaveSourceE=false, bool aSaveId=false, bool aSaveZprod=false,bool aSaveSourceDir=false):
+			RawOutput(aDir, false, aOverwriteExisting),fSaveSourceZ(aSaveSourceZ),fSaveSourceE(aSaveSourceE),fSaveId(aSaveId),fSaveZprod(aSaveZprod),fSaveSourceDir(aSaveSourceDir){ }
 		void WriteHeader(std::ostream& aOut, const Particle& aFirstParticle);
 		void Write(std::ostream& aOut, const Particle& aParticle);
 	private:
@@ -88,6 +88,7 @@ private:
 		bool fSaveSourceE;
 		bool fSaveId;
         bool fSaveZprod;
+        bool fSaveSourceDir;
 	};
 
 	class TotalEnergyOutput : public TSmartReferencedObj<IOutput> {

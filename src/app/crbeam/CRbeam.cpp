@@ -270,6 +270,7 @@ CRbeam::CRbeam(int argc, char** argv):
 	if( cmd.has_param("-h") )
 	{
 		cmd.printHelp(std::cerr);
+		std::cerr << std::endl << "Build on " << __DATE__ << " " << __TIME__ << std::endl;
 		exit(255);//enable binary_check
 	}
 	fNumThreads = cmd(PNumThreads);
@@ -391,7 +392,8 @@ int CRbeam::run()
 	}
     std::cout << "output dir: " << outputDir << std::endl;
     bool saveZprod = true;
-    SmartPtr<RawOutput3D> pOutput = new RawOutput3D(outputDir, fOverwriteOutput, true, true, fTrajectoryLogging, saveZprod);//this creates folder outputDir, later we will set output to outputDir/z0
+    bool saveInitialSourceDirection = true;
+    SmartPtr<RawOutput3D> pOutput = new RawOutput3D(outputDir, fOverwriteOutput, true, true, fTrajectoryLogging, saveZprod, saveInitialSourceDirection);//this creates folder outputDir, later we will set output to outputDir/z0
 	if(fLogging){
 		debug.SetOutputFile(outputDir + "/log.txt");
 		debug.EnableTimestamp();
@@ -719,11 +721,11 @@ int CRbeam::run()
 	            if(end_calc_time>60)std::cerr << int(end_calc_time/60)%60 << "m";
 	            std::cerr << int(end_calc_time)%60 << "s";
 	            std::cerr<< ", left: ";
-	            double leftSeconds = double((fNoParticles-i)/i)*1.01*end_calc_time;
-//	            if( (i-1)/fBatchSize + 1 < 10 )leftSeconds*=1.13;
-//	            if(leftSeconds>3600)std::cerr << int(leftSeconds/3600.) << "h";
-//	            if(leftSeconds>60)std::cerr << int(leftSeconds/60.)%60 << "m";
-	            std::cerr << int(leftSeconds) << "s";
+	            double leftSeconds = double(fNoParticles-i)/double(i)*1.01*end_calc_time;
+	            if( (i-1)/fBatchSize + 1 < 20 )leftSeconds*=1.13; // Experimantal magic numbers. Why?
+	            if(leftSeconds>3600)std::cerr << int(leftSeconds/3600.) << "h";
+	            if(leftSeconds>60)std::cerr << int(leftSeconds/60.)%60 << "m";
+	            std::cerr << int(leftSeconds)%60 << "s";
 	        }
 	        std::cerr << std::endl;
             pe.RunMultithread(0, fNumThreads);

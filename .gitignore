@@ -2,7 +2,9 @@ bin/CMakeCache.txt
 bin/CMakeFiles/
 src/external/SOPHIA
 src/external/nr
+src/external/.nr_backup
 bin/Makefile
 bin/cmake_install.cmake
 bin/mcray/
 bin/CRbeam
+pybeam/pybeam.so
