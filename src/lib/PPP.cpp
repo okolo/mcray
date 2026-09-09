@@ -259,28 +259,41 @@ double PPP::DifSigma_r::f(double r) const
 
 double PPP::Rate(const Particle& aParticle) const
 {
-	if(aParticle.Type != Proton)
-		return 0.;
-	return fBackground->GetRateS(fSigma, aParticle) / f_ScaleFactor;
+	if(aParticle.Type == Proton)
+		return fBackground->GetRateS(fSigma, aParticle) / f_ScaleFactor;
+	else if (aParticle.Type >= H2)
+		return aParticle.ElectricCharge() * fBackground->GetRateS(fSigma, aParticle) / f_ScaleFactor;
+	else
+		return 0;
 }
 
 bool PPP::SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer) const
 {
-	ASSERT(aParticle.Type == Proton);
+	ASSERT(aParticle.Type == Proton || (aParticle.Type >= H2 && aParticle.Type < ParticleTypeEOF));
 	aS = 0.;
-	return (fBackground->GetRateAndSampleS(fSigma, aParticle, aRandomizer, aS)!=0);
+	if(aParticle.Type == Proton)
+		return (fBackground->GetRateAndSampleS(fSigma, aParticle, aRandomizer, aS)!=0);	
+	else if (aParticle.Type >= H2 && aParticle.Type < ParticleTypeEOF)
+    {
+		Particle innerProton = aParticle;
+        innerProton.Type = Proton;
+        innerProton.Energy *= (innerProton.Mass()/aParticle.Mass());
+		return (fBackground->GetRateAndSampleS(fSigma, innerProton, aRandomizer, aS)!=0);
+	}
+	else
+		return false;
+	
 }
 
 void PPP::SampleSecondariesMean(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const
 {//// sampling secondary electrons/positrons is expensive so thinning is performed before sampling
  /// via usage of scale factor parameter and generating either electron or positron (not both)
-	ASSERT(aParticle.Type == Proton);
-    MathUtils mutils;
+	ASSERT(aParticle.Type == Proton || (aParticle.Type >= H2 && aParticle.Type < ParticleTypeEOF));
 
 	Particle sec = aParticle;
 	sec.Type = aRandomizer.Rand()>0.5 ? Electron : Positron;
 	DifSigma_r difSigma;
-	double r = difSigma.SampleR(aS, s_epsRel, mutils, aRandomizer);
+	double r = difSigma.SampleR(aS, s_epsRel, math, aRandomizer.Rand());
 	sec.Energy *= r;
 	sec.Weight *= (f_ScaleFactor*2);//2 takes into account that pair is produced
 	sec.fCascadeProductionTime = aParticle.Time;
@@ -289,7 +302,7 @@ void PPP::SampleSecondariesMean(Particle& aParticle, std::vector<Particle>& aSec
 	//don't add proton to the list of secondaries since this.KillsPrimary == false
 }
 
-	double PPP::DifSigma_r::SampleR(double aS, double aEpsRel, Utils::MathUtils& aMath, Randomizer& aRand)
+	double PPP::DifSigma_r::SampleR(double aS, double aEpsRel, const Utils::MathUtils& aMath, double aRand)
 	{
 		double r = 0.;
 		SetS(aS);
@@ -316,8 +329,7 @@ void PPP::SampleSecondariesMean(Particle& aParticle, std::vector<Particle>& aSec
 			//double rMaxAdj = fMe/fMp/3./pow(f_rMin,0.75) + pow(f_rMin,0.25);   //adjust rMin to have < r > = m_e/m_p (assuming rMin<<rMax)
 			//ASSERT(rMaxAdj<1.);
 			//ASSERT(rMaxAdj/f_rMin<1e-3);
-            double randNumber = aRand.Rand();
-			r = pow(pow(rMinAdj,-0.75)*(1.-randNumber)+randNumber*pow(f_rMax,-0.75) , -4./3.);
+			r = pow(pow(rMinAdj,-0.75)*(1.-aRand)+aRand*pow(f_rMax,-0.75) , -4./3.);
 			ASSERT(r>=rMinAdj && r<=f_rMax);
 		}
 		return r;
@@ -326,16 +338,16 @@ void PPP::SampleSecondariesMean(Particle& aParticle, std::vector<Particle>& aSec
 
 void PPP::SampleSecondariesExact(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const
 {
-	ASSERT(aParticle.Type == Proton);
+	ASSERT(aParticle.Type == Proton || (aParticle.Type >= H2 && aParticle.Type < ParticleTypeEOF));
 	double m = aParticle.Mass();
 	double k = 0.5*(aS/m-m)/fMe;//photon energy in proton rest frame in units of electron mass
 	ASSERT(k>2);
 	((PPP::DifSigma_Eprime&)fDifSigma_Eprime).SetK(k);
 
 	double Eprime, cosTheta, sigmaTot;
-	((MathUtils&)math).SampleLogDistribution(fDifSigma_Eprime, aRandomizer, Eprime, sigmaTot, fDifSigma_Eprime.Xmin(), fDifSigma_Eprime.Xmax(), 10.*s_epsRel);
+	((MathUtils&)math).SampleLogDistribution(fDifSigma_Eprime, aRandomizer.Rand(), Eprime, sigmaTot, fDifSigma_Eprime.Xmin(), fDifSigma_Eprime.Xmax(), 10.*s_epsRel);
 	CosThetaSamplingEq cosProb(Eprime, k);
-	((MathUtils&)math).SampleDistribution(cosProb, aRandomizer, cosTheta, sigmaTot, cosProb.Xmin(), cosProb.Xmax(), s_epsRel);
+	((MathUtils&)math).SampleDistribution(cosProb, aRandomizer.Rand(), cosTheta, sigmaTot, cosProb.Xmin(), cosProb.Xmax(), s_epsRel);
 	Particle electron = aParticle;
 	electron.Type = Electron;
 	electron.Energy *= ((Eprime-cosTheta*sqrt(Eprime-1.))*fMe/m);

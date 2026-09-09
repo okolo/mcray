@@ -106,6 +106,8 @@ Particle.cpp
 Particle.h
 ParticleStack.cpp
 ParticleStack.h
+PD.cpp
+PD.h
 PropagationEngine.cpp
 PropagationEngine.h
 ProtonPP.cpp
