@@ -32,11 +32,11 @@
 namespace Backgrounds {
 
     Stecker16LowerBackground::Stecker16LowerBackground() :
-            Stecker16Background(TABLES_DIR  "stecker_ebl16/comoving_enerdens_lo.csv", "Stecker_16_lower") {
+            Stecker16Background(tables_dir + "stecker_ebl16/comoving_enerdens_lo.csv", "Stecker_16_lower") {
 }
 
 Stecker16UpperBackground::Stecker16UpperBackground() :
-        Stecker16Background(TABLES_DIR "stecker_ebl16/comoving_enerdens_up.csv", "Stecker_16_upper")
+        Stecker16Background(tables_dir + "stecker_ebl16/comoving_enerdens_up.csv", "Stecker_16_upper")
 {
 }
 
@@ -55,6 +55,7 @@ int Stecker16Background::UnitTest()
     BackgroundUtils::UnitTest(backgrUpper);
     Stecker16LowerBackground backgrLower;
     BackgroundUtils::UnitTest(backgrLower);
+    return 0;
 }
 
 }

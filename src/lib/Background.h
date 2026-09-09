@@ -148,7 +148,7 @@ public:
 	@param[in]  aMinZ minimal background red shift
 	@param[in]  aMaxZ maximal background red shift
 	*/
-	PlankBackground(double aT0, double aEmin, double aEmax, double aMinZ=0, double aMaxZ=10000, bool aFixedTemperature = false);
+    PlankBackground(double aT0, double aEmin, double aEmax, double aMinZ=0, double aMaxZ=10000, bool aFixedTemperature = false);
 	double n(double aE, double aZ) const;
 	double MinE() const { return fMinE; }
 	double MaxE() const { return fMaxE; }
@@ -262,9 +262,7 @@ public:
 	MonochromaticBackgroundIntegral(const MonochromaticBackgroundIntegral& aBackgroundIntegral);
 
 
-    double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, Randomizer& aRandomizer, double& aS, double aAbsError=0){
-        return GetRateAndSampleS(aSigmaS, aParticle, aRandomizer.Rand(), aS, aAbsError);
-    }
+    double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, Randomizer& aRandomizer, double& aS, double aAbsError=0);
 
 	double GetRateS(const Function& aSigma, const Particle& aParticle, double aAbsError=0);
 
@@ -274,7 +272,6 @@ public:
 	BackgroundIntegral* Clone() const;
 	virtual ~MonochromaticBackgroundIntegral(){};
 private:
-    double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, double aRand, double& aS, double aAbsError=0);
 	MathUtils		math;
 	bool			fEnableDebugOutput;
 	Function&		fConcentration;
@@ -358,21 +355,23 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 public:
 	ContinuousBackgroundIntegral(IBackground& aBackground, double aStepZ, double aLogStepK, double aZmaxLimit, double aEpsRel = 0);
 	BackgroundIntegral* Clone() const;
-	double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, Randomizer& aRandomizer, double& aS, double aAbsError = 0){
-        return GetRateAndSampleS(aSigmaS, aParticle, aRandomizer.Rand(), aS, aAbsError);
-    }
+	double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, Randomizer& aRandomizer, double& aS, double aAbsError = 0);
+//    {
+//        return GetRateAndSampleS(aSigmaS, aParticle, aRandomizer.Rand(), aS, aAbsError);
+//    }
 	double GetRateS(const Function &aSigmaS, const Particle &aParticle, double aAbsError = 0);
 
-	double GetRateAndSampleK(const Function& aSigmaK, const Particle& aParticle, Randomizer& aRandomizer, double& aK, double aAbsError = 0){
-		return GetRateAndSampleK(aSigmaK, aParticle, aRandomizer.Rand(), aK, aAbsError);
-	}
+	double GetRateAndSampleK(const Function& aSigmaK, const Particle& aParticle, Randomizer& aRandomizer, double& aK, double aAbsError = 0);
+//    {
+//		return GetRateAndSampleK(aSigmaK, aParticle, aRandomizer.Rand(), aK, aAbsError);
+//	}
 	double GetRateK(const Function &aSigmaK, const Particle &aParticle, double aAbsError = 0);
 
 	virtual ~ContinuousBackgroundIntegral();
 	static void UnitTest();
 private:
-    double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, double aRand, double& aS, double aAbsError = 0);
-	double GetRateAndSampleK(const Function& aSigmaK, const Particle& aParticle, double aRand, double&aK, double aAbsError = 0);
+//    double GetRateAndSampleS(const Function& aSigmaS, const Particle& aParticle, double aRand, double& aS, double aAbsError = 0);
+//	double GetRateAndSampleK(const Function& aSigmaK, const Particle& aParticle, double aRand, double&aK, double aAbsError = 0);
 	ContinuousBackgroundIntegral(const ContinuousBackgroundIntegral& aBackgroundIntegral);
 	//used in unit test
 	static double PlankBackgroundIntegral(double aT, double aE);

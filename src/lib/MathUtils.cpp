@@ -25,15 +25,24 @@
  * THE SOFTWARE.
  */
 
-#ifdef USE_BOOST
+#define DISABLE_NR // don't use Numerical Recipes API
 
-#include <boost/numeric/odeint/config.hpp>
+#ifdef DISABLE_NR
+
+//#include <boost/numeric/odeint/config.hpp>
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/stepper/bulirsch_stoer.hpp>
 #include <boost/numeric/odeint/stepper/bulirsch_stoer_dense_out.hpp>
 
-#endif
+#else
+
+#include "nr/nr3.h"
+#include "nr/stepper.h"
+#include "nr/odeint.h"
+#include "nr/stepperdopr5.h"
+
+#endif //#ifndef DISABLE_NR
 
 #include "Utils.h"
 #include "MathUtils.h"
@@ -41,17 +50,10 @@
 #include "gsl/gsl_sf_erf.h"
 #include <gsl/gsl_math.h>
 #include "TableFunction.h"
-#include "nr/nr3.h"
-//namespace nr {
-#include "nr/stepper.h"
-#include "nr/odeint.h"
-#include "nr/stepperdopr5.h"
-//}
-
 
 
 namespace Utils {
-#ifdef USE_BOOST
+#ifdef DISABLE_NR
 	using namespace boost::numeric::odeint;
 
 	template< class Obj , class Mem >
@@ -547,15 +549,14 @@ namespace Utils {
 		X      fRelErr;
 		X      fAbsErr;
 	};
-
-#endif //#ifdef USE_BOOST
+#endif //#ifdef DISABLE_NR
 
 	template<typename X = double >
 	class NRSampler : public ISampler<X> {
 		X sample(const FunctionX<X>& f, X aTmin, X aTmax, X aRand,
 				 X & aTotRate, X aRelErr, X aAbsErr = 1e300){
 			X x;
-			MathUtils::SampleLogDistributionNR(f,aRand,x,aTotRate,aTmin,aTmax,aRelErr);
+            MathUtils::_SampleLogDistribution(f,aRand,x,aTotRate,aTmin,aTmax,aRelErr);
 		}
 	};
 
@@ -715,6 +716,7 @@ MathUtils::~MathUtils()
 	return false;
 }
 
+#ifndef DISABLE_NR
 class MathUtilsODE
 {
 public:
@@ -731,11 +733,24 @@ public:
 private:
 	const Function& fDistrib;
 };
+#endif
 
 IFunctionCallHandlerX<double>* MathUtils::fLogger = 0;
 
-bool MathUtils::SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
+bool MathUtils::_SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
 {
+#ifdef DISABLE_NR
+    Sampler<double> dil;//slower 25 sec
+    //Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
+    //Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
+    aOutputIntegral=0.;
+
+    aOutputX=dil.sample(aDistrib, xMin, xMax, aRand, aOutputIntegral, aRelError);
+
+    ASSERT_VALID_NO(aOutputX);
+    return true;
+
+#else
 	const Function* distrib = &aDistrib;
 	SafePtr<DebugFunctionX<double> > func;
 	if(fLogger)
@@ -809,8 +824,10 @@ bool MathUtils::SampleDistribution(const Function& aDistrib, double aRand, doubl
 	x2=out2.xsave[i2];
 	aOutputX = x1 + (x2-x1)/(y2-y1)*(aRand-y1);//make a linear estimate of X
 	return true;
+#endif
 }
 
+#ifndef DISABLE_NR
 class MathUtilsLogODE
 {
 public:
@@ -828,20 +845,23 @@ public:
 private:
 	const Function& fDistrib;
 };
-
-bool MathUtils::SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
-{
-#ifdef USE_BOOST
-    return SampleLogDistributionBoost(aDistrib, aRand, aOutputX, aOutputIntegral, xMin, xMax, aRelError);
-#else
-	return SampleLogDistributionNR(aDistrib, aRand, aOutputX, aOutputIntegral, xMin, xMax, aRelError);
 #endif
-}
 
-bool MathUtils::SampleLogDistributionNR(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
+bool MathUtils::_SampleLogDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
 {
-	ASSERT(aRelError>0 && aRelError<=0.1);
+    ASSERT(aRelError>0 && aRelError<=0.1);
+    ASSERT(xMin>0 && xMax>xMin);
+#ifdef DISABLE_NR
+    LogSampler<double> dil;//slower 25 sec
+    //Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
+    //Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
+    aOutputIntegral=0.;
 
+    aOutputX=dil.sample(aDistrib, xMin, xMax, aRand, aOutputIntegral, aRelError);
+
+    ASSERT_VALID_NO(aOutputX);
+    return true;
+#else
 	const Function* distrib = &aDistrib;
 	SafePtr<DebugFunctionX<double> > func;
 	if(fLogger)
@@ -927,28 +947,148 @@ bool MathUtils::SampleLogDistributionNR(const Function& aDistrib, double aRand, 
 	aOutputX = exp(aOutputX);
 	ASSERT_VALID_NO(aOutputX);
 	return true;
+#endif
 }
 
+// diagnostics
+//struct SampleStat{
+//     long long tot_calls;
+//     long long failed_calls;
+//     long long level;
+//};
+//static SampleStat stats_SampleDistribution;
+//static SampleStat stats_SampleLogDistribution;
+//
+//void print_sampling_stat(SampleStat s){
+//#pragma omp critical (stderr)
+//    std::cerr << "sampling failures %: " << 100.0*s.failed_calls/s.tot_calls << std::endl;
+//}
 
-bool MathUtils::SampleLogDistributionBoost(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError)
-	{
-#ifdef USE_BOOST
-		ASSERT(aRelError>0 && aRelError<=0.1);
-		ASSERT(xMin>0 && xMax>xMin);
-		LogSampler<double> dil;//slower 25 sec
-		//Sampler2<double> dil;// 20 sec (todo: fix memory leaks)
-		//Sampler3<double> dil;// 20 sec (todo: fix memory leaks)
-		aOutputIntegral=0.;
+    bool MathUtils::SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax,
+                                       double aRelError, int max_recurse){
+        size_t limit = 1000;
+        int sampling_limit = 1000;
+        ASSERT(aRelError > 0 && aRelError <= 0.1);
 
-		aOutputX=dil.sample(aDistrib, xMin, xMax, aRand, aOutputIntegral, aRelError);
+        double distrXmin = aDistrib.Xmin();
+        if(xMin < distrXmin)
+            xMin = distrXmin;
+        double distrXmax = aDistrib.Xmax();
+        if(xMax > distrXmax)
+            xMax = distrXmax;
+        ASSERT(xMax>xMin);
 
-		ASSERT_VALID_NO(aOutputX);
-		return true;
-#else
-	Exception::Throw("MathUtils::SampleLogDistributionBoost boostlib support is disabled");
-	return false;//avoid compiler warning
-#endif
-	}
+        double max_arg = 0;
+        double max_val = -1e-300; //will be used for sampling
+        MaxFunction pdf(aDistrib, max_arg, max_val);
+
+        aOutputIntegral = Integration_qag (pdf,xMin,xMax,0,aRelError, limit);
+// Rejection Sampling
+        for(int attempts_left = sampling_limit; attempts_left>0; attempts_left--){
+            double x = xMin + aRandomizer.Rand() * (xMax-xMin);
+            double threshold = aRandomizer.Rand() * max_val;
+            double f = aDistrib(x);
+            if (f >= threshold) {
+                aOutputX = x;
+                return true;
+            }
+        }
+
+        if (max_recurse <= 0){
+            // perhaps the distribution is very narrow return argmax of PDF
+            std::cerr << "SampleDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
+            aOutputX = max_arg;
+            return true;
+        }
+        // perhaps the distribution is very narrow try to sample around its maximum
+        double new_xmin = max_arg - 0.05*(xMax-xMin);
+        new_xmin = (new_xmin<xMin)?xMin:new_xmin;
+        double new_xmax = max_arg + 0.05*(xMax-xMin);
+        new_xmax = (new_xmax>xMax)?xMax:new_xmax;
+        double out_int;
+        return SampleDistribution(aDistrib, aRandomizer,  aOutputX, out_int, new_xmin, new_xmax, aRelError, max_recurse-1);
+}
+
+class LogscaleDistr : public Function
+{
+public:
+    LogscaleDistr(const Function& aOrigFunc, double& aMaxArg, double& aMaxValue):
+            fOrigFunc(aOrigFunc),
+            fMaxArg(aMaxArg),
+            fMaxVal(aMaxValue),
+            fXmin(log(aOrigFunc.Xmin())),
+            fXmax(log(aOrigFunc.Xmax()))
+    {};
+    virtual double f(double _x) const
+    {
+        double orig_x = exp(_x);
+        double y = orig_x * fOrigFunc.f(orig_x);
+        if (y > fMaxVal){
+            fMaxArg = _x;
+            fMaxVal = y;
+        }
+        return y;
+    }
+    virtual double Xmin() const {return fXmin;}
+    virtual double Xmax() const {return fXmax;}
+    virtual ~LogscaleDistr(){};
+    virtual Function* Clone() const { return new LogscaleDistr(fOrigFunc,fMaxArg,fMaxVal); }
+private:
+    const Function&				fOrigFunc;
+    double&	                    fMaxArg;
+    double&	                    fMaxVal;
+    double                      fXmin;
+    double                      fXmax;
+};
+
+bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError, int max_recurse){
+    size_t limit = 1000;
+    int sampling_limit = 1000;
+    ASSERT(aRelError > 0 && aRelError <= 0.1);
+
+    double distrXmin = aDistrib.Xmin();
+    if(xMin < distrXmin)
+        xMin = distrXmin;
+    double distrXmax = aDistrib.Xmax();
+    if(xMax > distrXmax)
+        xMax = distrXmax;
+    ASSERT(xMax>xMin && xMin>0);
+    xMin=log(xMin);
+    xMax=log(xMax);
+
+    double max_arg = 0;
+    double max_val = -1e-300; //will be used for sampling
+    LogscaleDistr pdf(aDistrib, max_arg, max_val);
+
+    aOutputIntegral = Integration_qag (pdf,xMin,xMax,0,aRelError, limit);
+
+    // Rejection Sampling
+    for(int attempts_left = sampling_limit; attempts_left>0; attempts_left--){
+        double x = xMin + aRandomizer.Rand()*(xMax-xMin);
+        double threshold = aRandomizer.Rand() * max_val;
+        double f = pdf(x);
+        if (f >= threshold) {
+            aOutputX = exp(x);
+            return true;
+        }
+    }
+
+    if (max_recurse <= 0){
+        // perhaps the distribution is very narrow return argmax of PDF
+        std::cerr << "SampleLogDistribution maximal number of iteration reached, returning argmax of PDF" << std::endl;
+        aOutputX = exp(max_arg);
+        return true;
+    }
+    // perhaps the distribution is very narrow try to sample around its maximum
+    double new_xmin = max_arg - 0.05*(xMax-xMin);
+    new_xmin = (new_xmin<xMin)?xMin:new_xmin;
+    double new_xmax = max_arg + 0.05*(xMax-xMin);
+    new_xmax = (new_xmax>xMax)?xMax:new_xmax;
+    new_xmin = exp(new_xmin);
+    new_xmax = exp(new_xmax);
+    double out_int;
+    return SampleLogDistribution(aDistrib, aRandomizer,  aOutputX, out_int, new_xmin, new_xmax, aRelError, max_recurse-1);
+}
 
 template<typename X> void MathUtils::RelAccuracy(X& aOutput)
 {
@@ -975,6 +1115,7 @@ template bool MathUtils::SampleLogscaleDistribution<double>(const Function& aDis
 		//Sampler4<double> dil;
 		NRSampler<double> dil;
 		dil.UnitTest();
+        return 0;
 	}
 
 double MathUtils::Integration_qag (

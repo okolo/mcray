@@ -30,6 +30,7 @@
 #define TEST_H_
 
 #include <string>
+#include <functional>
 #include <map>
 #include "Background.h"
 #include "ParticleStack.h"

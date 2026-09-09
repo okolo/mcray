@@ -39,11 +39,22 @@
 #include <sys/types.h>
 #include "Debug.h"
 #include <algorithm>
+#include <boost/dll.hpp>
 
 namespace Utils {
 
+std::string default_tables_path();
+
+
+
+#ifdef _WIN32
+#define DIR_DELIMITER_STR "\\"
+#else
 #define DIR_DELIMITER_STR "/"
-#define TABLES_DIR "tables" DIR_DELIMITER_STR
+#endif
+
+extern std::string tables_dir;
+//#define TABLES_DIR "tables" DIR_DELIMITER_STR
 
 class Exception
 {

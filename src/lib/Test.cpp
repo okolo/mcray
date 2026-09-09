@@ -331,14 +331,15 @@ int TestList::Main(int argc, char** argv)
 void TestList::SamplingTest()
 {
 	ParamlessFunction aDistrib(sin);
-	double aRand = 0.5;
+	Randomizer aRand;
 	double aOutputX;
 	double aOutputIntegral;
 	double xMin = 0;
 	double xMax = M_PI;
 	double aRelError = 1e-4;
+    MathUtils mu;
 	//SampleDistribution(const Function& aDistrib, double aRand, double& aOutputX, double& aOutputIntegral, double aInitialStep, double xMin, double xMax, double aRelError);
-	MathUtils::SampleDistribution(aDistrib, aRand, aOutputX, aOutputIntegral, xMin, xMax, aRelError);
+	mu.SampleDistribution(aDistrib, aRand, aOutputX, aOutputIntegral, xMin, xMax, aRelError);
 
 	aOutputX/=M_PI;
 	aOutputX*=M_PI;
@@ -386,14 +387,14 @@ void TestList::SamplingTest()
 	double x;
 	double I;
 	int nTrials = 100000;
+
 	for(int i=0; i<nTrials; i++)
 	{
-		double rand = r.Rand();
+      double rand = r.Rand();
 		math.SampleLogscaleDistribution<double>(f, rand, x, I, nSteps, xMin, xMax, aRelError);
 		samplingOut << x << "\n";
-		MathUtils::SampleLogDistribution(f, rand, x, I, xMin, xMax, aRelError);
+        mu.SampleLogDistribution(f, r, x, I, xMin, xMax, aRelError);
 		samplingOutNew << x << "\n";
-
 	}
 	samplingOut.close();
 	samplingOutNew.close();

@@ -68,6 +68,8 @@ using namespace cors::cmdline;
  */
 int user_main(int argc, char** argv) {
     std::cout << "Number of available threads: " << omp_thread_count() << std::endl;
+	std::cout << "Using tables path: " << tables_dir << std::endl;
+
 	CRbeam prog(argc, argv);
 	return prog.run();
 }
@@ -238,7 +240,7 @@ CRbeam::CRbeam(int argc, char** argv):
 	if( cmd.has_param("-h") )
 	{
 		cmd.printHelp(std::cerr);
-		exit(255);//enable binary_check
+		exit(0);
 	}
 	fLogging = cmd(PLog);
     fTrajectoryLogging = cmd(PTrajectoryLog);
@@ -359,7 +361,7 @@ int CRbeam::run()
 	double cmbTemp = 2.73/Units::phTemperature_mult/units.Eunit;
 	if(fFixedCmb)
 		cmbTemp *= (1.+fZmax);
-	IBackground* b1 = new PlankBackground(cmbTemp, 1e-3*cmbTemp, 1e3*cmbTemp, 0., fZmax + 1., fFixedCmb);
+    IBackground* b1 = new PlankBackground(cmbTemp, 1e-3*cmbTemp, 1e3*cmbTemp, 0., fZmax + 1., fFixedCmb);
 	IBackground* b2 = 0;
 	switch(fBackgroundModel)
 	{

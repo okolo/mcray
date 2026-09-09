@@ -73,7 +73,7 @@ class PPP: public RandomInteractionS, public EMInteraction {
 	public:
 		double f(double r) const;
 		void SetS(double aS);
-		double SampleR(double aS, double aEpsRel, const Utils::MathUtils& aMath, double aRand);
+		double SampleR(double aS, double aEpsRel, Utils::MathUtils& aMath, Randomizer& aRand);
 		double Xmin() const { return f_rMin; }
 		double Xmax() const { return f_rMax; }
 	private:

@@ -36,7 +36,7 @@ namespace Backgrounds {
 
 #define IRO_DATA_FILE "iro_stecker2005"
     Stecker2005EBL::Stecker2005EBL():
-            CTableWithHeaderReader(TABLES_DIR IRO_DATA_FILE),
+            CTableWithHeaderReader((tables_dir + IRO_DATA_FILE).c_str()),
     m_accuracyE(0),
     m_accuracyZ(0),
     m_curE(0)
