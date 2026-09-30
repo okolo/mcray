@@ -28,6 +28,7 @@
 
 #include <cstdlib>
 #include <time.h>
+#include <exception>
 #include "Test.h"
 
 using namespace Utils;
@@ -53,6 +54,11 @@ int main(int argc, char** argv) {
 	catch(Exception* ex)
 	{
 		std::cerr << ex->Message() << std::endl;
+		result = 1;
+	}
+	catch(const std::exception& ex)
+	{
+		std::cerr << ex.what() << std::endl;
 		result = 1;
 	}
 	if(!result){

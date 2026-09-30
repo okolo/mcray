@@ -145,3 +145,12 @@ add_executable(z2t z2t.cpp)
 target_link_libraries(mcray gfortran ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${CMAKE_DL_LIBS})
 target_link_libraries(mcray_test mcray)
 target_link_libraries(z2t mcray)
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(nuclear_interactions_test tests/NuclearInteractions.cpp)
+  target_include_directories(nuclear_interactions_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_link_libraries(nuclear_interactions_test mcray)
+  add_test(NAME nuclear_interactions COMMAND nuclear_interactions_test
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../bin/tables)
+endif()

@@ -321,10 +321,18 @@ void ProtonPPcel::UnitTest()
 
 double ProtonPPcel::Rate(const Particle& aParticle) const
 {
-	if(aParticle.Type != Proton)
-		return 0.;
-
-	return fBackground->GetRateS(fSigma, aParticle);
+    if(aParticle.Type == Proton)
+        return fBackground->GetRateS(fSigma, aParticle);
+    if(aParticle.Type >= StartRealNuclei && aParticle.Type < EndRealNuclei) {
+        Particle proton = aParticle;
+        proton.Type = Proton;
+        const double massRatio = proton.Mass()/aParticle.Mass();
+        proton.Energy *= massRatio;
+        // Match PPP's independent-proton model. This is a fractional energy
+        // loss rate, hence the extra proton/nucleus energy ratio.
+        return aParticle.ElectricCharge()*massRatio*fBackground->GetRateS(fSigma, proton);
+    }
+    return 0.;
 }
 
 void ProtonPPcel::GetSecondaries(const Particle& aParticle, std::vector<Particle>& aSecondaries,

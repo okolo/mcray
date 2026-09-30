@@ -29,6 +29,7 @@
 #include "TableFunction.h"
 #include "Sophia.h"
 #include "Randomizer.h"
+#include <stdexcept>
 
 //used for unit test only
 #include "PropagationEngine.h"
@@ -52,7 +53,7 @@ GZK::GZK(BackgroundIntegral* aBackground, int aRandSeed):fBackground(aBackground
 
 Function* GZK::InitSigma(ParticleType aPrim)
 {
-    std::string tablesDir = "tables/sophia2/";
+    std::string tablesDir = tables_dir + "sophia2/";
     Utils::TableReader reader(tablesDir+(aPrim==Proton?"p":"n"), 2);
     std::vector<double>& s = reader.getColumn(0);
     std::vector<double>& sigma = reader.getColumn(1);
@@ -123,47 +124,32 @@ bool GZK::SampleS(const mcray::Particle &aParticle, double &aS,
     }
     else if (aParticle.Type >= H2 && aParticle.Type < ParticleTypeEOF)
     {
-        int aPrimZ = Particle::ElectricCharge(aParticle.Type);
-        double Proportion = aPrimZ/Particle::AtomicMass(aParticle.Type)
-
-        double aRand = aRandomizer.Rand();
-        aType = aRand<Proportion?Proton:Neutron;
-
-        Particle innerNucleon1 = aParticle;
-        innerNucleon1.Type = aType;
-        innerNucleon1.Energy *= (innerNucleon1.Mass()/aParticle.Mass());
-        const Function* sigma1 = aType==Proton?fSigmaP:fSigmaN;
-
-        Particle innerNucleon2 = aParticle;
-        innerNucleon2.Type = aType;
-        innerNucleon2.Energy *= (innerNucleon2.Mass()/aParticle.Mass());
-        const Function* sigma2 = aType==Proton?fSigmaP:fSigmaN;
-
-
-        if(fBackground->GetRateAndSampleS(*sigma1, innerNucleon1, aRandomizer, aS)!=0)
-        {
-            const double sophiaThreshold=1.1646*units.GeV*units.GeV;
-            if(aS<sophiaThreshold)
-            {
-                ASSERT(aS>=sophiaThreshold*0.999);
-                aS = 1.001*sophiaThreshold;
-            }
-            aS *= aType==Proton?1:-1;
-            return true;
-        }
-        else if(fBackground->GetRateAndSampleS(*sigma2, innerNucleon2, aRandomizer, aS)!=0)
-        {
-            const double sophiaThreshold=1.1646*units.GeV*units.GeV;
-            if(aS<sophiaThreshold)
-            {
-                ASSERT(aS>=sophiaThreshold*0.999);
-                aS = 1.001*sophiaThreshold;
-            }
-            aS *= aType==Proton?1:-1;
-            return true;
-        }
-        else
+        const int Z = aParticle.ElectricCharge();
+        const int N = aParticle.AtomicMass() - Z;
+        Particle proton = aParticle;
+        proton.Type = Proton;
+        proton.Energy *= proton.Mass()/aParticle.Mass();
+        Particle neutron = aParticle;
+        neutron.Type = Neutron;
+        neutron.Energy *= neutron.Mass()/aParticle.Mass();
+        const double rateP = Z * fBackground->GetRateS(*fSigmaP, proton);
+        const double rateN = N * fBackground->GetRateS(*fSigmaN, neutron);
+        const double total = rateP + rateN;
+        if(total <= 0.) return false;
+        const bool useProton = rateP > 0. &&
+            (rateN <= 0. || aRandomizer.Rand() < rateP/total);
+        const Particle& nucleon = useProton ? proton : neutron;
+        const Function* sigma = useProton ? fSigmaP : fSigmaN;
+        if(fBackground->GetRateAndSampleS(*sigma, nucleon, aRandomizer, aS) == 0.)
             return false;
+        const double sophiaThreshold = 1.1646*units.GeV*units.GeV;
+        if(aS < sophiaThreshold) {
+            ASSERT(aS >= sophiaThreshold*0.999);
+            aS = 1.001*sophiaThreshold;
+        }
+        // The sign carries the sampled nucleon type to SampleSecondaries.
+        if(!useProton) aS = -aS;
+        return true;
     }
     else
     {
@@ -196,7 +182,7 @@ void GZK::SampleSecondaries(mcray::Particle &aParticle,
         }
     }
     else if (aParticle.Type >= H2 && aParticle.Type < ParticleTypeEOF)
-    {   
+    {
         ParticleType aType;
         double M;
         int aPrimZ = aParticle.ElectricCharge();
@@ -229,13 +215,13 @@ void GZK::SampleSecondaries(mcray::Particle &aParticle,
             //todo: separately collect protons and neutrons in two queues and try to handle the queues one after another with critical section disabled
             SOPHIA::SamplePhotopionRel(aType, epsPrimeGeV, noSecondaries, secEfrac, secTypes);
         }
-        
+
         for (int i=0; i<noSecondaries; i++)
         {
             int Type = secTypes[i];
-            if (Type==9)
+            if (Type==Neutron)
                 dN -= 1;
-            else if (Type ==10)
+            else if (Type ==Proton)
                 dZ -= 1;
         }
 
@@ -243,63 +229,16 @@ void GZK::SampleSecondaries(mcray::Particle &aParticle,
         int mainSecZ = aPrimZ-dZ;
         int mainSecN = aPrimN-dN;
 
-        ParticleType mainSecType;
-        bool hasMainSec = (mainSecZ>0 && mainSecN>0);
-        bool invalidBranch = false;
-
-
-        if (hasMainSec)
-        {
-            if (dZ==0 && dN==0)
-                mainSecType = aParticle.Type;
-            else if (mainSecZ==1 && mainSecN == 0)
-                mainSecType = Proton;
-            else if (mainSecZ==0 && mainSecN == 1)
-                mainSecType = Neutron;
-            else
-            {
-                for (int i=66; ParticleType(i)<EndRealNuclei; i++)
-                {
-                    int Z = Particle::ElectricCharge(ParticleType(i));
-                    int N = Particle::AtomicMass(ParticleType(i))-Z;
-                    if (mainSecZ==Z && mainSecN == N)
-                    {
-                        mainSecType = ParticleType(i);
-                        break;
-                    }
-                    if (i==EndRealNuclei-1)
-                    {
-                        hasMainSec = false;
-                    }
-
-                }
-            }
-        }
-        ASSERT(mainSecType.Type<StartRealNuclei || mainSecType.Type>EndRealNuclei);
-
-        if (!hasMainSec)
-        {
-            if(mainSecZ>0 || mainSecN>0)
-            {
-                if(aType==9)
-                    std::cout<<std::endl<<"GZK:\tinvalid Neutron channel for "<<aParticle.ToString()<<std::endl;
-                else
-                    std::cout<<std::endl<<"GZK:\tinvalid Proton channel for "<<aParticle.ToString()<<std::endl;
-                std::cout<<"\tMay be secondary particle is an unstable short-living nuclei?"<<std::endl;
-                std::cout<<"\tGZK process cancelled"<<std::endl<<std::endl;
-                Particle survivedPrim = aParticle;
-                survivedPrim.Weight *= 0;                               //allows to exclude all future secondaries, but not previous
-                aParticle.Ninteractions -= 1;
-                aSecondaries.push_back(survivedPrim);
-                invalidBranch = true;
-            }
-        }
-        else
+        ParticleType mainSecType = Particle::FindNucleus(mainSecZ, mainSecN);
+        if(mainSecType == ParticleTypeEOF)
+            throw std::runtime_error("GZK: unsupported residual nucleus Z=" +
+                ToString(mainSecZ) + " N=" + ToString(mainSecN) +
+                " from " + Particle::Name(aParticle.Type));
         {
             double EnergyLoss = 0.;
             while(--noSecondaries>=0)
             {
-                if (secTypes[noSecondaries]!=9 && secTypes[noSecondaries]!=10)
+                if (secTypes[noSecondaries]!=Neutron && secTypes[noSecondaries]!=Proton)
                 {
                     Particle sec = aParticle;
                     sec.Type = (ParticleType)secTypes[noSecondaries];
@@ -312,10 +251,10 @@ void GZK::SampleSecondaries(mcray::Particle &aParticle,
             Particle mainSec = aParticle;
             mainSec.Type = mainSecType;
             mainSec.fCascadeProductionTime = aParticle.Time;
-            mainSec.Energy -= EnergyLoss;  
+            mainSec.Energy -= EnergyLoss;
             aSecondaries.push_back(mainSec);
         }
-        
+
     }
 }
 

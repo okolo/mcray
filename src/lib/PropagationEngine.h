@@ -30,6 +30,8 @@
 #define	PROPAGATIONENGINE_H
 
 #include <vector>
+#include <atomic>
+#include <memory>
 #include "Interaction.h"
 #include "Thinning.h"
 #include "Filter.h"
@@ -85,6 +87,7 @@ private:
     static unsigned long int			fLastRandSeed;
     bool                                fInfoPrinted;
     ILogger*                            fLogger;
+    std::shared_ptr<std::atomic<bool> > fFatalStop;
 };
 
 }

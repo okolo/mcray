@@ -346,6 +346,8 @@ namespace mcray
     	static double Mass(ParticleType aType);
     	static double ElectricCharge(ParticleType aType);
         static double AtomicMass(ParticleType aType);
+        // Returns ParticleTypeEOF when the isotope is not in the catalogue.
+        static ParticleType FindNucleus(int aZ, int aN);
         void PropagateFreely(cosmo_time dt);
         ParticleType Type;
         double Weight;

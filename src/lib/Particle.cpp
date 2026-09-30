@@ -567,11 +567,25 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
         return 0.;
     }
 
-        double Particle::AtomicMass(ParticleType aType){
-        if(aType<=EndRealNuclei && aType>=StartRealNuclei)
+    double Particle::AtomicMass(ParticleType aType){
+        if(aType == Proton || aType == Neutron)
+            return 1;
+        if(aType >= StartNuclei && aType < EndNuclei)
+            return Interactions::CNucleus::getA(aType);
+        if(aType >= StartRealNuclei && aType < EndRealNuclei)
             return NucleonStructure[aType-StartRealNuclei][0]+NucleonStructure[aType-StartRealNuclei][1];
-        NOT_IMPLEMENTED // treat other particles when added
+        Exception::Throw("AtomicMass: invalid particle type");
         return 0.;
+    }
+
+    ParticleType Particle::FindNucleus(int aZ, int aN){
+        if(aZ == 1 && aN == 0) return Proton;
+        if(aZ == 0 && aN == 1) return Neutron;
+        for(int i = StartRealNuclei; i < EndRealNuclei; ++i)
+            if(NucleonStructure[i-StartRealNuclei][0] == aZ &&
+               NucleonStructure[i-StartRealNuclei][1] == aN)
+                return ParticleType(i);
+        return ParticleTypeEOF;
     }
 
     double Particle::ElectricCharge(ParticleType aType){

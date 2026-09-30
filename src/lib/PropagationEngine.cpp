@@ -29,6 +29,7 @@
 #include <numeric>
 #include "PropagationEngine.h"
 #include <omp.h>
+#include <exception>
 
 using namespace std;
 
@@ -46,7 +47,8 @@ PropagationEngine::PropagationEngine(ParticleStack &aStack, IResult &aResult, un
         fAccuracy(0.01),
         fMinStep(0.),
         fInfoPrinted(false),
-        fLogger(0)
+        fLogger(0),
+        fFatalStop(new std::atomic<bool>(false))
 {
 	if(!aRandSeed)
 		fLastRandSeed++;
@@ -61,7 +63,9 @@ PropagationEngine::PropagationEngine(PropagationEngine &aEngine, unsigned long i
 		fRandomizer(aRandSeed ? aRandSeed:fLastRandSeed),
 		fAccuracy(aEngine.fAccuracy),
         fMinStep(aEngine.fMinStep),
-        fLogger(aEngine.fLogger)
+        fInfoPrinted(aEngine.fInfoPrinted),
+        fLogger(aEngine.fLogger),
+        fFatalStop(aEngine.fFatalStop)
 {
 	if(!aRandSeed)
 		fLastRandSeed++;
@@ -86,7 +90,7 @@ PropagationEngine::PropagationEngine(PropagationEngine &aEngine, unsigned long i
 void PropagationEngine::Run(double aMaxRateVariation) {
     try {
         Particle p(Electron, 0.);//will be reset by fStack.Pop
-        while (fStack.Pop(p)) {
+        while (!fFatalStop->load() && fStack.Pop(p)) {
             try {
                 while (true) {
                     if(fLogger)
@@ -95,7 +99,7 @@ void PropagationEngine::Run(double aMaxRateVariation) {
                         RunParticleWithVariableRate(p, aMaxRateVariation);
                     else
                         RunParticle(p);
-                    if(fResult.AbortRequested())
+                    if(fFatalStop->load() || fResult.AbortRequested())
                         return;
                     if (!fSecondaryParticles.size())
                         break;
@@ -118,6 +122,11 @@ void PropagationEngine::Run(double aMaxRateVariation) {
     {
         LOG_ERROR(ex->Message());
         std::cerr << ex->Message() << std::endl;
+    } catch(const std::exception&) {
+        fFatalStop->store(true);
+        fFinalParticles.clear();
+        fSecondaryParticles.clear();
+        throw;
     }
 }
 
@@ -132,33 +141,44 @@ void PropagationEngine::RunMultithreadReleaseOnly(double aMaxRateVariation, int 
 
 void PropagationEngine::RunMultithread(double aMaxRateVariation, int aNumberOfThreads)
 {
-    if(aNumberOfThreads>1)
+    if(aNumberOfThreads > 1)
         omp_set_num_threads(aNumberOfThreads);
-    else if(aNumberOfThreads==1){
+    else if(aNumberOfThreads == 1) {
         Run(aMaxRateVariation);
         return;
     }
+    std::exception_ptr failure;
 #pragma omp parallel
-{
-  SafePtr<PropagationEngine> pe;
+    {
+        try {
+            SafePtr<PropagationEngine> pe;
 #pragma omp critical (PropagationEngine)
-  {
-	   pe = new PropagationEngine(*this, fRandomizer.CreateIndependent());
-  }
-
-#pragma omp barrier
-
-#pragma omp master
-{
-    if(!fInfoPrinted){
-        int nthreads = omp_get_num_threads();
-        cout << "Running in " << nthreads << " threads" << '\n';
-        fInfoPrinted = true;
+            {
+                if(!fFatalStop->load()) {
+                    try {
+                        pe = new PropagationEngine(*this, fRandomizer.CreateIndependent());
+                    } catch(...) {
+                        fFatalStop->store(true);
+                        if(!failure) failure = std::current_exception();
+                    }
+                    if(!fInfoPrinted) {
+                        cout << "Running in " << omp_get_num_threads() << " threads\n";
+                        fInfoPrinted = true;
+                    }
+                }
+            }
+            if(!pe.isNull()) pe->Run(aMaxRateVariation);
+        } catch(...) {
+            // Model/data errors must not be resampled or silently discard a
+            // cascade. Transport the exception out of the OpenMP region.
+            fFatalStop->store(true);
+#pragma omp critical (PropagationEngine)
+            {
+                if(!failure) failure = std::current_exception();
+            }
+        }
     }
-}
-
-  pe->Run(aMaxRateVariation);
-}
+    if(failure) std::rethrow_exception(failure);
 }
 
 void PropagationEngine::move(Particle &aParticle, cosmo_time aDt, double aElossRate)
@@ -194,7 +214,7 @@ double PropagationEngine::GetInteractionRate(const Particle &aParticle) const {
 
 void PropagationEngine::RunParticle(Particle& aParticle) 
 {
-    while((!fResult.AbortRequested()) && fResult.ContinuePropagation(aParticle))
+    while((!fFatalStop->load()) && (!fResult.AbortRequested()) && fResult.ContinuePropagation(aParticle))
     {
     	if(fFilter && !fFilter->Pass(aParticle))
     		return;
@@ -294,7 +314,7 @@ void PropagationEngine::RunParticle(Particle& aParticle)
 void PropagationEngine::RunParticleWithVariableRate(Particle& aParticle, double aMaxRelRateError){
     const int maxNumberOfStepAdjustments = 50;//2e-50 ~ 1e-15 which is double type accuracy
     LOG_VERBOSE("RPWVR:0\t" + aParticle.ToString());
-    while((!fResult.AbortRequested()) && fResult.ContinuePropagation(aParticle))
+    while((!fFatalStop->load()) && (!fResult.AbortRequested()) && fResult.ContinuePropagation(aParticle))
     {
         LOG_VERBOSE("RPWVR:1\t" + aParticle.ToString());
         if(fFilter && !fFilter->Pass(aParticle))
