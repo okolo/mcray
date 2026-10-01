@@ -1060,7 +1060,9 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomize
     double max_val = -1e-300; //will be used for sampling
     LogscaleDistr pdf(aDistrib, max_arg, max_val);
 
-    aOutputIntegral = Integration_qag (pdf,xMin,xMax,0,aRelError, limit);
+    // The 15-point rule can report roundoff for PSB daughter kernels even
+    // at 1e-4 relative tolerance. Retain the tolerance with a higher-order rule.
+    aOutputIntegral = Integration_qag (pdf,xMin,xMax,0,aRelError, limit, GSL_INTEG_GAUSS61);
 
     // Rejection Sampling
     for(int attempts_left = sampling_limit; attempts_left>0; attempts_left--){

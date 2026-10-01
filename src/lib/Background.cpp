@@ -728,7 +728,8 @@ double ContinuousBackgroundIntegral::GetRateS(const Function &aSigma, const Part
 
 	RateSKern leftKern(*fIntegrals[iZ], aSigma, aParticle);
 
-	double leftRate = math.Integration_qag(leftKern,Smin,Smax,0,fEpsRel,maxIntervals);
+	// Resolve tabulated cross-section structure without relaxing the tolerance.
+	double leftRate = math.Integration_qag(leftKern,Smin,Smax,0,fEpsRel,maxIntervals,GSL_INTEG_GAUSS61);
 	ASSERT_VALID_NO(leftRate);
 
 	double result = 0;
@@ -737,7 +738,7 @@ double ContinuousBackgroundIntegral::GetRateS(const Function &aSigma, const Part
 	else
 	{
 		RateSKern rightKern(*fIntegrals[iZ + 1], aSigma, aParticle);
-		double rightRate = math.Integration_qag(rightKern,Smin,Smax,aAbsError,fEpsRel,maxIntervals);
+		double rightRate = math.Integration_qag(rightKern,Smin,Smax,aAbsError,fEpsRel,maxIntervals,GSL_INTEG_GAUSS61);
 		ASSERT_VALID_NO(rightRate);
 		result = leftRate + (rightRate-leftRate)/fStepZ*(z-iZ*fStepZ);
 		ASSERT_VALID_NO(result);

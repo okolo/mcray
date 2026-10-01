@@ -38,7 +38,7 @@ Interactions::PhotoDisintegration::PhotoDisintegration(mcray::BackgroundIntegral
 }
 
 mcray::RandomInteraction *Interactions::PhotoDisintegration::Clone() const {
-    return new PhotoDisintegration(fBackground);
+    return new PhotoDisintegration(fBackground->Clone(), fSampleK);
 }
 
 Interactions::PhotoDisintegration::~PhotoDisintegration() {
@@ -189,6 +189,8 @@ bool Interactions::PhotoDisintegration::SampleK(const mcray::Particle &aParticle
 
 bool Interactions::PhotoDisintegration::GetSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, Randomizer& aRandomizer) const
 {
+    if(aParticle.Type<A02 || aParticle.Type>=EndNuclei)
+        return false;
     if(fSampleK){
         double k = 0.;
         if(!SampleK(aParticle, k, aRandomizer))
@@ -230,16 +232,18 @@ void Interactions::PhotoDisintegration::SampleSecondariesWithK(mcray::Particle &
     {
         Function* curSigma = (*it)->Sigma();
         double kMinCur = curSigma->Xmin();
-        if (kMinCur < k)
+        if (kMinCur <= k && k <= curSigma->Xmax())
             totSigma += curSigma->f(k);
         sigma[iCanal]=totSigma;
         iCanal++;
     }
+    if(totSigma<=0.)
+        Utils::Exception::Throw("PSB sampling requested outside the supported cross-section range");
     double randSigma = aRandomizer.Rand()*totSigma;
     CPhotoDisintegrationCanal* selectedCanal=0;
     for (iCanal=0; iCanal<canals->size(); iCanal++)
     {
-        if(sigma[iCanal]>=randSigma) {
+        if(sigma[iCanal]>randSigma) {
             selectedCanal = canals->at(iCanal);
             break;
         }

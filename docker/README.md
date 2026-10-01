@@ -24,14 +24,18 @@ Sources are copied into the image: building does not modify host files or result
 
 The container fully builds CRbeam, mcray_test, and z2t, then runs:
 
-- 24 GoogleTest unit cases: interpolation for double and long double,
+- 37 GoogleTest unit cases: interpolation for double and long double,
   including zeros, Clone, and legacy-call compatibility; PSB getRate
-  boundaries, valid coefficients, and single-/double-nucleon channels;
+  boundaries, channel support, Clone behavior, weighted bookkeeping, and
+  light-nucleus multiplicities; nucleon GZK event bookkeeping and proton pair
+  weight/rate scaling;
+- two real-CMB PSB integration checks and a GZK rate-convergence regression;
+- a two-step all-off propagation and output verification fixture;
 - crbeam_help: CRbeam help startup, including static and OpenMP initialization;
 - z2t_smoke: a short travel-time calculation for z=0.1.
 
 C++ builds require C++17. GoogleTest 1.18.0 is pinned by archive SHA-256
-and used only for tests. CTest labels are unit and e2e/smoke.
+and used only for tests. CTest labels are unit, integration, and e2e/smoke.
 See ../tests/README.md for framework and assertion guidance.
 
 The build uses two parallel jobs by default; locally override the count
@@ -89,6 +93,22 @@ passed in Docker Linux amd64 (uname: x86_64), emulated on macOS arm64.
 Tools: GCC/G++/gfortran 13.3.0, Boost 1.83, GSL 2.7.1, Ubuntu 24.04.
 All four tests also passed natively on macOS arm64 with Clang 22.1.5.
 A native run on physical Linux amd64 hardware has not yet been performed.
+
+## TransportCR comparison
+
+Run the slower isolated Fe-56 PSB comparison separately:
+
+```bash
+bash bin/test-transportcr-docker.sh
+```
+
+This builds a temporary clone of the pinned TransportCR reference using its
+unchanged bin/build.sh, and compares static-CMB propagation with 200,000 mcray
+primary histories in 20 independent batches. No TransportCR changes are committed.
+Results, input XML, logs, reference revision, and GoogleTest XML are saved in a
+new build/transportcr-validation.* directory. See ../psb_validation_results.md
+for the physical setup, convergence checks, and remaining limitations.
+This long comparison is not part of the default short CTest suite.
 
 After migration to C++17 and GoogleTest 1.18.0, all 26 CTest cases passed
 in both environments on 2026-10-01: 24 unit cases and two command-line

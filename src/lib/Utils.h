@@ -130,7 +130,7 @@ public:
 		std::vector<type*>::push_back(aElem);
 	}
 private:
-	int iMin;
+	int iMin = 0;
 };
 
 	class  ISmartReferencedObj

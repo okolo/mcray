@@ -220,7 +220,8 @@ The test-only dependency is GoogleTest 1.18.0, pinned by archive SHA-256
 in tests/CMakeLists.txt; production builds may disable BUILD_TESTING.
 See tests/README.md for local runs, labels, and offline dependency setup.
 Existing command-line smoke checks run directly through CTest.
-The framework for richer end-to-end output checks has not yet been agreed.
+The approved nuclear validation plan uses GoogleTest for end-to-end output
+assertions, with scripts preparing and running isolated reference cases.
 Do not treat smoke checks as validation of nuclear propagation.
 Use explicit numerical tolerances; compare Monte Carlo distributions with
 statistical uncertainties rather than requiring identical trajectories.
@@ -245,3 +246,15 @@ production supports protons; nuclear implementation requires agreement.
 The user accepted CMB-only monoenergetic Fe-56 as the first PSB comparison,
 then CMB plus EBL, and light-nucleus PSB unit checks. Validate existing
 nucleon GZK/proton pair code first; nuclear extensions require later approval.
+
+The user approved nuclear_validation_plan.md and authorized execution.
+Plan commit: 327bd46. Read psb_validation_results.md for current regression
+findings, supported E2E scenarios and numerical/statistical limitations.
+Do not mark PSB validated merely because short tests or one energy point pass.
+
+The user selected Inoue12 Baseline for the CMB+EBL validation stage. Use the
+identical EBL_Inoue/EBL_proper_baseline.dat table in both codes, record its
+SHA-256, and freeze the background at z=0. The user supplied finer SOPHIA
+reference tables at /Users/ok/propagation/tables/sophia2; copy selected files
+into isolated comparison runs and record hashes without modifying the source
+tables or committing in TransportCR.
