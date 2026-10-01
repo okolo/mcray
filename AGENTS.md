@@ -229,3 +229,19 @@ C++17/GoogleTest verification dated 2026-10-01: full Release builds and all
 26 CTest cases (24 unit, two smoke) passed on macOS arm64 and Docker
 Linux amd64 under emulation. BUILD_TESTING=OFF configured successfully
 without downloading GoogleTest. Physical propagation checks remain pending.
+
+## Current validation task
+
+User instruction dated 2026-10-01: plan unit tests and TransportCR E2E
+comparisons for PSB, GZK, and pair production on nuclei. Use isolated
+interactions, a point source at a nearby fixed distance (e.g. z=0.01),
+redshift losses disabled, and the TransportCR short-distance regime with
+XML input. Include mcray Monte Carlo uncertainty. See
+nuclear_validation_plan.md for the proposal and implementation gaps.
+This expands validation planning; it does not approve new nuclear GZK/pair
+physical approximations. Existing mcray GZK supports nucleons and pair
+production supports protons; nuclear implementation requires agreement.
+
+The user accepted CMB-only monoenergetic Fe-56 as the first PSB comparison,
+then CMB plus EBL, and light-nucleus PSB unit checks. Validate existing
+nucleon GZK/proton pair code first; nuclear extensions require later approval.
