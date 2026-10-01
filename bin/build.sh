@@ -28,7 +28,7 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 source_dir="$script_dir/../src/app/crbeam"
 build_dir="$script_dir/../build/$build_config"
 
-cmake_options=("-DCMAKE_CXX_STANDARD=14" "-DCMAKE_CXX_STANDARD_REQUIRED=ON")
+cmake_options=("-DCMAKE_CXX_STANDARD=17" "-DCMAKE_CXX_STANDARD_REQUIRED=ON")
 if [[ "$(uname -s)" == "Darwin" ]]
 then
     brew_prefix="$(brew --prefix)"

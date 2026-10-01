@@ -1,5 +1,7 @@
-cmake_minimum_required (VERSION 3.13)
+cmake_minimum_required (VERSION 3.16)
 project (CRbeam)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(CTest)
 # uncomment the line below for verbose output
 #set(CMAKE_VERBOSE_MAKEFILE ON)

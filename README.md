@@ -15,6 +15,9 @@ Framework for Monte Carlo simulation of ultra-high energy cosmic rays and electr
 
 ### Installation
 
+The code requires C++17. Test builds require CMake 3.16 or newer and use
+GoogleTest 1.18.0. See [tests/README.md](tests/README.md).
+
 - Install required libraries to [external](src/external) folder
 <pre><code>
 cd bin

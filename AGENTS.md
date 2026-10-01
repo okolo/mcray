@@ -169,7 +169,7 @@ The old `--test nucl_dis` does not replace new TALYS checks.
 `src/app/crbeam`, with output in `build/Release` or `build/Debug`.
 Both CMakeLists.txt files restrict the `--as-needed` linker flag to Linux.
 On macOS the script selects Homebrew Clang for C/C++, gfortran for Fortran,
-C++14, and Homebrew dependency paths. PATH ordering prevents the Miniforge
+C++17, and Homebrew dependency paths. PATH ordering prevents the Miniforge
 assembler from shadowing system tools. Linux retains GCC selection.
 
 The former crash in Utils::default_tables_path() occurred when the GCC
@@ -199,13 +199,33 @@ The Ubuntu 24.04 Docker environment is defined in
 Run `bash bin/test-docker.sh` from the root; see docker/README.md.
 The build and run explicitly request linux/amd64.
 On macOS arm64 this uses emulation rather than a native amd64 CPU.
-CTest includes table_function_log_zeros, psb_branching_bounds,
-crbeam_help, and z2t_smoke. They do not replace physical PSB/TALYS validation.
+CTest discovers GoogleTest unit cases for interpolation and PSB branching,
+and includes crbeam_help and z2t_smoke. They do not replace physical PSB/TALYS validation.
 Run these checks on the primary platform for subsequent changes;
 do not automatically include long historical calculations in the short suite.
 
-Verification dated 2026-10-01: the full Release build and all four CTest tests
+Before the GoogleTest migration, verification dated 2026-10-01 showed that
+the full Release build and all four CTest tests
 passed in Docker Linux amd64 (uname: x86_64), emulated on macOS arm64.
 Toolchain: GCC/G++/gfortran 13.3.0, Boost 1.83, GSL 2.7.1, Ubuntu 24.04.
 All four tests also passed natively on macOS arm64 with Clang 22.1.5.
 A native run on physical Linux amd64 hardware has not yet been performed.
+
+## C++ and test framework policy
+
+The user selected GoogleTest and migration to C++17 on 2026-10-01.
+Require C++17 in the application and library builds. Use GoogleTest for
+new C++ unit and integration tests, with CTest as the common runner.
+The test-only dependency is GoogleTest 1.18.0, pinned by archive SHA-256
+in tests/CMakeLists.txt; production builds may disable BUILD_TESTING.
+See tests/README.md for local runs, labels, and offline dependency setup.
+Existing command-line smoke checks run directly through CTest.
+The framework for richer end-to-end output checks has not yet been agreed.
+Do not treat smoke checks as validation of nuclear propagation.
+Use explicit numerical tolerances; compare Monte Carlo distributions with
+statistical uncertainties rather than requiring identical trajectories.
+
+C++17/GoogleTest verification dated 2026-10-01: full Release builds and all
+26 CTest cases (24 unit, two smoke) passed on macOS arm64 and Docker
+Linux amd64 under emulation. BUILD_TESTING=OFF configured successfully
+without downloading GoogleTest. Physical propagation checks remain pending.

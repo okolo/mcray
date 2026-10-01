@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.13)
 project (mcray)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # uncomment the line below for verbose output
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 enable_language (Fortran)
