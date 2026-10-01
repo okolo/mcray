@@ -109,21 +109,39 @@ class LinearFuncX  : public TableFunctionX<X>
 {
 public:
 	LinearFuncX(const std::vector<X>& _x,const  std::vector<X>& _y, X _leftVal=0., X _rightVal=0.):
-	  TableFunctionX<X>(_x, _y, _leftVal, _rightVal)  {};
+	  TableFunctionX<X>(_x, _y, _leftVal, _rightVal), fHandleLogZeros(false) {};
 
 	//stores smart ref to aReader
 	LinearFuncX(TableReaderX<X>* aReader, X _leftVal=0., X _rightVal=0.):
-		TableFunctionX<X>(aReader,_leftVal,_rightVal) {};
+		TableFunctionX<X>(aReader,_leftVal,_rightVal), fHandleLogZeros(false) {};
 
 	//takes ownership of aXscale and aYscale
-	LinearFuncX(const std::vector<X>& _x,const std::vector<X>& _y, IScale<X>* aXscale, IScale<X>* aYscale, X _leftVal=0., X _rightVal=0.):
-		TableFunctionX<X>(_x, _y, aXscale, aYscale, _leftVal, _rightVal) {}
+	// With aHandleLogZeros, use linear Y versus log(X) on intervals containing
+	// a zero Y; positive intervals still use log(Y) versus log(X).
+	// Requires LogScaleX for both axes. Existing callers retain their behavior.
+	LinearFuncX(const std::vector<X>& _x,const std::vector<X>& _y, IScale<X>* aXscale, IScale<X>* aYscale, X _leftVal=0., X _rightVal=0., bool aHandleLogZeros=false):
+		TableFunctionX<X>(_x, _y, aXscale, aYscale, _leftVal, _rightVal),
+		fHandleLogZeros(aHandleLogZeros) {
+		if(fHandleLogZeros) {
+			if(!dynamic_cast<LogScaleX<X>*>(aXscale) || !dynamic_cast<LogScaleX<X>*>(aYscale))
+				Exception::Throw("LinearFunc: zero handling requires logarithmic X and Y scales");
+			fOriginalY = _y;
+		}
+	}
 
+	X f(X _x) const;
 	X f_scaled(X _x) const;
 	FunctionX<X>* Clone() const { return new LinearFuncX<X>(*this); }
 protected:
 	LinearFuncX(const TableFunctionX<X>& aTableFunction):
-		TableFunctionX<X>(aTableFunction) {};
+		TableFunctionX<X>(aTableFunction), fHandleLogZeros(false) {};
+	LinearFuncX(const LinearFuncX<X>& aTableFunction):
+		TableFunctionX<X>(aTableFunction),
+		fHandleLogZeros(aTableFunction.fHandleLogZeros),
+		fOriginalY(aTableFunction.fOriginalY) {};
+private:
+	bool fHandleLogZeros;
+	std::vector<X> fOriginalY;
 };
 
 typedef LinearFuncX<double> LinearFunc;

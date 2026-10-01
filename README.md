@@ -21,3 +21,14 @@ cd bin
 cmake -S ../src/app/crbeam -B .
 make
 </code></pre>
+
+### Linux amd64 checks
+
+The primary target platform is Linux amd64. Build and run short tests in Docker:
+
+```bash
+bash bin/test-docker.sh
+```
+
+For the environment, test coverage, and rerun instructions, see
+[docker/README.md](docker/README.md).

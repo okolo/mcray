@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.13)
 project (CRbeam)
+include(CTest)
 # uncomment the line below for verbose output
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 add_definitions(-DUSE_GSL)
@@ -13,11 +14,13 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG -O0 -pg")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O2")
 
 # For executable targets
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
-# For shared library targets
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
-# For module targets
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--as-needed")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
+    # For shared library targets
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
+    # For module targets
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--as-needed")
+endif()
 
 #set(CMAKE_PREFIX_PATH "external")
 
@@ -43,3 +46,7 @@ CRbeam.h
 add_link_options(-fopenmp)
 add_executable(CRbeam ${SOURCE_FILES})
 target_link_libraries(CRbeam mcray ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${CMAKE_DL_LIBS})
+
+if(BUILD_TESTING)
+    add_subdirectory(../../../tests tests)
+endif()

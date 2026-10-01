@@ -330,7 +330,7 @@ namespace Interactions {
 			case EDouble:
 				return (aDeltaA == 2) ? 1. : 0.;
 			case EMultiple:
-				return (aDeltaA > 0 || aDeltaA <= iIsotope.branching->noOfModes) ? iIsotope.branching->nucleiRates[
+				return (aDeltaA > 0 && aDeltaA <= iIsotope.branching->noOfModes) ? iIsotope.branching->nucleiRates[
 						aDeltaA - 1] : 0.;
 		}
 		return 0.;//never goes here
