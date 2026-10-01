@@ -258,3 +258,12 @@ SHA-256, and freeze the background at z=0. The user supplied finer SOPHIA
 reference tables at /Users/ok/propagation/tables/sophia2; copy selected files
 into isolated comparison runs and record hashes without modifying the source
 tables or committing in TransportCR.
+
+For the initial CMB+EBL PSB comparison, use the short-path control L=1 Mpc
+without thinning. The user capped the ensemble at 200,000 histories and
+accepted marking the rare neutron yield inconclusive if its relative standard
+error exceeds 1%; do not relax that criterion or claim full validation.
+The user approved preserving different pair-product models: TransportCR's
+E^(-7/4) approximation and mcray's differential QED kernel. Compare energy
+balance and independently integrate the mcray kernel; do not force equal pair
+counts or shapes by silently changing either physical model.

@@ -1,11 +1,58 @@
 #include "PhotoDisintegration.h"
 #include "GZK.h"
+#include "frozen_inoue.h"
 #include <gtest/gtest.h>
 #include <cmath>
 
 namespace {
 using namespace mcray;
 using namespace Interactions;
+
+TEST(PsbConvolution, ProductionInoueExtendsToZeroInsideCompoundBackground) {
+    Backgrounds::Inoue12BaselineIROSpectrum direct;
+    ASSERT_DOUBLE_EQ(direct.MinZ(), 0.);
+    CompoundBackground compound;
+    compound.AddComponent(new Backgrounds::Inoue12BaselineIROSpectrum);
+    for (double energy : {0.01, 0.1, 1.}) {
+        const double e = energy * units.eV;
+        const double firstPlane = direct.n(e, 0.01);
+        ASSERT_GT(firstPlane, 0.);
+        for (double z : {0., 0.005, 0.01}) {
+            EXPECT_DOUBLE_EQ(direct.n(e, z), firstPlane);
+            EXPECT_DOUBLE_EQ(compound.n(e, z), firstPlane);
+        }
+    }
+}
+
+TEST(PsbConvolution, FrozenInoueRatesDoNotEvolveAlongThePath) {
+    if (!cosmology.IsInitialized()) cosmology.Init(0.1);
+    FrozenInoueBaseline frozen;
+    Backgrounds::Inoue12BaselineIROSpectrum evolving;
+    for (double energy : {0.01, 0.1, 1.}) {
+        const double e = energy * units.eV;
+        ASSERT_GT(frozen.n(e, 0.), 0.);
+        EXPECT_DOUBLE_EQ(frozen.n(e, 0.01), evolving.n(e, 0.));
+        // The table's first redshift plane can cover the entire short path;
+        // probe later evolution as well to detect accidental use of z.
+        EXPECT_NE(frozen.n(e, 1.), evolving.n(e, 1.));
+    }
+    CompoundBackground photons;
+    photons.AddComponent(new FrozenInoueBaseline);
+    const double t = 2.7255 * units.K;
+    photons.AddComponent(new PlankBackground(t, t * 1e-3, t * 1e3, 0., 0.02, true));
+    for (double z : {0., 0.005, 0.01})
+        EXPECT_DOUBLE_EQ(photons.n(1. * units.eV, z), frozen.n(1. * units.eV, 0.));
+    PhotoDisintegration interaction(new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.01), 0.02, 1e-4));
+    Particle p(A56, 0.);
+    p.Energy = 56 * 2.238721138568347e18 * units.eV;
+    const double rate = interaction.Rate(p);
+    ASSERT_GT(rate, 0.);
+    for (double z : {0.005, 0.01}) {
+        p.Time.setZ(z);
+        EXPECT_NEAR(interaction.Rate(p) / rate, 1., 1e-12);
+    }
+}
 
 TEST(PsbConvolution, FrozenCmbAndKSAreConsistent) {
     if (!cosmology.IsInitialized()) cosmology.Init(0.1);

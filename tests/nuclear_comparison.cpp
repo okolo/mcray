@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <map>
 #include <regex>
 #include <set>
@@ -12,12 +13,22 @@
 namespace {
 struct Row { int batch, history; std::string species; double yield, energy; };
 struct Options {
-    std::string mc, initial, final, process = "none";
+    std::string mc, initial, final, report, process = "none";
     int primaries = 20, batches = 2, a = 56;
     double energyPerNucleon = 1e19;
 } options;
 std::vector<Row> rows;
 double eventRate = -1., distance = -1.;
+bool particleRows = false;
+
+std::string canonical(const std::string& name) {
+    static const std::map<std::string, std::string> names{
+        {"proton", "p"}, {"neutron", "n"}, {"electron", "e"}, {"positron", "ae"},
+        {"photon", "ph"}, {"neutrinoE", "en"}, {"neutrinoAE", "aen"},
+        {"neutrinoM", "mn"}, {"neutrinoAM", "amn"}, {"neutrinoT", "tn"}, {"neutrinoAT", "atn"}};
+    auto it = names.find(name);
+    return it == names.end() ? name : it->second;
+}
 
 int mass(const std::string& s) {
     if (s == "proton" || s == "neutron" || s == "p" || s == "n") return 1;
@@ -37,7 +48,8 @@ std::string group(const std::string& species) {
 
 // PrintSpectrum uses E*coefficient*bin_population. Dividing by E restores
 // populations up to one shared factor, cancelled against initial injection.
-std::map<std::string, double> spectrum(const std::string& path, bool energy = false) {
+struct ReferenceRow { std::string species; double energy, count; };
+std::vector<ReferenceRow> referenceRows(const std::string& path) {
     std::ifstream in(path);
     if (!in) throw std::runtime_error("Cannot read reference spectrum " + path);
     std::string line; std::getline(in, line);
@@ -46,7 +58,7 @@ std::map<std::string, double> spectrum(const std::string& path, bool energy = fa
     for (auto it = std::sregex_iterator(line.begin(), line.end(), columns);
          it != std::sregex_iterator(); ++it)
         names[std::stoi((*it)[1]) - 1] = (*it)[2];
-    std::map<std::string, double> sum;
+    std::vector<ReferenceRow> result;
     while (std::getline(in, line)) {
         std::istringstream row(line);
         std::vector<double> values;
@@ -55,10 +67,123 @@ std::map<std::string, double> spectrum(const std::string& path, bool energy = fa
         if (values[0] <= 0 || names.empty()) throw std::runtime_error("Invalid reference columns");
         for (const auto& entry : names) {
             if (entry.first >= static_cast<int>(values.size())) throw std::runtime_error("Truncated spectrum row");
-            if (entry.second != "All") sum[entry.second] += values[entry.first] / (energy ? 1. : values[0]);
+            if (entry.second != "All") result.push_back({entry.second, values[0], values[entry.first]/values[0]});
         }
     }
+    return result;
+}
+std::map<std::string, double> spectrum(const std::string& path, bool energy = false) {
+    std::map<std::string, double> sum;
+    for (const auto& row : referenceRows(path)) sum[row.species] += row.count*(energy ? row.energy : 1.);
     return sum;
+}
+
+TEST(NuclearEndToEnd, SecondaryMomentsAgreeWithTransportCR) {
+    // Pair spectra intentionally use different physical approximations.
+    if (options.process != "gzk") GTEST_SKIP();
+    const auto initial = spectrum(options.initial), counts = spectrum(options.final), energies = spectrum(options.final, true);
+    const double norm = initial.at(options.a == 0 ? "n" : "p");
+    ASSERT_GT(norm, 0.);
+    ASSERT_GE(options.batches, 20);
+    for (const std::string species : {"e", "ae", "ph", "en", "aen", "mn", "amn"}) {
+        for (bool energy : {false, true}) {
+            std::vector<double> batches(options.batches);
+            for (const auto& row : rows) if (canonical(row.species) == species)
+                batches.at(row.batch) += (energy ? row.energy/options.energyPerNucleon : row.yield)/options.primaries;
+            double mean = 0., variance = 0.;
+            for (double value : batches) mean += value/options.batches;
+            for (double value : batches) variance += (value-mean)*(value-mean)/(options.batches-1);
+            const double se = std::sqrt(variance/options.batches);
+            const auto& ref = energy ? energies : counts;
+            const auto it = ref.find(species);
+            const double expected = it == ref.end() ? 0. : it->second/norm/(energy ? options.energyPerNucleon : 1.);
+            std::cout << "secondary " << species << (energy ? " energy" : " count")
+                      << " MC=" << mean << " SE=" << se << " TransportCR=" << expected << '\n';
+            EXPECT_LE(std::abs(mean-expected), std::max(.001, .01*expected)+4*se);
+            if (expected > .01) { EXPECT_LE(se, .01*expected); }
+        }
+    }
+}
+
+TEST(NuclearEndToEnd, PairSecondaryEnergyMatchesPrimaryLoss) {
+    if (options.process != "pair") GTEST_SKIP();
+    ASSERT_GE(options.batches, 20);
+    std::vector<double> loss(options.batches, 1.), emitted(options.batches);
+    for (const auto& row : rows) {
+        const double fraction = row.energy/options.primaries/options.energyPerNucleon;
+        if (canonical(row.species) == "p") loss.at(row.batch) -= fraction;
+        if (canonical(row.species) == "e" || canonical(row.species) == "ae")
+            emitted.at(row.batch) += fraction;
+    }
+    double meanLoss = 0., meanEmission = 0., residual = 0., variance = 0.;
+    for (int i = 0; i < options.batches; ++i) {
+        meanLoss += loss[i]/options.batches;
+        meanEmission += emitted[i]/options.batches;
+        residual += (emitted[i]-loss[i])/options.batches;
+    }
+    for (int i = 0; i < options.batches; ++i)
+        variance += std::pow(emitted[i]-loss[i]-residual, 2)/(options.batches-1);
+    const double se = std::sqrt(variance/options.batches);
+    std::cout << "pair energy lost=" << meanLoss << " emitted=" << meanEmission << " SE=" << se << '\n';
+    EXPECT_LE(std::abs(residual), .01*meanLoss+4*se);
+    EXPECT_LE(se, .01*meanLoss);
+    const auto initial = spectrum(options.initial), final = spectrum(options.final, true);
+    const double norm = initial.at("p")*options.energyPerNucleon;
+    ASSERT_GT(norm, 0.);
+    const double refLoss = 1.-final.at("p")/norm;
+    const double refEmission = (final.at("e")+final.at("ae"))/norm;
+    std::cout << "TransportCR pair energy lost=" << refLoss << " emitted=" << refEmission << '\n';
+    EXPECT_NEAR(refEmission, refLoss, .01*refLoss);
+}
+
+TEST(NuclearEndToEnd, WriteDiagnosticSpectra) {
+    if (options.report.empty()) GTEST_SKIP();
+    ASSERT_TRUE(particleRows) << "Individual particle rows are required for spectra";
+    ASSERT_GE(options.batches, 2);
+    const auto initial = spectrum(options.initial);
+    const double norm = initial.at(options.a == 0 ? "n" : "p");
+    ASSERT_GT(norm, 0.);
+    // Fixed centered log bins: ten per decade, six decades below injection.
+    // Bins are diagnostic only; sharp features need numerical convergence and
+    // a separately justified joint spectral acceptance test.
+    auto bin = [](double ratio) { return std::max(-61, std::min(1, static_cast<int>(std::floor(10*std::log10(ratio)+.5)))); };
+    using Key = std::pair<std::string, int>;
+    std::map<Key, std::vector<double>> mc;
+    std::map<Key, double> reference;
+    for (const auto& row : rows) {
+        ASSERT_GT(row.yield, 0.);
+        ASSERT_GT(row.energy, 0.);
+        const Key key{canonical(row.species), bin(row.energy/row.yield/options.energyPerNucleon)};
+        auto& batches = mc[key];
+        batches.resize(options.batches);
+        batches.at(row.batch) += row.yield/options.primaries;
+    }
+    for (const auto& row : referenceRows(options.final)) {
+        if (row.count == 0.) continue;
+        const Key key{row.species, bin(row.energy/options.energyPerNucleon)};
+        reference[key] += row.count/norm;
+        mc[key].resize(options.batches);
+    }
+    std::ofstream out(options.report);
+    ASSERT_TRUE(out.good());
+    out << std::setprecision(17);
+    out << "# Diagnostic counts per injected primary; bin=-61 underflow, bin=1 overflow\n"
+        << "# Center energy = injection_energy * 10^(log_bin/10)\n"
+        << "# Zero-observation SE is unavailable; the bound concerns history occupancy, not mean multiplicity\n"
+        << "# species log_bin MC_mean batch_SE TransportCR zero_history_probability_99pct_upper\n";
+    for (const auto& item : mc) {
+        double mean = 0., variance = 0.;
+        for (double value : item.second) mean += value/options.batches;
+        for (double value : item.second) variance += (value-mean)*(value-mean)/(options.batches-1);
+        out << item.first.first << '\t' << item.first.second << '\t' << mean << '\t';
+        if (mean == 0.) out << "NA";
+        else out << std::sqrt(variance/options.batches);
+        out << '\t' << reference[item.first] << '\t';
+        if (mean == 0.)
+            out << -std::expm1(std::log(.01)/(static_cast<double>(options.batches)*options.primaries));
+        else out << "NA";
+        out << '\n';
+    }
 }
 
 TEST(NuclearEndToEnd, EveryPrimaryHasACompleteHistory) {
@@ -77,15 +202,15 @@ TEST(NuclearEndToEnd, PsbPreservesWeightedBaryonNumberPerHistory) {
     if (options.process != "none" && options.process != "psb") GTEST_SKIP();
     std::map<std::pair<int, int>, double> baryons;
     for (const auto& r : rows) baryons[{r.batch, r.history}] += mass(r.species) * r.yield;
-    for (const auto& h : baryons) EXPECT_NEAR(h.second, options.a, 1e-9);
+    for (const auto& h : baryons) EXPECT_NEAR(h.second, std::max(1, options.a), 1e-9);
 }
 
 TEST(NuclearEndToEnd, NoInteractionsPreserveInjection) {
     if (options.process != "none") GTEST_SKIP();
     for (const auto& r : rows) {
-        EXPECT_EQ(mass(r.species), options.a);
+        EXPECT_EQ(mass(r.species), std::max(1, options.a));
         EXPECT_DOUBLE_EQ(r.yield, 1.);
-        EXPECT_NEAR(r.energy / (options.a * options.energyPerNucleon), 1., 1e-14);
+        EXPECT_NEAR(r.energy / (std::max(1, options.a) * options.energyPerNucleon), 1., 1e-14);
     }
 }
 
@@ -139,7 +264,7 @@ TEST(NuclearEndToEnd, NucleonEnergyMomentsAgreeWithTransportCR) {
             std::cout << "comparison " << species << (energy ? " energy" : " count")
                       << " MC=" << mean << " SE=" << se << " TransportCR=" << expected << '\n';
             EXPECT_LE(std::abs(mean-expected), tolerance+4*se);
-            if (expected > 0.01) EXPECT_LE(se, .01*expected);
+            if (expected > 0.01) { EXPECT_LE(se, .01*expected); }
         }
     }
 }
@@ -173,7 +298,7 @@ TEST(NuclearEndToEnd, PsbCompositionAgreesWithTransportCR) {
         std::cout << "comparison " << item.first << " MC=" << mean << " SE=" << se << " TransportCR=" << ref << '\n';
         const double numerical = std::max(0.001, 0.01 * std::abs(ref));
         EXPECT_LE(std::abs(mean-ref), numerical + 4*se) << item.first;
-        if (ref > 0.01) EXPECT_LE(se, 0.01*ref) << item.first << ": insufficient MC precision";
+        if (ref > 0.01) { EXPECT_LE(se, 0.01*ref) << item.first << ": insufficient MC precision"; }
     }
 }
 } // namespace
@@ -188,6 +313,7 @@ int main(int argc, char** argv) {
             if (key=="--mc") options.mc=value;
             else if (key=="--initial") options.initial=value;
             else if (key=="--final") options.final=value;
+            else if (key=="--spectral-report") options.report=value;
             else if (key=="--process") options.process=value;
             else if (key=="--primaries") options.primaries=std::stoi(value);
             else if (key=="--batches") options.batches=std::stoi(value);
@@ -201,6 +327,7 @@ int main(int argc, char** argv) {
         for (std::string line; std::getline(in,line);) {
             if (line.empty()) continue;
             if (line[0]=='#') {
+                if (line == "# particle_rows=1") particleRows = true;
                 std::smatch match;
                 if (std::regex_search(line, match, std::regex("event_rate_per_Mpc=([^ ]+)")))
                     eventRate=std::stod(match[1]);

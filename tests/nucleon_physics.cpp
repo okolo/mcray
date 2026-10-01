@@ -3,6 +3,7 @@
 #include "ProtonPP.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <gsl/gsl_integration.h>
 
 namespace {
 using namespace mcray;
@@ -108,6 +109,64 @@ TEST(ProtonPairs, CelCloneAndUnsupportedSpeciesAreExplicit) {
         Particle unsupported(type, 0.);
         EXPECT_DOUBLE_EQ(cel.Rate(unsupported), 0.);
         EXPECT_DOUBLE_EQ(random.Rate(unsupported), 0.);
+    }
+}
+
+TEST(ProtonPairs, SamplingMatchesIndependentRestFrameQedQuadrature) {
+    constexpr double k = 3.; // Rest-frame photon energy in electron masses.
+    const double massRatio = Particle::Mass(Proton)/Particle::Mass(Electron);
+    // Integrate independently over rest-frame electron energy and angle.
+    // The sampler integrates a transformed one-dimensional lab-energy kernel.
+    auto integrate = [&](int nodes) {
+        std::unique_ptr<gsl_integration_glfixed_table, decltype(&gsl_integration_glfixed_table_free)>
+            table(gsl_integration_glfixed_table_alloc(nodes), gsl_integration_glfixed_table_free);
+        std::array<long double, 3> sums{};
+        for (int i = 0; i < nodes; ++i) {
+            double energy, energyWeight;
+            gsl_integration_glfixed_point(1., k-1., i, &energy, &energyWeight, table.get());
+            for (int j = 0; j < nodes; ++j) {
+                double angle, angleWeight;
+                gsl_integration_glfixed_point(-1., 1., j, &angle, &angleWeight, table.get());
+                const double density = PPP::DiffSigma(k, energy, angle)*energyWeight*angleWeight;
+                const double r = (energy-angle*std::sqrt(energy*energy-1.))/massRatio;
+                sums[0] += density;
+                sums[1] += density*r;
+                sums[2] += density*r*r;
+            }
+        }
+        return std::array<double, 2>{static_cast<double>(sums[1]/sums[0]), static_cast<double>(sums[2]/sums[0])};
+    };
+    const auto coarse = integrate(64), expected = integrate(128);
+    for (int moment = 0; moment < 2; ++moment)
+        ASSERT_NEAR(coarse[moment]/expected[moment], 1., 1e-3);
+    PPP interaction(new FixedRestFramePhoton(k*Particle::Mass(Electron)));
+    Particle p(Proton, 0.);
+    p.Energy = 1e19 * units.eV;
+    Randomizer random(20261601);
+    constexpr int samples = 2000;
+    std::array<double, 2> sums{}, squares{};
+    try {
+        for (int i = 0; i < samples; ++i) {
+            std::vector<Particle> products;
+            ASSERT_TRUE(interaction.GetSecondaries(p, products, random));
+            ASSERT_EQ(products.size(), 1u);
+            const double r = products[0].Energy/p.Energy;
+            for (int moment = 0; moment < 2; ++moment) {
+                const double value = moment == 0 ? r : r*r;
+                sums[moment] += value;
+                squares[moment] += value*value;
+            }
+        }
+    } catch (Utils::Exception* error) {
+        const std::string message = error->Message();
+        delete error;
+        FAIL() << message;
+    }
+    for (int moment = 0; moment < 2; ++moment) {
+        const double mean = sums[moment]/samples;
+        const double se = std::sqrt((squares[moment]/samples-mean*mean)/(samples-1));
+        // The kernel neglects recoil; the sampler retains recoil in its bounds.
+        EXPECT_NEAR(mean, expected[moment], 4*se+.01*expected[moment]);
     }
 }
 } // namespace

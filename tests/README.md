@@ -19,9 +19,9 @@ bash bin/test-docker.sh
 bash bin/test-docker.sh -L unit
 ```
 
-The short suite contains 37 discovered GoogleTest unit cases, three
-convolution integration cases, two command-line smoke tests, and a two-step
-no-interaction E2E fixture (44 CTest entries). Unit tests exercise the production library:
+The short suite contains 38 discovered GoogleTest unit cases, five
+background and convolution integration cases, two command-line smoke tests, and a two-step
+no-interaction E2E fixture (47 CTest entries). Unit tests exercise the production library:
 
 - Log interpolation for double and long double: zeros, positive intervals,
   external limits, Clone, legacy behavior, and invalid scale combinations.
@@ -30,7 +30,32 @@ no-interaction E2E fixture (44 CTest entries). Unit tests exercise the productio
 - Nucleon GZK: supported rates, Clone, and SOPHIA event energy, weight and
   nucleon-number bookkeeping.
 - Proton pairs: sampling weight versus rate scaling, Clone, continuous loss,
-  and explicit absence of nuclear/neutron support.
+  explicit absence of nuclear/neutron support, and independent rest-frame
+  QED quadrature compared with lab-energy sampling.
+
+The scenario runner accepts --background cmb-inoue for the agreed static
+CMB+Inoue12 Baseline experiment. FrozenInoueBaseline is a test-only fixture;
+production Inoue12 already extends the first table plane to z=0; the fixture
+only freezes its density. Integration tests check the native extension to z=0,
+the compound background, and rates along the path.
+TransportCR prepare_case.py accepts the same --background option and records
+the EBL table hash. The production background implementation is unchanged.
+
+Use --particle-output in nuclear_scenario to retain individual weighted
+particles within each complete primary history. The same TSV columns remain;
+energy_eV is weighted energy, so energy_eV/yield is a particle's energy.
+With this output, nuclear_comparison --spectral-report /path/report.tsv writes
+diagnostic spectra in centered logarithmic bins (10 per decade, six decades
+below injection, separate underflow/overflow). Its errors use independent
+batch means. These bins do not establish a global spectral acceptance result.
+For zero observed products, the reported SE is unavailable (NA); a 99%
+upper bound applies to the probability that a primary history populates the
+bin, not to weighted mean multiplicity. Do not interpret missing products
+as a precise physical zero.
+GZK secondary count/energy moments are checked separately with GoogleTest.
+Pair counts and shapes use different models in the two codes; compare energy
+balance and check the mcray sampler independently rather than requiring
+identical pair spectra.
 
 CTest labels distinguish unit, integration, and e2e. CRbeam help and the
 short z2t calculation also have the smoke label. Every current test has a 30-second timeout.

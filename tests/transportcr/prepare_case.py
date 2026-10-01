@@ -11,6 +11,7 @@ p = argparse.ArgumentParser()
 p.add_argument('--transportcr', type=Path, required=True)
 p.add_argument('--output', type=Path, required=True)
 p.add_argument('--process', choices=('none', 'psb', 'gzk', 'pair'), required=True)
+p.add_argument('--background', choices=('cmb', 'cmb-inoue'), default='cmb')
 p.add_argument('--a', type=int, default=56)
 p.add_argument('--energy-per-nucleon', type=float, required=True)
 p.add_argument('--distance-mpc', type=float, required=True)
@@ -35,7 +36,8 @@ values = {
     'Emin': str(a.energy_per_nucleon / 10**(a.grid_span_decades/2)),
     'Emax': str(a.energy_per_nucleon * 10**(a.grid_span_decades/2)),
     'energyResolutionFactor': str(a.resolution), 'microStep': str(a.step_mpc),
-    'NO_MWB': 'false', 'T0_CMB': '2.7255', 'IRO_model': '0', 'Radio_model': '0',
+    'NO_MWB': 'false', 'T0_CMB': '2.7255',
+    'IRO_model': '15' if a.background == 'cmb-inoue' else '0', 'Radio_model': '0',
     'NO_PHOTODISINTEGRATION': str(a.process != 'psb').lower(),
     'NO_PI': str(a.process != 'gzk').lower(),
     'NO_PPP': str(a.process != 'pair').lower(),
@@ -66,6 +68,12 @@ xml = ET.tostring(root, encoding='unicode')
     '<!DOCTYPE dir SYSTEM "switches.dtd">\n' + xml, encoding='utf-8')
 shutil.copyfile(a.transportcr / 'bin/switches.dtd', a.output / 'switches.dtd')
 reference_tables = (a.transportcr / 'bin/tables').resolve()
+if a.background == 'cmb-inoue':
+    table = reference_tables / 'EBL_Inoue/EBL_proper_baseline.dat'
+    (a.output / 'ebl-manifest.json').write_text(json.dumps({
+        'model': 'Inoue12 Baseline', 'redshift': 0,
+        'source': str(table), 'sha256': hashlib.sha256(table.read_bytes()).hexdigest()
+    }, indent=2) + '\n', encoding='utf-8')
 if a.sophia_tables is None:
     (a.output / 'tables').symlink_to(reference_tables, target_is_directory=True)
 else:

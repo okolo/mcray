@@ -2,7 +2,9 @@
 
 Date: 2026-10-01. Plan: nuclear_validation_plan.md, approved and committed
 as 327bd46. Scientific PSB assumptions remain weighted branching, an A-indexed
-chain, and approximate masses. Implementation changes below are not yet committed.
+chain, and approximate masses. The initial repairs and validation infrastructure
+were committed as 7f4b45f. Subsequent CMB+EBL and spectral extensions are not
+yet committed.
 
 ## Reproduced defects and repairs
 
@@ -184,7 +186,98 @@ No complete GZK physical agreement is claimed.
 
 ## Remaining work
 
-- Add CMB+Inoue12 Baseline checks with the agreed frozen z=0 spectrum.
+- Extend CMB+EBL controls to further energies/paths after accounting for the
+  cost of weighted branching without thinning.
 - Extend spectral comparisons beyond integrated composition, with covariance.
 - Complete full proton pair/GZK spectral comparisons and additional energies.
 - Agree nuclear GZK/pair approximations before implementing nuclear support.
+
+## Subsequent CMB+EBL and spectral checks
+
+The user selected Inoue12 Baseline. Both repositories have identical
+EBL_Inoue/EBL_proper_baseline.dat with SHA-256
+197a50e810b23538d506763be2664cfa9ffead2d8f0747df90665c466e2ea993.
+The table starts at z=0.01. Production Inoue12 already enables
+MatrixBackground's extend-to-zero behavior: both its evaluator and MinZ()
+include z=0. CompoundBackground therefore retains it below the first table
+plane. The earlier claim that this component was excluded was incorrect.
+The test-only FrozenInoueBaseline fixture freezes evaluation at z=0; it does
+not repair a production lower-bound defect. Direct production and frozen
+integration regressions check the compound background at the start, midpoint
+and end. Production EBL evolution was not changed.
+
+Initial incomplete long-path pilots are excluded; the redundant MinZ override
+did not change the production background's already-correct lower bound.
+The 43.8959-Mpc static EBL pilot was stopped because weighted PSB branching is
+too expensive without thinning; no acceptance result is inferred from it.
+The planned thin-path control instead uses L=1 Mpc, the same E/A as the
+moderate CMB case, and no thinning. The user capped it at 200,000 histories
+(20 batches of 10,000; seeds 20261501..20261520), accepting an inconclusive
+rare neutron yield rather than relaxing precision requirements.
+
+| Observable | MC mean | Batch SE | TransportCR resolution 16 |
+| --- | ---: | ---: | ---: |
+| Fe-56 survival | 0.884800 | 0.000654 | 0.885330 |
+| A41..55 yield | 0.115192 | 0.000654 | 0.114663 |
+| Proton yield | 0.140148 | 0.000973 | 0.139327 |
+| Neutron yield | 0.012049 | 0.000213 | 0.011559 |
+
+All histories and weighted baryon checks pass; mean discrepancies meet the
+provisional agreement criteria. The composition test still returns failure
+for insufficient neutron precision, as intended. Its relative standard error
+is about 1.84% of the reference yield, exceeding 1%. This scenario is not a
+complete pass. The initial Fe rate is 0.1218120771/Mpc in mcray, versus
+0.1217942844/Mpc inferred from TransportCR survival. At resolution 8 the
+reference rate is 0.1218573452/Mpc (8-to-16 change about 0.052%).
+Halving microStep from 0.01 to 0.005 Mpc preserves Fe, p and n yields at
+printed precision. These reference refinements pass numerical checks despite
+the separately inconclusive neutron MC precision.
+
+The runner now optionally retains individual terminal particles, including
+their primary-history membership. A fresh GZK proton ensemble of 150,000
+histories (20 batches of 7,500; seeds 20261401..20261420) passes nucleon and
+all seven EM/neutrino secondary count/energy-moment checks. The reference uses
+100-bin SOPHIA tables, microStep=0.125 Mpc, and a lower energy bound of 1e14 eV
+to retain secondary products. The electron yield is 0.131927 +/- 0.000949
+versus 0.131596; photon energy fraction is 0.074486 +/- 0.000298 versus
+0.074350. Diagnostic spectral bins are written to
+/tmp/mcray-gzk-acceptance-spectra.tsv. A global covariance-aware spectral
+acceptance decision is still pending; passing moments is not full shape validation.
+
+Proton pair products differ physically between the codes. TransportCR
+Ppp.cpp::P_PPP uses an E^(-7/4) approximation normalized by continuous losses;
+mcray uses PPP's differential QED kernel. The 200-history pilot produces
+electron/positron yields 90.59/92.19 versus 83.624/83.624 in TransportCR.
+Do not repair this difference by silently replacing either model. The user
+approved preserving both, comparing energy balance, and independently
+checking the mcray sampler. A fixed rest-frame photon test at k=3 electron
+masses integrates PPP::DiffSigma over electron energy and angle with fixed
+Gauss-Legendre quadrature, then compares the first two lab-energy moments
+with 2,000 generated samples. Quadrature refinement 64-to-128 nodes and
+sampling checks pass. This checks the coordinate transformation and sampler
+against the existing kernel; it does not independently derive that kernel or
+validate every high-k/recoil approximation. A separate 2,000-history ensemble
+(20 batches of 100; seeds 20261621..20261640) passes pair energy balance:
+fraction lost by protons 0.0316968, generated e-/e+ energy fraction 0.0316167,
+batch standard error of their difference 0.0001833. TransportCR gives losses
+0.031340 and generated energy 0.031127 at resolution 16. The latter discrepancy
+is below 1% of the loss and reflects grid/normalization approximations. Four
+applicable pair E2E checks pass, including complete histories, primary moments
+and the diagnostic spectral report. Equal e-/e+ counts or shapes are not
+asserted because the user explicitly retained the different physical models.
+
+Refining the pair reference to resolution 32 and microStep=0.125 Mpc also
+passes the four applicable checks: proton loss 0.0314877 and emitted energy
+0.0313733. The reference's emitted-versus-lost difference decreases from about
+0.68% to 0.36% of the loss. The emitted-energy change between resolutions
+16 and 32 is about 0.79%; further refinement remains necessary for the
+proposed 0.2% numerical target on secondary energy. These initial passes do
+not establish final high-precision pair-spectrum/loss convergence.
+
+The expanded short suite has 47 CTest entries: 38 unit, five integration,
+two smoke and a two-step all-off E2E fixture. Native macOS checks pass; the
+independent QED test and the expanded suite also passed in Linux amd64 in
+a container with the updated test sources, including the native Inoue12
+extension-to-zero regression. Full GZK secondary and pair-energy
+acceptance ensembles above were run natively; no Linux spectral-acceptance
+ensemble is claimed.

@@ -4,6 +4,7 @@
 #include "ProtonPP.h"
 #include "PropagationEngine.h"
 #include "Output.h"
+#include "frozen_inoue.h"
 #include <array>
 #include <fstream>
 #include <iomanip>
@@ -17,26 +18,32 @@ using namespace Interactions;
 // Each primary owns a complete weighted history, including correlated products.
 class HistoryOutput : public Utils::TSmartReferencedObj<IOutput> {
 public:
+    struct Product { ParticleType type; double weight, energy; };
     struct History {
         std::array<double, ParticleTypeEOF> yield{};
         std::array<double, ParticleTypeEOF> energy{};
+        std::vector<Product> products;
     };
+    explicit HistoryOutput(bool particles) : particles(particles) {}
     std::map<unsigned long long, History> histories;
     void AddParticle(const Particle& p) override {
         if (!p.SourceParticle) throw std::runtime_error("Missing primary history");
         auto& h = histories[p.SourceParticle->id];
         h.yield[p.Type] += p.Weight;
         h.energy[p.Type] += p.Weight * p.Energy / units.eV;
+        if (particles) h.products.push_back({p.Type, p.Weight, p.Weight * p.Energy / units.eV});
     }
     void Flush(bool) override {}
+private:
+    bool particles;
 };
 
 struct Options {
-    std::string process = "none", output;
+    std::string process = "none", output, background = "cmb";
     int a = 56, batches = 1, primaries = 100;
     unsigned long seed = 20261001;
     double perNucleon = 1e19, distance = 0., accuracy = 1e-4;
-    bool scan = false;
+    bool scan = false, particles = false;
 };
 
 Options parse(int argc, char** argv) {
@@ -44,9 +51,11 @@ Options parse(int argc, char** argv) {
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
         if (arg == "--scan") { o.scan = true; continue; }
+        if (arg == "--particle-output") { o.particles = true; continue; }
         if (i + 1 == argc) throw std::runtime_error("Missing value for " + arg);
         const std::string value = argv[++i];
         if (arg == "--process") o.process = value;
+        else if (arg == "--background") o.background = value;
         else if (arg == "--output") o.output = value;
         else if (arg == "--a") o.a = std::stoi(value);
         else if (arg == "--batches") o.batches = std::stoi(value);
@@ -71,6 +80,8 @@ Options parse(int argc, char** argv) {
     if (o.process == "psb" && o.a < 2)
         throw std::runtime_error("PSB requires a nucleus");
     if (o.output.empty()) throw std::runtime_error("--output is required");
+    if (o.background != "cmb" && o.background != "cmb-inoue")
+        throw std::runtime_error("Unknown background");
     return o;
 }
 
@@ -86,10 +97,12 @@ int main(int argc, char** argv) {
             static_cast<ParticleType>(A02 + o.a - 2);
         const double temperature = 2.7255 * units.K;
         // Fixed-temperature support already exists in the production background.
-        PlankBackground cmb(temperature, 1e-3 * temperature, 1e3 * temperature,
-                            0., 0.02, true);
+        CompoundBackground photons;
+        photons.AddComponent(new PlankBackground(temperature, 1e-3 * temperature,
+                                                 1e3 * temperature, 0., 0.02, true));
+        if (o.background == "cmb-inoue") photons.AddComponent(new FrozenInoueBaseline);
         PBackgroundIntegral background = new ContinuousBackgroundIntegral(
-            cmb, 0.02, std::pow(10., 0.01), 0.02, o.accuracy);
+            photons, 0.02, std::pow(10., 0.01), 0.02, o.accuracy);
         PRandomInteraction randomInteraction;
         PCELInteraction cel;
         if (o.process == "psb") randomInteraction = new PhotoDisintegration(background);
@@ -102,7 +115,10 @@ int main(int argc, char** argv) {
         if (!out) throw std::runtime_error("Cannot create output: " + o.output);
         out << std::setprecision(17);
         out << "# source_z=0.01 L_mpc=" << distance << " T_K=2.7255 OmegaLambda=0.692 H0=67.8"
-            << " process=" << o.process << " seed=" << o.seed << " accuracy=" << o.accuracy << '\n';
+            << " process=" << o.process << " background=" << o.background
+            << " primary=" << Particle::Name(type)
+            << " seed=" << o.seed << " accuracy=" << o.accuracy << '\n';
+        out << "# particle_rows=" << o.particles << '\n';
         Particle primary(type, 0.01);
         primary.Energy = o.perNucleon * (o.a ? o.a : 1) * units.eV;
         if (o.scan) {
@@ -124,7 +140,7 @@ int main(int argc, char** argv) {
             CosmoTime end;
             end.setT(std::min<cosmo_time>(0., primary.Time.t() + distance * units.Mpc));
             result.SetEndTime(end);
-            auto* output = new HistoryOutput;
+            auto* output = new HistoryOutput(o.particles);
             result.AddOutput(output);
             PropagationEngine engine(stack, result, o.seed + batch);
             if (randomInteraction) engine.AddInteraction(randomInteraction);
@@ -139,10 +155,16 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Propagation discarded one or more primary histories; comparison is invalid");
             int history = 0;
             for (const auto& item : output->histories) {
-                for (int t = 0; t < ParticleTypeEOF; ++t)
-                    if (item.second.yield[t] != 0.)
-                        out << batch << '\t' << history << '\t' << Particle::Name(static_cast<ParticleType>(t))
-                            << '\t' << item.second.yield[t] << '\t' << item.second.energy[t] << '\n';
+                if (o.particles) {
+                    for (const auto& product : item.second.products)
+                        out << batch << '\t' << history << '\t' << Particle::Name(product.type)
+                            << '\t' << product.weight << '\t' << product.energy << '\n';
+                } else {
+                    for (int t = 0; t < ParticleTypeEOF; ++t)
+                        if (item.second.yield[t] != 0.)
+                            out << batch << '\t' << history << '\t' << Particle::Name(static_cast<ParticleType>(t))
+                                << '\t' << item.second.yield[t] << '\t' << item.second.energy[t] << '\n';
+                }
                 ++history;
             }
             out << "# batch=" << batch << " primaries=" << o.primaries << '\n';
