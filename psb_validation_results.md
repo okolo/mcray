@@ -246,7 +246,7 @@ acceptance decision is still pending; passing moments is not full shape validati
 
 Proton pair products differ physically between the codes. TransportCR
 Ppp.cpp::P_PPP uses an E^(-7/4) approximation normalized by continuous losses;
-mcray uses PPP's differential QED kernel. The 200-history pilot produces
+mcray uses PPP's differential kernel. The 200-history pilot produces
 electron/positron yields 90.59/92.19 versus 83.624/83.624 in TransportCR.
 Do not repair this difference by silently replacing either model. The user
 approved preserving both, comparing energy balance, and independently
@@ -276,8 +276,220 @@ not establish final high-precision pair-spectrum/loss convergence.
 
 The expanded short suite has 47 CTest entries: 38 unit, five integration,
 two smoke and a two-step all-off E2E fixture. Native macOS checks pass; the
-independent QED test and the expanded suite also passed in Linux amd64 in
+independent PPP-kernel test and the expanded suite also passed in Linux amd64 in
 a container with the updated test sources, including the native Inoue12
 extension-to-zero regression. Full GZK secondary and pair-energy
 acceptance ensembles above were run natively; no Linux spectral-acceptance
 ensemble is claimed.
+
+
+## Multi-energy pair-sampler validation
+
+The independent rest-frame PPP-kernel quadrature check now covers k=2.2, 3, 5,
+10, and 20 electron masses, including near-threshold photons. Each case uses
+10,000 samples at primary proton energy 1e19 eV. Seeds are
+20261601 + unsigned(100*k), independently fixed for each energy.
+The first two lab-energy moments are compared with a two-dimensional
+rest-frame energy/angle integration using 256 and 512 Gauss-Legendre nodes
+per dimension. The largest relative quadrature change is 2.78e-8, below the
+unchanged 1e-3 convergence requirement. Sampling comparisons retain the
+existing 4*SE + 1% recoil-approximation allowance; no tolerance was widened.
+All five energy cases pass natively and on Docker Linux amd64.
+
+| k / electron mass | Integrated mean E_secondary/E_primary | Sample mean | Sample SE |
+| --- | ---: | ---: | ---: |
+| 2.2 | 0.000530991 | 0.000531597 | 0.000001189 |
+| 3 | 0.000479482 | 0.000478933 | 0.000002464 |
+| 5 | 0.000384079 | 0.000390015 | 0.000003523 |
+| 10 | 0.000264988 | 0.000261088 | 0.000003779 |
+| 20 | 0.000175160 | 0.000177049 | 0.000004121 |
+
+The second moment at k=20 still has a relative sampling SE of about 9%;
+passing this check is not a claim of percent-level tail accuracy. These
+checks validate the sampler against the existing differential kernel, not
+an independent derivation of the PPP differential cross section. They do not cover the separate asymptotic
+sampling branch at k>=20000 or all recoil regimes.
+The updated short suite has 51 CTest entries (42 unit, five integration,
+two smoke, and a two-step all-off E2E fixture); all pass natively and in Docker
+Linux amd64. Logs: /tmp/mcray-qed-multienergy-final.log,
+/tmp/mcray-qed-native51.log, and /tmp/mcray-qed-linux51.log.
+Production sources and TransportCR sources were not changed.
+
+
+## Pair-reference grid and step convergence
+
+Further isolated TransportCR runs use the same 1e19-eV proton source,
+L=43.895883086391059 Mpc, static 2.7255-K CMB, pair production only, and
+Emin=1e13 eV. Resolution denotes ten times as many energy bins per decade.
+The reference checkout is 94eca0c886df80b1d0b1dd09dae95b0483c2273c;
+the existing native executable SHA-256 is
+a931520439aa1758f1fb2260a189e4bed099a421524b2b3f5d31c167c01a2a42.
+Its compiled revision banner predates that checkout revision; the binary is
+recorded explicitly rather than inferred from the current checkout label.
+No TransportCR source or binary changes were made during these checks.
+
+At resolution 32, reducing microStep from 0.125 to 0.0625 Mpc changes the
+proton energy loss from 0.0314877288684 to 0.0314876573265, a relative change
+of 0.0002273%. The emitted pair energy stays 0.0313733181222 at output
+precision. The three applicable pair E2E assertions pass against the existing
+2,000-history mcray ensemble; the optional diagnostic-report assertion was
+not requested for this check.
+
+To avoid computing empty bins far above injection at resolution 128, Emax
+is reduced from 1e25 to 1e20 eV, retaining an extra decade above injection.
+TransportCR anchors its grid to integer decades (Ranges.cpp::adjustRanges),
+so the retained grid centers do not move. A separate resolution-32 control
+with this upper limit produces a byte-identical final spectrum to the full
+range. Input directories are /tmp/mcray-transport-pair-spectrum32-step,
+/tmp/mcray-transport-pair-spectrum32-bounded,
+/tmp/mcray-transport-pair-spectrum64, and
+/tmp/mcray-transport-pair-spectrum128-bounded.
+
+At resolution 64 and microStep=0.125 Mpc, the proton energy-loss fraction is
+0.0315621582751 and the emitted pair-energy fraction is 0.0315063033646.
+The 32-to-64 relative changes are 0.23582% for loss and 0.42209% for emitted
+energy, using the finer result as denominator. The energy-balance residual
+is 0.17697% of the proton loss. The three applicable pair E2E assertions
+pass against the existing mcray ensemble; log:
+/tmp/mcray-pair-energy-comparison64.log. This refinement alone does not meet
+the 0.2% successive-grid target for secondary energy.
+
+The reusable tests/transportcr/check_pair_convergence.py verifies compatible
+physical XML settings and reports loss/emission changes as JSON. It ignores
+only resolution, spatial step, upper grid bound, and the two derived source
+normalizations written back by TransportCR. Native and Docker Linux amd64
+checks correctly pass the step/range controls and reject 32-to-64 grid
+convergence at threshold 0.002. Linux tool log:
+/tmp/mcray-pair-convergence-tool-linux.log.
+
+The pair E2E assertion now also directly compares the transferred energy
+between codes, rather than relying only on the much larger retained proton
+energy. It uses the same 1%-of-loss budget plus four batch SEs for both loss
+and emitted energy, and checks each SE against 1% of the reference loss.
+The resolution-64 comparison passes: loss SE is 4.45245e-9 and emission SE
+is 0.000183261 (about 0.58% of the reference loss). The mean proton loss differs
+by about 0.43% between codes. Counts and spectral shapes remain unconstrained
+across the intentionally different pair-product models.
+Native log: /tmp/mcray-pair-energy-comparison64-strict.log.
+The strengthened check also passes in Docker Linux amd64 when analyzing
+the same native physical ensembles/reference files; no Linux simulation
+ensemble is claimed here. Log: /tmp/mcray-pair-flux-comparison-linux64.log.
+It correctly rejects the coarser resolution-16 reference: the proton-loss
+difference is 0.0003567621422, about 1.14% of the reference loss, exceeding
+the 1% loss budget. Earlier resolution-16 passes describe the older retained-
+energy and internal-balance checks, not this new direct-transfer assertion.
+
+At resolution 128, microStep=0.125 Mpc, and Emax=1e20 eV, proton loss is
+0.0315984378597 and emitted pair energy is 0.0315699614104. The 64-to-128
+relative changes are 0.11481% and 0.201641%, respectively. The secondary
+energy change narrowly exceeds 0.2%; it is not rounded into a pass.
+The reference energy-balance residual decreases to 0.09012% of loss.
+The strengthened pair E2E comparison with mcray passes all three applicable
+cases; log: /tmp/mcray-pair-energy-comparison128-strict.log.
+The native calculation took 5466 seconds, including 805 seconds of propagation.
+
+An additional resolution-32 control with Emax=1.1e19 eV also reproduces the
+full-range final spectrum byte for byte. A further resolution-160 refinement
+therefore uses this tighter upper limit, retaining Emin=1e13 eV and
+microStep=0.125 Mpc. The density increment is 25%, not another doubling;
+report its actual successive changes explicitly and do not interpret them
+as a rigorous absolute-error bound. Directory:
+/tmp/mcray-transport-pair-spectrum160-tight.
+
+
+A sixth fixed-photon PPP case at k=50 extends the sampler check to the more
+energetic CMB photons relevant to a 1e19-eV proton. It retains 10,000 samples
+and the same tolerances. The 256-to-512-node changes are 2.17181e-5 and
+2.12044e-5 for the two moments, below 1e-3. Integrated mean energy ratio is
+9.79214e-5; the sampled mean is 9.80702e-5 with SE=4.48238e-6. The second
+moment is 1.77525e-7 by quadrature and 2.10515e-7 +/- 5.94789e-8 in sampling.
+Both comparisons pass natively, but the latter has about 28% relative sample
+SE; this does not establish precise tail accuracy. The high-k asymptotic
+sampling branch remains outside these tests. Native log:
+/tmp/mcray-qed-k50-native.log.
+
+## Near-threshold PPP sampling defect and repair
+
+A fixed-photon diagnostic at k=2.0005 electron masses exposes an existing
+PPP defect on native macOS and Docker Linux amd64: the approximate total
+cross section is positive (diagnostic rate 4.8667e-17 in fixture units), but
+DifSigma_r::SetS contains the square-root factor k*(k*(m-1)-2*m)*(m-1).
+For this k and m=Mp/Me, the factor is negative. Sampling throws GSL error 5
+("could not integrate function"). Diagnostic logs:
+/tmp/mcray-pair-threshold-native.log and /tmp/mcray-pair-threshold-linux.log.
+
+PropagationEngine already permits GetSecondaries to return false near a
+process threshold. PPP::SampleS now uses this existing null-interaction
+contract when k*(m-1)-2*m is not positive, before evaluating the recoil
+bounds. The total cross-section approximation and continuous-loss model
+are unchanged. The original rate remains a proposal rate; proposals in
+the rejected interval produce no secondary and leave the primary intact.
+Consequently this repair does not fully reconcile the cross section, CEL,
+and sampled secondary production near threshold. The boundary follows
+the existing recoil formulas, not a newly derived exact physical threshold.
+The contribution of the rejected interval has not been quantified for
+arbitrary backgrounds and primary energies.
+Previously exceptions triggered recovery attempts and could discard the
+cascade after unsuccessful recovery.
+
+The regression is now enabled and covers k=2, k=2.0005, points just below,
+at, and above the sampling boundary 2*m/(m-1), and k=2.01. It verifies finite
+rates, finite generated energies, empty output for rejected events, and
+unchanged primary energy/weight. The regression passes natively after the
+repair. This is a new production change in src/lib/PPP.cpp after commit
+9753d96; earlier statements of unchanged production code refer to the
+preceding validation stages.
+
+
+## Completed PPP refinement and final validation
+
+The original, unmodified TransportCR calculation at resolution 160 finished
+in 10220 seconds, including 1342 seconds of propagation. It uses the previously
+verified upper bound Emax=1.1e19 eV, Emin=1e13 eV, and microStep=0.125 Mpc.
+No TransportCR source or binary was modified for this refinement.
+
+| Resolution factor | Proton energy-loss fraction | Emitted pair-energy fraction | Balance residual / proton loss |
+| --- | ---: | ---: | ---: |
+| 64 | 0.0315621582751 | 0.0315063033646 | 0.17697% |
+| 128 | 0.0315984378597 | 0.0315699614104 | 0.09012% |
+| 160 | 0.0316061396434 | 0.0315836396987 | 0.07119% |
+
+From 128 to 160, the relative changes using the finer result as denominator
+are 0.024368% for proton loss and 0.043308% for emitted pair energy. Both
+pass the unchanged 0.2% successive-refinement criterion. This increment is
+25% in energy-bin density; the result is not an absolute discretization-error
+bound. Machine-readable check: /tmp/mcray-pair-grid160-convergence-check.json.
+
+The repeated mcray ensemble has 20 independent batches of 100 proton
+histories, injection energy 1e19 eV, static CMB, and distance
+43.895883086391059 Mpc. It passes all three applicable E2E assertions against
+the resolution-160 reference; six assertions for other processes or optional
+spectral output are skipped. Log:
+/tmp/mcray-pair-energy-comparison160-fixed.log.
+Mean proton loss is about 0.0316968 and emitted pair energy about 0.0316167.
+Their batch SEs are 4.45245e-9 and 0.000183261, respectively. The loss differs
+from TransportCR by about 0.287%; the emitted-energy comparison retains its
+1%-of-reference-loss plus four-SE budget. Pair multiplicities and spectral
+shapes are not required to agree between the distinct secondary models.
+
+After the threshold repair, all 53 CTest entries pass on native macOS and
+Docker Linux amd64 (44 unit, five integration, two smoke, and two all-off E2E
+fixture entries). Logs: /tmp/mcray-pair-threshold-final-native53.log and
+/tmp/mcray-pair-threshold-final-linux53.log. These are short-suite runs;
+physical acceptance ensembles were generated natively.
+
+Repeating the 2000-history physical ensemble with identical seeds after the
+repair produces byte-identical physical data rows. Their SHA-256 is
+2ba5e41167cce9065b30a07d7e65bd62c71e9da3d702d36e827438356d60037e.
+The whole TSV files differ because the updated harness adds primary-species
+metadata. This controls the selected scenario only; it does not establish
+that threshold rejection is negligible for all inputs.
+
+
+Following the terminology clarification, test descriptions name PPP directly
+and the parameterized sampler suite is ProtonPppSampling. The final sources
+were rebuilt and all 53 entries passed again natively and in Docker Linux
+amd64. Logs: /tmp/mcray-ppp-final-native53.log (27.89 seconds) and
+/tmp/mcray-ppp-final-linux53.log (86.46 seconds, following a fresh image build).
+The TransportCR executable used for the resolution-160 run has SHA-256
+ a931520439aa1758f1fb2260a189e4bed099a421524b2b3f5d31c167c01a2a42.

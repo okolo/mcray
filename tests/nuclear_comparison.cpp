@@ -116,14 +116,20 @@ TEST(NuclearEndToEnd, PairSecondaryEnergyMatchesPrimaryLoss) {
             emitted.at(row.batch) += fraction;
     }
     double meanLoss = 0., meanEmission = 0., residual = 0., variance = 0.;
+    double lossVariance = 0., emissionVariance = 0.;
     for (int i = 0; i < options.batches; ++i) {
         meanLoss += loss[i]/options.batches;
         meanEmission += emitted[i]/options.batches;
         residual += (emitted[i]-loss[i])/options.batches;
     }
-    for (int i = 0; i < options.batches; ++i)
+    for (int i = 0; i < options.batches; ++i) {
         variance += std::pow(emitted[i]-loss[i]-residual, 2)/(options.batches-1);
+        lossVariance += std::pow(loss[i]-meanLoss, 2)/(options.batches-1);
+        emissionVariance += std::pow(emitted[i]-meanEmission, 2)/(options.batches-1);
+    }
     const double se = std::sqrt(variance/options.batches);
+    const double lossSe = std::sqrt(lossVariance/options.batches);
+    const double emissionSe = std::sqrt(emissionVariance/options.batches);
     std::cout << "pair energy lost=" << meanLoss << " emitted=" << meanEmission << " SE=" << se << '\n';
     EXPECT_LE(std::abs(residual), .01*meanLoss+4*se);
     EXPECT_LE(se, .01*meanLoss);
@@ -134,6 +140,13 @@ TEST(NuclearEndToEnd, PairSecondaryEnergyMatchesPrimaryLoss) {
     const double refEmission = (final.at("e")+final.at("ae"))/norm;
     std::cout << "TransportCR pair energy lost=" << refLoss << " emitted=" << refEmission << '\n';
     EXPECT_NEAR(refEmission, refLoss, .01*refLoss);
+    // Compare the transferred energy, rather than the much larger energy
+    // retained by the proton. Pair counts and shapes use different models.
+    std::cout << "pair cross-code loss SE=" << lossSe << " emitted SE=" << emissionSe << '\n';
+    EXPECT_NEAR(meanLoss, refLoss, .01*refLoss+4*lossSe);
+    EXPECT_NEAR(meanEmission, refEmission, .01*refLoss+4*emissionSe);
+    EXPECT_LE(lossSe, .01*refLoss);
+    EXPECT_LE(emissionSe, .01*refLoss);
 }
 
 TEST(NuclearEndToEnd, WriteDiagnosticSpectra) {

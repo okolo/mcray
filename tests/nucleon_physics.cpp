@@ -112,8 +112,46 @@ TEST(ProtonPairs, CelCloneAndUnsupportedSpeciesAreExplicit) {
     }
 }
 
-TEST(ProtonPairs, SamplingMatchesIndependentRestFrameQedQuadrature) {
-    constexpr double k = 3.; // Rest-frame photon energy in electron masses.
+TEST(ProtonPairs, NearThresholdSamplingRemainsFinite) {
+    const double m = Particle::Mass(Proton)/Particle::Mass(Electron);
+    const double samplingThreshold = 2.*m/(m-1.);
+    for (double k : {2., 2.0005, samplingThreshold-1e-8,
+                     samplingThreshold, samplingThreshold+1e-6, 2.01}) {
+        SCOPED_TRACE(k);
+        PPP interaction(new FixedRestFramePhoton(k*Particle::Mass(Electron)));
+        Particle p(Proton, 0.);
+        const double energy = 1e19*units.eV;
+        p.Energy = energy;
+        const double rate = interaction.Rate(p);
+        ASSERT_TRUE(std::isfinite(rate));
+        ASSERT_GE(rate, 0.);
+        if (rate == 0.) continue;
+        Randomizer random(20266701);
+        std::vector<Particle> products;
+        try {
+            const bool generated = interaction.GetSecondaries(p, products, random);
+            EXPECT_DOUBLE_EQ(p.Energy, energy);
+            EXPECT_DOUBLE_EQ(p.Weight, 1.);
+            if (!generated) {
+                EXPECT_TRUE(products.empty());
+                continue;
+            }
+            ASSERT_EQ(products.size(), 1u);
+            EXPECT_TRUE(std::isfinite(products[0].Energy));
+            EXPECT_GT(products[0].Energy, 0.);
+            EXPECT_LE(products[0].Energy, p.Energy);
+        } catch (Utils::Exception* error) {
+            const std::string message = error->Message();
+            delete error;
+            FAIL() << message;
+        }
+    }
+}
+
+class ProtonPppSampling : public ::testing::TestWithParam<double> {};
+
+TEST_P(ProtonPppSampling, MatchesIndependentRestFrameQuadrature) {
+    const double k = GetParam(); // Rest-frame photon energy in electron masses.
     const double massRatio = Particle::Mass(Proton)/Particle::Mass(Electron);
     // Integrate independently over rest-frame electron energy and angle.
     // The sampler integrates a transformed one-dimensional lab-energy kernel.
@@ -136,14 +174,17 @@ TEST(ProtonPairs, SamplingMatchesIndependentRestFrameQedQuadrature) {
         }
         return std::array<double, 2>{static_cast<double>(sums[1]/sums[0]), static_cast<double>(sums[2]/sums[0])};
     };
-    const auto coarse = integrate(64), expected = integrate(128);
-    for (int moment = 0; moment < 2; ++moment)
+    const auto coarse = integrate(256), expected = integrate(512);
+    for (int moment = 0; moment < 2; ++moment) {
+        std::cout << "k=" << k << " moment=" << moment+1 << " quadrature_relative_change="
+                  << std::abs(coarse[moment]/expected[moment]-1.) << '\n';
         ASSERT_NEAR(coarse[moment]/expected[moment], 1., 1e-3);
+    }
     PPP interaction(new FixedRestFramePhoton(k*Particle::Mass(Electron)));
     Particle p(Proton, 0.);
     p.Energy = 1e19 * units.eV;
-    Randomizer random(20261601);
-    constexpr int samples = 2000;
+    Randomizer random(20261601 + static_cast<unsigned int>(100*k));
+    constexpr int samples = 10000;
     std::array<double, 2> sums{}, squares{};
     try {
         for (int i = 0; i < samples; ++i) {
@@ -165,8 +206,12 @@ TEST(ProtonPairs, SamplingMatchesIndependentRestFrameQedQuadrature) {
     for (int moment = 0; moment < 2; ++moment) {
         const double mean = sums[moment]/samples;
         const double se = std::sqrt((squares[moment]/samples-mean*mean)/(samples-1));
+        std::cout << "k=" << k << " moment=" << moment+1 << " quadrature="
+                  << expected[moment] << " MC=" << mean << " SE=" << se << '\n';
         // The kernel neglects recoil; the sampler retains recoil in its bounds.
         EXPECT_NEAR(mean, expected[moment], 4*se+.01*expected[moment]);
     }
 }
+INSTANTIATE_TEST_SUITE_P(RestFrameEnergies, ProtonPppSampling,
+                        ::testing::Values(2.2, 3., 5., 10., 20., 50.));
 } // namespace

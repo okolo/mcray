@@ -268,7 +268,14 @@ bool PPP::SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer
 {
 	ASSERT(aParticle.Type == Proton);
 	aS = 0.;
-	return (fBackground->GetRateAndSampleS(fSigma, aParticle, aRandomizer, aS)!=0);
+	if (fBackground->GetRateAndSampleS(fSigma, aParticle, aRandomizer, aS)==0)
+		return false;
+	const double m = fMp/fMe;
+	const double k = 0.5*(aS/fMp-fMp)/fMe;
+	// The approximate cross section becomes positive before the recoil bounds
+	// in DifSigma_r::SetS have a real, nonempty domain. Use the existing null-
+	// interaction contract near threshold; retain the cross section and CEL.
+	return k*(m-1.)-2.*m > 0.;
 }
 
 void PPP::SampleSecondariesMean(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const

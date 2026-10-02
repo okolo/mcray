@@ -19,9 +19,9 @@ bash bin/test-docker.sh
 bash bin/test-docker.sh -L unit
 ```
 
-The short suite contains 38 discovered GoogleTest unit cases, five
+The short suite contains 44 discovered GoogleTest unit cases, five
 background and convolution integration cases, two command-line smoke tests, and a two-step
-no-interaction E2E fixture (47 CTest entries). Unit tests exercise the production library:
+no-interaction E2E fixture (53 CTest entries). Unit tests exercise the production library:
 
 - Log interpolation for double and long double: zeros, positive intervals,
   external limits, Clone, legacy behavior, and invalid scale combinations.
@@ -30,8 +30,10 @@ no-interaction E2E fixture (47 CTest entries). Unit tests exercise the productio
 - Nucleon GZK: supported rates, Clone, and SOPHIA event energy, weight and
   nucleon-number bookkeeping.
 - Proton pairs: sampling weight versus rate scaling, Clone, continuous loss,
-  explicit absence of nuclear/neutron support, and independent rest-frame
-  QED quadrature compared with lab-energy sampling.
+  explicit absence of nuclear/neutron support, near-threshold null
+  interactions, and independent rest-frame integration of the PPP
+  differential kernel compared with lab-energy sampling at photon
+  energies 2.2, 3, 5, 10, 20, and 50 electron masses (10,000 samples each).
 
 The scenario runner accepts --background cmb-inoue for the agreed static
 CMB+Inoue12 Baseline experiment. FrozenInoueBaseline is a test-only fixture;
@@ -143,3 +145,17 @@ interpolated total-energy columns. Dividing j(E)*E^2 by E and normalizing to
 the initial Fe column removes common unit/bin-width/volume factors; this
 conversion is validated with the all-off run. Record grid convergence before
 treating the comparison as a completed physical validation.
+
+For completed pair-only TransportCR runs, compare grid or step refinement:
+
+```bash
+python3 tests/transportcr/check_pair_convergence.py \
+    --coarse /path/to/coarse-case --fine /path/to/fine-case
+```
+
+The script verifies compatible physical settings and lower energy bounds,
+then compares proton loss and emitted pair energy. It writes JSON and returns
+1 when either relative change exceeds 0.002. Grid resolution, spatial step,
+and the empty upper energy range may differ; derived source normalizations
+written back by TransportCR are ignored. This is a successive-refinement
+check, not a proof of absolute error or of spectral-shape convergence.
