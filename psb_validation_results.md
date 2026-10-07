@@ -493,3 +493,124 @@ amd64. Logs: /tmp/mcray-ppp-final-native53.log (27.89 seconds) and
 /tmp/mcray-ppp-final-linux53.log (86.46 seconds, following a fresh image build).
 The TransportCR executable used for the resolution-160 run has SHA-256
  a931520439aa1758f1fb2260a189e4bed099a421524b2b3f5d31c167c01a2a42.
+
+
+## Approved GZK spectral method and first pilot
+
+The user approved gzk_spectral_validation_plan.md on 2026-10-02: seven
+secondary species, four fixed intervals from 1e14 to 1e20 eV, simultaneous
+99% Bonferroni Student intervals, a 5% spectral budget, and three outcomes.
+The old 1% integrated moment criteria remain unchanged. No new physical
+simulation or retrospective spectral acceptance is claimed here.
+
+Test-only shared statistics and five unit cases are implemented. The
+comparison runner writes a pilot report with full-history occupancy and
+batch uncertainties. It does not assert global spectral acceptance.
+For 20 batches and 28 observables the Student critical value is
+4.334545147994069. Native short-suite validation passes all 58 entries
+(49 unit, five integration, two smoke, and two all-off fixture entries).
+Log: /tmp/mcray-gzk-statistics-native58.log.
+
+Two original TransportCR controls were run with the same injection,
+background, path, Emin=1e14 eV and Emax=1e26 eV:
+/tmp/mcray-transport-gzk-spectrum50 (50 bins/decade, step 0.125 Mpc),
+and /tmp/mcray-transport-gzk-spectrum100-step (100 bins/decade,
+step 0.0625 Mpc). Their total calculation times are 10 and 79 seconds.
+XML comparison against the original spectrum100 case finds only energy
+resolution plus rewritten source normalizations for the grid control,
+and only microStep for the step control. SOPHIA table hashes are saved
+in each case's sophia-manifest.json. TransportCR source and binary are unchanged.
+
+The 150000-history pilot gives 28 fixed-bin outputs. With extraction by
+whole-cell center energy, the absolute grid/step-change sum exceeds 0.2%
+of reference yield for 23 observables. All 28 have positive observations
+in all 20 batches, but this does not establish Student-interval validity.
+Only five interval outcomes are conditionally compatible with the approved
+agreement rule; the remaining 23 are inconclusive, not disagreements.
+Logs: /tmp/mcray-gzk-wide-bin-pilot.log and
+/tmp/mcray-gzk-wide-bin-pilot.tsv. The four applicable GoogleTest cases pass;
+six unrelated cases are skipped. Reporting success is not spectral acceptance.
+
+A separate read-only extraction diagnostic considers log-uniform population
+within each reference cell and apportions a crossing cell by log-energy
+intersection. The 50-to-100 grid changes then range from about 0.00085% to
+0.49753%, instead of changes reaching several percent with center assignment.
+Halving the spatial step changes these reconstructed yields by at most
+0.00000179% at printed precision. Nine of 28 grid changes still exceed 0.2%.
+This reconstruction is not yet adopted: it introduces an explicit
+within-cell assumption and has been submitted for user approval.
+Diagnostic script: /tmp/mcray-gzk-cell-diagnostic.py.
+
+Further history-count estimates from the initial extraction are provisional:
+several intervals have no available budget margin after residual and numerical
+changes, so increasing MC statistics alone cannot resolve the comparison.
+First settle extraction and reference convergence, then plan independent
+acceptance statistics without searching for passing seeds.
+
+
+Final short-suite runs pass all 58 entries on native macOS and Docker Linux
+amd64. Logs: /tmp/mcray-gzk-final-native58.log (29.31 seconds) and
+/tmp/mcray-gzk-statistics-linux58.log (88.91 seconds). The latest comparator,
+including the guard rejecting incomplete convergence arguments, was separately
+rebuilt in a disposable Linux container. Its all-off fixture and GZK pilot
+report pass, and incomplete controls correctly return failure. Log:
+/tmp/mcray-gzk-pilot-linux.log. The Linux pilot analyzes the native ensemble
+and references; no new Linux physical ensemble was generated.
+All changes in this stage are test tools and documentation. Production
+mcray and TransportCR source files remain unchanged after f6c8c80.
+
+
+## Approved GZK cell reconstruction and repeated pilot
+
+The user approved constant dN/dlog(E) within each reference cell on
+2026-10-02. The comparison runner now shares a crossing cell by its logarithmic
+intersection with the four unchanged intervals and preserves both tails.
+Only the seven secondary species are reconstructed. The printed reference
+grid is validated and its bins-per-decade density is inferred; no TransportCR
+source, tables, or physical model were changed.
+
+Three additional unit checks cover half/quarter crossing-cell fractions,
+count conservation including tails, and grid rounding versus missing cells.
+All eight statistical/reconstruction unit checks pass natively. The pilot
+was repeated on the same 150000 histories and the same original 50/100-bin
+and spatial-step controls. Logs: /tmp/mcray-gzk-cell-pilot.log and
+/tmp/mcray-gzk-cell-pilot.tsv. Reporting passes all four applicable checks;
+this is not a new acceptance ensemble or a global spectral agreement result.
+
+Thirteen of 28 conditional interval outcomes are agreements; fifteen are
+inconclusive and none are disagreements. Nine observed grid/step-change sums
+still exceed the unchanged 0.2% numerical threshold:
+
+| Species | Energy interval, eV | Refinement change / reference |
+| --- | --- | ---: |
+| Photon | [1e14,1e17) | 0.44520% |
+| Electron | [1e14,1e17) | 0.32716% |
+| Electron | [1e17,1e18) | 0.20399% |
+| Electron | [1e19,1e20] | 0.40546% |
+| Positron | [1e14,1e17) | 0.47960% |
+| Electron antineutrino | [1e14,1e17) | 0.25988% |
+| Electron antineutrino | [1e19,1e20] | 0.49752% |
+| Muon neutrino | [1e19,1e20] | 0.45741% |
+| Muon antineutrino | [1e19,1e20] | 0.20101% |
+
+Values just above 0.2% are not rounded into passes. The available independent
+SOPHIA secondary tables have 20, 50, and 100 bins per decade; denser tables
+or the original generator have been requested before further refinement.
+
+For the upper electron interval the pilot's simultaneous half-width is
+about 14.71% of reference; its observed residual is about -2.60%. A heuristic
+SE proportional to N^(-1/2), keeping 20 batches and the observed residual/
+refinement envelope fixed, gives a total-history factor about 54.43, or
+8.17 million histories. This is an extrapolation, not an approved run size,
+a confidence guarantee, or a promise that acceptance will pass. Further
+reference refinement may change the margin. No new acceptance ensemble
+has been launched while reference convergence remains unresolved.
+
+
+The final reconstruction sources pass all 61 CTest entries (52 unit, five
+integration, two smoke, and two all-off fixture entries) on native macOS
+and Docker Linux amd64. Logs: /tmp/mcray-gzk-cell-native61.log (27.52 seconds)
+and /tmp/mcray-gzk-cell-linux61.log (91.84 seconds). A separate Linux
+comparison-runner check also passes the reconstructed pilot report on the
+same native input data: /tmp/mcray-gzk-cell-pilot-linux.log. This verifies
+analysis portability, not a new Linux physical simulation ensemble.

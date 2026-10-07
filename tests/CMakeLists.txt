@@ -7,7 +7,7 @@ FetchContent_Declare(googletest
     URL_HASH SHA256=6e3191c1455468b3fc35a417fb565c1c5071aee1b7e7f85e30cf48a98d37d8b5)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(mcray_unit_tests table_function_log_zeros.cpp psb_branching_bounds.cpp psb_physics.cpp nucleon_physics.cpp)
+add_executable(mcray_unit_tests table_function_log_zeros.cpp psb_branching_bounds.cpp psb_physics.cpp nucleon_physics.cpp gzk_spectral_statistics.cpp)
 target_include_directories(mcray_unit_tests PRIVATE ../src/lib)
 # Resolve main from GoogleTest before searching mcray's legacy main object.
 target_link_libraries(mcray_unit_tests PRIVATE GTest::gtest_main mcray)
@@ -29,7 +29,7 @@ target_include_directories(nuclear_scenario PRIVATE ../src/lib)
 target_link_libraries(nuclear_scenario PRIVATE mcray)
 
 add_executable(nuclear_comparison nuclear_comparison.cpp)
-target_link_libraries(nuclear_comparison PRIVATE GTest::gtest)
+target_link_libraries(nuclear_comparison PRIVATE GTest::gtest ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})
 add_test(NAME nuclear_none_run COMMAND nuclear_scenario
     --process none --batches 2 --primaries 20
     --output "${CMAKE_CURRENT_BINARY_DIR}/none.tsv")

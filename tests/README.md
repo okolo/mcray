@@ -19,9 +19,9 @@ bash bin/test-docker.sh
 bash bin/test-docker.sh -L unit
 ```
 
-The short suite contains 44 discovered GoogleTest unit cases, five
+The short suite contains 52 discovered GoogleTest unit cases, five
 background and convolution integration cases, two command-line smoke tests, and a two-step
-no-interaction E2E fixture (53 CTest entries). Unit tests exercise the production library:
+no-interaction E2E fixture (61 CTest entries). Unit tests exercise the production library:
 
 - Log interpolation for double and long double: zeros, positive intervals,
   external limits, Clone, legacy behavior, and invalid scale combinations.
@@ -159,3 +159,49 @@ then compares proton loss and emitted pair energy. It writes JSON and returns
 and the empty upper energy range may differ; derived source normalizations
 written back by TransportCR are ignored. This is a successive-refinement
 check, not a proof of absolute error or of spectral-shape convergence.
+
+
+## Approved GZK spectral comparison
+
+See ../gzk_spectral_validation_plan.md. Seven secondary species in four
+fixed energy intervals form a family of 28 observables. The approved method
+uses 99% simultaneous Bonferroni Student intervals and a 5% spectral budget;
+existing integrated moment checks remain unchanged.
+
+The shared test-only gzk_spectral_statistics.h computes batch errors,
+quantiles, interval classification, and fixed-bin boundaries. Eight GoogleTest
+cases check correlated history contributions, analytic Cauchy quantiles,
+tail handling, and agreement/disagreement/inconclusive outcomes.
+
+Use the comparison runner's pilot report after preparing compatible
+TransportCR grid and spatial-step controls:
+
+```bash
+build/Release/tests/nuclear_comparison \
+    --process gzk --a 1 --energy-per-nucleon 1e20 \
+    --batches 20 --primaries 7500 --mc /path/to/pilot.tsv \
+    --initial /path/to/reference/step0/all --final /path/to/reference/fin/all \
+    --gzk-grid-initial /path/to/grid-control/step0/all \
+    --gzk-grid-final /path/to/grid-control/fin/all \
+    --gzk-step-initial /path/to/step-control/step0/all \
+    --gzk-step-final /path/to/step-control/fin/all \
+    --gzk-spectral-report /path/to/wide-bin-pilot.tsv
+```
+
+The report is exploratory, not a global spectral acceptance assertion. It
+includes underflow/overflow, history occupancy, batch SEs, simultaneous
+half-widths, refinement changes, and conditional interval outcomes. Missing
+controls cannot imply numerical convergence. Physical XML settings must
+be verified compatible before supplying the spectra. The pilot temporarily
+uses the sum of absolute grid/step changes as a practical refinement envelope;
+this is not a rigorous error bound. Conditional outcomes require further
+assessment of Student-interval applicability. Filling all batches alone
+is not evidence of normality.
+
+Reference products use the approved constant dN/dlog(E) reconstruction within
+centered logarithmic cells. Counts are apportioned by log-energy intersection
+with physical intervals; both tails are retained. The parser validates the
+printed log grid. Three additional unit cases verify crossing-cell fractions,
+count conservation, and rejection of missing grid cells. This reconstruction
+is limited to the seven secondary species. Do not interpret the pilot as a
+completed physical agreement test or use it to select favorable seeds.

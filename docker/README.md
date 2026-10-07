@@ -24,11 +24,13 @@ Sources are copied into the image: building does not modify host files or result
 
 The container fully builds CRbeam, mcray_test, and z2t, then runs:
 
-- 44 GoogleTest unit cases: interpolation for double and long double,
+- 52 GoogleTest unit cases: interpolation for double and long double,
   including zeros, Clone, and legacy-call compatibility; PSB getRate
   boundaries, channel support, Clone behavior, weighted bookkeeping, and
   light-nucleus multiplicities; nucleon GZK event bookkeeping and proton pair
   weight/rate scaling, safe near-threshold rejection, and independent PPP-kernel quadrature at six photon energies;
+  GZK spectral batch errors, Bonferroni quantiles, interval outcomes, unresolved-zero guards,
+  and log-cell reconstruction with count conservation;
 - two real-CMB PSB integration checks, a native Inoue12 extension-to-zero
   check, a static CMB+Inoue12 check, and a GZK
   rate-convergence regression;

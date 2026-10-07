@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "gzk_spectral_statistics.h"
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -14,6 +15,7 @@ namespace {
 struct Row { int batch, history; std::string species; double yield, energy; };
 struct Options {
     std::string mc, initial, final, report, process = "none";
+    std::string gzkReport, gzkGridInitial, gzkGridFinal, gzkStepInitial, gzkStepFinal;
     int primaries = 20, batches = 2, a = 56;
     double energyPerNucleon = 1e19;
 } options;
@@ -199,6 +201,103 @@ TEST(NuclearEndToEnd, WriteDiagnosticSpectra) {
     }
 }
 
+TEST(NuclearEndToEnd, GzkSpectralPilotReport) {
+    if (options.gzkReport.empty()) GTEST_SKIP();
+    ASSERT_EQ(options.process, "gzk");
+    ASSERT_EQ(options.a, 1);
+    ASSERT_DOUBLE_EQ(options.energyPerNucleon, 1e20);
+    ASSERT_TRUE(particleRows);
+    ASSERT_GE(options.batches, 20);
+    const std::set<std::string> species{"ph", "e", "ae", "en", "aen", "mn", "amn"};
+    using Key = std::pair<std::string, int>;
+    std::map<Key, std::vector<double>> batches;
+    std::map<Key, std::set<std::pair<int, int>>> histories;
+    for (const auto& s : species) for (int bin = -1; bin <= 4; ++bin)
+        batches[{s, bin}].resize(options.batches);
+    for (const auto& row : rows) {
+        const auto s = canonical(row.species);
+        if (!species.count(s)) continue;
+        ASSERT_GE(row.batch, 0);
+        ASSERT_LT(row.batch, options.batches);
+        ASSERT_GE(row.history, 0);
+        ASSERT_LT(row.history, options.primaries);
+        ASSERT_TRUE(std::isfinite(row.yield) && row.yield > 0.);
+        const Key key{s, GzkSpectral::bin(row.energy/row.yield)};
+        batches.at(key).at(row.batch) += row.yield/options.primaries;
+        histories[key].insert({row.batch, row.history});
+    }
+    auto reference = [&](const std::string& initialPath, const std::string& finalPath) {
+        std::map<Key, double> result;
+        const auto initial = spectrum(initialPath);
+        const double norm = initial.at("p");
+        if (!std::isfinite(norm) || norm <= 0.) throw std::runtime_error("Invalid reference injection");
+        for (const auto& row : referenceRows(initialPath)) if (row.count > 0.) {
+            if (row.species != "p" || std::abs(row.energy/1e20-1.) > 1e-10)
+                throw std::runtime_error("Spectral reference injection differs");
+        }
+        const auto finalRows = referenceRows(finalPath);
+        std::set<double> centers;
+        for (const auto& row : finalRows) centers.insert(row.energy);
+        const double width = GzkSpectral::gridLogWidth({centers.begin(), centers.end()});
+        for (const auto& row : finalRows) {
+            if (!species.count(row.species) || row.count == 0.) continue;
+            if (!std::isfinite(row.count) || row.count < 0.) throw std::runtime_error("Invalid reference yield");
+            const auto fractions = GzkSpectral::cellFractions(row.energy, width);
+            for (int region = 0; region < 6; ++region)
+                result[{row.species, region-1}] += fractions[region]*row.count/norm;
+        }
+        return result;
+    };
+    auto ref = reference(options.initial, options.final);
+    const bool controls = !options.gzkGridInitial.empty() && !options.gzkGridFinal.empty() &&
+                          !options.gzkStepInitial.empty() && !options.gzkStepFinal.empty();
+    auto grid = controls ? reference(options.gzkGridInitial, options.gzkGridFinal) : std::map<Key, double>{};
+    auto step = controls ? reference(options.gzkStepInitial, options.gzkStepFinal) : std::map<Key, double>{};
+    const double critical = GzkSpectral::critical(options.batches);
+    std::ofstream out(options.gzkReport);
+    ASSERT_TRUE(out.good());
+    out << std::setprecision(17)
+        << "# GZK pilot only: no global spectral acceptance is asserted\n"
+        << "# Seven species, four fixed bins; alpha=0.01, family=28, budget=0.05\n"
+        << "# Bin -1 is unsupported underflow; bin 4 is overflow\n"
+        << "# Reference cells use constant dN/dlog(E); counts are shared by log-energy overlap\n"
+        << "# Numerical envelope is |reference-grid|+|reference-step|, not a rigorous error bound\n"
+        << "# Conditional outcome assumes valid Student batch intervals; occupancy alone does not establish validity\n"
+        << "# Student_critical=" << critical << '\n'
+        << "# species bin MC_mean SE half_width reference grid step envelope occupied_histories occupied_batches numerical_ready conditional_outcome estimated_history_factor\n";
+    for (const auto& item : batches) {
+        const Key key = item.first;
+        const auto m = GzkSpectral::moments(item.second);
+        const double expected = ref[key];
+        const double halfWidth = critical*m.se;
+        const double envelope = controls ? std::abs(expected-grid[key])+std::abs(expected-step[key]) : 0.;
+        int occupied = 0;
+        for (double value : item.second) if (value > 0.) ++occupied;
+        const bool inside = key.second >= 0 && key.second < 4;
+        const bool numerical = inside && controls && expected > 0. && envelope <= .002*expected;
+        const bool candidate = inside && occupied == options.batches && m.se > 0.;
+        const auto outcome = GzkSpectral::classify(m.mean, expected, halfWidth, envelope, numerical, candidate);
+        const double margin = .05*expected-std::abs(m.mean-expected)-envelope;
+        out << key.first << '\t' << key.second << '\t' << m.mean << '\t' << m.se << '\t';
+        if (m.mean > 0. && m.se > 0.) out << halfWidth; else out << "NA";
+        out << '\t' << expected << '\t';
+        if (controls) out << grid[key] << '\t' << step[key] << '\t' << envelope;
+        else out << "NA\tNA\tNA";
+        out << '\t' << histories[key].size() << '\t' << occupied << '\t' << numerical
+            << '\t' << GzkSpectral::name(outcome) << '\t';
+        if (inside && controls && margin > 0. && m.se > 0.)
+            out << std::max(1., std::pow(halfWidth/margin, 2));
+        else out << "NA";
+        out << '\n';
+        if (key.second == 4) {
+            EXPECT_DOUBLE_EQ(m.mean, 0.) << "Unexpected MC secondary above injection";
+            EXPECT_DOUBLE_EQ(expected, 0.) << "Unexpected reference secondary above injection";
+        }
+    }
+    std::cout << "GZK spectral pilot report: " << options.gzkReport
+              << "; conditional intervals only, no global acceptance decision\n";
+}
+
 TEST(NuclearEndToEnd, EveryPrimaryHasACompleteHistory) {
     ASSERT_FALSE(rows.empty());
     std::map<int, std::set<int>> histories;
@@ -327,6 +426,11 @@ int main(int argc, char** argv) {
             else if (key=="--initial") options.initial=value;
             else if (key=="--final") options.final=value;
             else if (key=="--spectral-report") options.report=value;
+            else if (key=="--gzk-spectral-report") options.gzkReport=value;
+            else if (key=="--gzk-grid-initial") options.gzkGridInitial=value;
+            else if (key=="--gzk-grid-final") options.gzkGridFinal=value;
+            else if (key=="--gzk-step-initial") options.gzkStepInitial=value;
+            else if (key=="--gzk-step-final") options.gzkStepFinal=value;
             else if (key=="--process") options.process=value;
             else if (key=="--primaries") options.primaries=std::stoi(value);
             else if (key=="--batches") options.batches=std::stoi(value);
@@ -335,6 +439,10 @@ int main(int argc, char** argv) {
             else throw std::runtime_error("Unknown option "+key);
         }
         if (options.primaries<1 || options.batches<1) throw std::runtime_error("Invalid sample sizes");
+        const int controls = !options.gzkGridInitial.empty() + !options.gzkGridFinal.empty() +
+                             !options.gzkStepInitial.empty() + !options.gzkStepFinal.empty();
+        if (controls != 0 && controls != 4)
+            throw std::runtime_error("Provide all four GZK convergence paths or none");
         std::ifstream in(options.mc);
         if (!in) throw std::runtime_error("Cannot read MC output");
         for (std::string line; std::getline(in,line);) {
