@@ -267,3 +267,30 @@ The user approved preserving different pair-product models: TransportCR's
 E^(-7/4) approximation and mcray's differential QED kernel. Compare energy
 balance and independently integrate the mcray kernel; do not force equal pair
 counts or shapes by silently changing either physical model.
+
+
+### Independent SOPHIA generation discovered on 2026-10-07
+
+The predecessor generator is at /Users/ok/propagation/sources/sophia.
+Use tests/transportcr/build_sophia_generator_docker.sh to copy and hash its
+sources and build in Linux amd64 outside Git. Source provenance, pilot data,
+and pending full-generation statistics are in sophia_table_generation.md.
+Do not modify the original generator or replace its sampling with mcray.
+Diagnostic 100-event tables are loader tests only, not acceptance references.
+Separate table-generation Monte Carlo uncertainty from grid discretization
+before claiming the fixed 0.2% reference criterion. Full table generation and
+new acceptance ensembles remain subject to the recorded statistics decisions.
+
+
+### PSB CMB+Inoue12 energy extension on 2026-10-07
+
+Two additional Fe56 controls at E/A=1e18 and 10^18.5 eV, L=1 Mpc, have
+complete 200000-history ensembles outside Git in
+../validation/psb-inoue-extension-20261007. GetRateK now uses GAUSS61 at
+unchanged tolerances after an A30 GSL_EROUND failure discarded histories.
+All daughter rates are checked at working tolerance 1e-4; tolerance 1e-5
+remains unsupported for A45 at the higher energy with spacing 0.01.
+See psb_validation_results.md. Neutron relative SEs are 6.919% and 1.396%;
+keep both outputs statistically inconclusive under the unchanged 1% target.
+Do not increase the ensemble cap or reinterpret a precision-guard failure
+as a physical disagreement without a separately agreed next step.

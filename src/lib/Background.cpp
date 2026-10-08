@@ -767,7 +767,9 @@ double ContinuousBackgroundIntegral::GetRateK(const Function &aSigmaK, const Par
 
 	RateKKern leftKern(*fIntegrals[iZ], aSigmaK, aParticle);
 
-	double leftRate = math.Integration_qag(leftKern, Kmin, Kmax, 0, fEpsRel, maxIntervals);
+	// Resolve cross-section and background interpolation structure at the
+	// requested tolerance, as in GetRateS.
+	double leftRate = math.Integration_qag(leftKern, Kmin, Kmax, 0, fEpsRel, maxIntervals, GSL_INTEG_GAUSS61);
 	ASSERT_VALID_NO(leftRate);
 
 	double result = 0;
@@ -776,7 +778,7 @@ double ContinuousBackgroundIntegral::GetRateK(const Function &aSigmaK, const Par
 	else
 	{
 		RateKKern rightKern(*fIntegrals[iZ + 1], aSigmaK, aParticle);
-		double rightRate = math.Integration_qag(rightKern, Kmin, Kmax, aAbsError, fEpsRel, maxIntervals);
+		double rightRate = math.Integration_qag(rightKern, Kmin, Kmax, aAbsError, fEpsRel, maxIntervals, GSL_INTEG_GAUSS61);
 		ASSERT_VALID_NO(rightRate);
 		result = leftRate + (rightRate-leftRate)/fStepZ*(z-iZ*fStepZ);
 		ASSERT_VALID_NO(result);

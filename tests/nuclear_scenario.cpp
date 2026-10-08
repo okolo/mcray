@@ -43,6 +43,7 @@ struct Options {
     int a = 56, batches = 1, primaries = 100;
     unsigned long seed = 20261001;
     double perNucleon = 1e19, distance = 0., accuracy = 1e-4;
+    double backgroundStepDecades = 0.01;
     bool scan = false, particles = false;
 };
 
@@ -64,12 +65,15 @@ Options parse(int argc, char** argv) {
         else if (arg == "--energy-per-nucleon") o.perNucleon = std::stod(value);
         else if (arg == "--distance-mpc") o.distance = std::stod(value);
         else if (arg == "--accuracy") o.accuracy = std::stod(value);
+        else if (arg == "--background-step-decades") o.backgroundStepDecades = std::stod(value);
         else throw std::runtime_error("Unknown option: " + arg);
     }
     if (o.a < 0 || o.a > 56 || o.batches < 1 || o.primaries < 1 ||
         !std::isfinite(o.perNucleon) || o.perNucleon <= 0 ||
         !std::isfinite(o.distance) || o.distance < 0 ||
-        !std::isfinite(o.accuracy) || o.accuracy <= 0 || o.accuracy > 0.01)
+        !std::isfinite(o.accuracy) || o.accuracy <= 0 || o.accuracy > 0.01 ||
+        !std::isfinite(o.backgroundStepDecades) || o.backgroundStepDecades <= 0 ||
+        o.backgroundStepDecades > 0.1)
         throw std::runtime_error("Invalid scenario parameters");
     if (o.process != "none" && o.process != "psb" && o.process != "gzk" &&
         o.process != "pair-cel" && o.process != "pair")
@@ -102,7 +106,7 @@ int main(int argc, char** argv) {
                                                  1e3 * temperature, 0., 0.02, true));
         if (o.background == "cmb-inoue") photons.AddComponent(new FrozenInoueBaseline);
         PBackgroundIntegral background = new ContinuousBackgroundIntegral(
-            photons, 0.02, std::pow(10., 0.01), 0.02, o.accuracy);
+            photons, 0.02, std::pow(10., o.backgroundStepDecades), 0.02, o.accuracy);
         PRandomInteraction randomInteraction;
         PCELInteraction cel;
         if (o.process == "psb") randomInteraction = new PhotoDisintegration(background);
@@ -117,7 +121,8 @@ int main(int argc, char** argv) {
         out << "# source_z=0.01 L_mpc=" << distance << " T_K=2.7255 OmegaLambda=0.692 H0=67.8"
             << " process=" << o.process << " background=" << o.background
             << " primary=" << Particle::Name(type)
-            << " seed=" << o.seed << " accuracy=" << o.accuracy << '\n';
+            << " seed=" << o.seed << " accuracy=" << o.accuracy
+            << " background_step_decades=" << o.backgroundStepDecades << '\n';
         out << "# particle_rows=" << o.particles << '\n';
         Particle primary(type, 0.01);
         primary.Energy = o.perNucleon * (o.a ? o.a : 1) * units.eV;

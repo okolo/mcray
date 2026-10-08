@@ -614,3 +614,172 @@ and /tmp/mcray-gzk-cell-linux61.log (91.84 seconds). A separate Linux
 comparison-runner check also passes the reconstructed pilot report on the
 same native input data: /tmp/mcray-gzk-cell-pilot-linux.log. This verifies
 analysis portability, not a new Linux physical simulation ensemble.
+
+
+## Independent SOPHIA generator recovered on 2026-10-07
+
+The source was found at ~/propagation/sources/sophia and frozen outside Git
+in ../validation/sophia-generator-20261007. Source-file hashes, image identity,
+binary checksum, compiler versions, and pilot logs are retained there.
+The new helper tests/transportcr/build_sophia_generator_docker.sh reproduces
+the isolated Linux amd64 build without modifying the original checkout.
+
+P/n diagnostic tables use 200 bins per decade, kmax=1e7 GeV, 100 trials per
+cell, and seeds 2026100701/2026100702. They completed in 19.29/19.43 seconds
+while run concurrently. All 18 secondary files passed format checks;
+photon-energy row counts are 1564/1565. Repeating the proton run with the same
+seed produced byte-identical nine secondary tables and the cross-section file.
+These pilots do not validate physical spectra or numerical convergence.
+
+Existing table statistics are 1.38 million, 2 million, and 1 million trials
+per cell at 20, 50, and 100 bins per decade, respectively. Thus grid differences
+also contain table sampling uncertainty. A full 200-bin p/n generation with
+one million trials per cell and kmax=2e6 GeV has been proposed for approval;
+rough runtime is 45--55 hours in the current Docker configuration, with no
+completion guarantee. Full generation and acceptance ensembles are not running.
+See sophia_table_generation.md for the statistical and provenance limitations.
+
+
+The user approved the proposed full-generation parameters on 2026-10-07.
+Both p/n Docker Linux amd64 jobs started at 20:33:59 UTC, with seeds
+2026100711/2026100712. They are running as detached containers named
+mcray-sophia200-p-20261007 and mcray-sophia200-n-20261007. Commands,
+source/image/binary hashes, and completion markers are retained under
+../validation/sophia-generator-20261007/full-generation.json and
+full200-p/full200-n. This records job launch, not completed table generation.
+
+The diagnostic TransportCR run with the 100-trial, 200-bin pilot tables
+completed successfully in 149 seconds (130 seconds propagation), confirming
+loader compatibility only. Its XML, table manifest, logs, and outputs are
+../validation/gzk-smoke200-20261007. The original TransportCR remains unchanged.
+
+The new validate_sophia_tables.py validates all 18 secondary tables and two
+cross-section files and refuses non-successful/incomplete runs. The complete
+pilots passed; the running full-generation directories were correctly rejected
+without publishing a validation manifest. Table shape/range validation and
+same-seed reproducibility do not establish the 0.2% reference accuracy.
+Replica independence requires further review of the generator's warm-up-only
+seed implementation; that implementation was preserved unchanged.
+
+
+## Extended PSB CMB+Inoue12 energy checks, 2026-10-07
+
+Two additional Fe56 source energies were checked at fixed L=1 Mpc:
+E/A=1e18 and 10^18.5 eV. All other interactions, decay, redshift losses,
+and thinning are disabled. CMB temperature is 2.7255 K and the approved
+Inoue12 Baseline is frozen at z=0. Its SHA-256 remains
+197a50e810b23538d506763be2664cfa9ffead2d8f0747df90665c466e2ea993.
+No TransportCR source or original background tables were modified.
+
+Raw XML, spectra, per-history outputs, failed diagnostics, comparison logs,
+and JSON summaries are outside Git in
+../validation/psb-inoue-extension-20261007. The completed-scenario manifest
+records binary hashes, controls, seeds, and raw-file hashes. Each accepted
+ensemble contains 20 independent batches of 10000 complete histories;
+first seeds are 2026100781 and 2026100811. These were fixed before the final
+ensembles. Diagnostic 2000-history pilots are excluded from final estimates.
+
+### Rate-integration defect and bounded fix
+
+With the previous 15-node quadrature in ContinuousBackgroundIntegral::GetRateK,
+the high-energy ensemble encountered GSL_EROUND for the A30 daughter and
+lost primary histories. Its partial output is retained and excluded. Direct
+Fe56 probes at tolerance 1e-5 also failed at both energies.
+
+GetRateK now explicitly uses GSL_INTEG_GAUSS61 on both redshift planes,
+matching the existing GetRateS choice. Relative tolerances, error handling,
+PSB cross sections, weighted branching, A-chain, and masses are unchanged.
+This resolves the observed A30 failure without accepting failed integrals
+or relaxing tolerances. Both final ensembles were rerun using the original
+seeds with the corrected quadrature. All 200000 histories per scenario are
+present; per-history weighted baryon conservation and static attenuation
+checks pass. Low-energy grouped results are unchanged at the displayed
+precision compared with its complete earlier ensemble.
+
+Fe56 rates at the working tolerance 1e-4 and background spacing 0.01 are
+0.05608426304/Mpc and 0.4483519928/Mpc. Switching quadrature changes the
+previous rates by about 0.00040% and 0.00045%, respectively. Refining spacing
+to 0.0025 with tolerance 1e-5 gives 0.05608752066/Mpc and
+0.4483531450/Mpc. A30 also supports those controls; its high-energy rate
+changes by about 0.0181% between the coarsest and finest probe.
+
+The fix does not establish arbitrary-tolerance robustness: A45 at the higher
+energy still raises GSL_EROUND with spacing 0.01 and tolerance 1e-5 on
+both macOS and Linux amd64. Its
+spacing-0.005 probe succeeds. The integration regression therefore covers
+all A=2..56 at the actual working tolerance 1e-4, checks K/S equivalence and
+spacing refinement within 0.05%, and checks the stricter 1e-5 tolerance for
+Fe56/A30 specifically. The failed stricter all-chain diagnostic remains
+recorded; no full-chain claim is made at tolerance 1e-5.
+
+### TransportCR refinement
+
+Reference runs use 40, 80, and 160 bins per decade, microStep=0.01 Mpc,
+and a separate 160-bin run with microStep=0.005 Mpc. All four runs per
+energy completed successfully. Delta-source deposition into adjacent
+TransportCR total-energy cells is retained and included in grid refinement;
+it is not treated as an exact Monte Carlo delta at a bin center.
+Composition is normalized by initial Fe56 count from each run.
+
+The largest relative 80-to-160 change across the six prescribed groups is
+0.1095% at the lower energy and 0.1139% at the higher energy. Spatial-step
+changes are below 0.000002% at printed precision. The 40-to-80 changes
+reach 0.2674% and 0.3213%, showing why the coarser reference is inadequate
+for all groups under the provisional 0.2% refinement target. These are
+observed refinement changes, not rigorous upper bounds on reference error.
+
+### Composition and precision
+
+Values below are weighted yields per primary. SE is computed from the
+20 complete-history batch means, preserving correlated daughter weights.
+The reference uses 160 bins per decade and microStep=0.01 Mpc.
+
+| E/A, eV | Group | mcray mean | Batch SE | TransportCR |
+| --- | --- | ---: | ---: | ---: |
+| 1e18 | Fe56 | 0.945080 | 0.000516089 | 0.945453434 |
+| 1e18 | A41..55 | 0.0549191913 | 0.000516068 | 0.0545456184 |
+| 1e18 | A21..40 | 8.08750e-7 | 1.93490e-7 | 7.10569e-7 |
+| 1e18 | A2..20 | 0 | 0 | 1.74491e-13 |
+| 1e18 | p | 0.0627884663 | 0.000597946 | 0.0622178312 |
+| 1e18 | n | 0.0026777145 | 0.000181606 | 0.00262464915 |
+| 10^18.5 | Fe56 | 0.638665 | 0.001027959 | 0.638644969 |
+| 10^18.5 | A41..55 | 0.361302579 | 0.001027875 | 0.361324466 |
+| 10^18.5 | A21..40 | 3.24204158e-5 | 1.64919730e-6 | 3.06189696e-5 |
+| 10^18.5 | A2..20 | 2.09250e-10 | 2.09250e-10 | 5.61354e-11 |
+| 10^18.5 | p | 0.459151275 | 0.001466146 | 0.458558261 |
+| 10^18.5 | n | 0.0326608555 | 0.000446027 | 0.0319463301 |
+
+All six discrepancies at each energy satisfy the existing exploratory rule
+abs(MC-reference) <= max(0.001, 0.01*reference) + 4*SE. This is a discrepancy
+check, not proof of a bias below 1%. Fe56, A41..55, and proton SEs satisfy
+the 1% relative-precision requirement at both energies. Neutron relative
+SEs are 6.919% and 1.396%; these yields remain statistically inconclusive.
+The rare A21..40 and A2..20 groups also lack 1% precision. No sampled output
+in the low-energy A2..20 group implies zero empirical SE, not a precision
+or agreement guarantee for a nonzero reference yield.
+
+The lower-energy GoogleTest comparison passes its four applicable checks.
+The higher-energy comparison passes completeness, baryon conservation,
+and static attenuation, but correctly fails the composition precision guard
+for neutrons (reference yield exceeds 0.01). That failure is retained and
+classified as insufficient statistics, not hidden or rounded into success.
+Neither scenario constitutes full PSB validation at 1% precision for all
+outputs. The agreed 200000-history cap was preserved; no acceptance-driven
+seed replacement or extra histories were added.
+
+The final native short suite passes all 62 CTest entries (52 unit, six
+integration, two smoke, and two all-off fixture checks). Log:
+/tmp/mcray-psb-extension-native62-final.log. Linux amd64 verification is
+complete: all 62 entries also pass under Linux amd64 emulation (88.65
+seconds). Log: /tmp/mcray-psb-extension-linux62-final.log. The Docker
+image contains the corrected production integrator; its final integration
+test source was mounted, copied into the isolated container, and rebuilt
+before running the full suite. The initial stricter all-chain diagnostic
+failed on both platforms and is preserved separately.
+
+The Linux comparison runner also reproduces the native outcomes on the
+same saved physical inputs: low-energy comparison passes, high-energy
+comparison fails only the neutron precision guard. This verifies analysis
+portability, not a separate Linux physical ensemble. Logs are
+low/comparison-linux.log and high/comparison-linux.log in the raw-run
+directory.

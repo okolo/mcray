@@ -109,6 +109,43 @@ TEST(PsbConvolution, DaughterSamplingCompletesWithoutDiscardingHistories) {
     }
 }
 
+TEST(PsbConvolution, InoueDaughterRatesConvergeAndAgreeInKAndS) {
+    if (!cosmology.IsInitialized()) cosmology.Init(0.1);
+    const double t = 2.7255 * units.K;
+    CompoundBackground photons;
+    photons.AddComponent(new PlankBackground(t, t * 1e-3, t * 1e3, 0., 0.02, true));
+    photons.AddComponent(new FrozenInoueBaseline);
+    PBackgroundIntegral integral = new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.01), 0.02, 1e-4);
+    PhotoDisintegration byK(integral, true), byS(integral, false);
+    PhotoDisintegration refined(new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.005), 0.02, 1e-4));
+    PhotoDisintegration stricter(new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.01), 0.02, 1e-5));
+    // Include the A30 daughter that previously raised GSL_EROUND and lost
+    // complete Fe56 histories, as well as every other PSB daughter mass.
+    for (double energy : {1e18, std::pow(10., 18.5)}) {
+        for (int a = 2; a <= 56; ++a) {
+            SCOPED_TRACE(::testing::Message() << "A=" << a << " E/A=" << energy);
+            Particle p(static_cast<ParticleType>(A02 + a - 2), 0.01);
+            p.Energy = a * energy * units.eV;
+            try {
+                const double rate = byK.Rate(p);
+                ASSERT_TRUE(std::isfinite(rate));
+                ASSERT_GT(rate, 0.);
+                EXPECT_NEAR(byS.Rate(p) / rate, 1., 5e-4);
+                EXPECT_NEAR(refined.Rate(p) / rate, 1., 5e-4);
+                if (a == 30 || a == 56)
+                    EXPECT_NEAR(stricter.Rate(p) / rate, 1., 5e-4);
+            } catch (Utils::Exception* error) {
+                const std::string message = error->Message();
+                delete error;
+                FAIL() << message;
+            }
+        }
+    }
+}
+
 TEST(NucleonConvolution, GzkRateConvergesOnFrozenCmb) {
     if (!cosmology.IsInitialized()) cosmology.Init(0.1);
     const double t = 2.7255 * units.K;

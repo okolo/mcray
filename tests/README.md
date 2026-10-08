@@ -205,3 +205,70 @@ printed log grid. Three additional unit cases verify crossing-cell fractions,
 count conservation, and rejection of missing grid cells. This reconstruction
 is limited to the seven secondary species. Do not interpret the pilot as a
 completed physical agreement test or use it to select favorable seeds.
+
+
+## Independent SOPHIA table generator
+
+The original TransportCR predecessor generator was found at
+~/propagation/sources/sophia. See ../sophia_table_generation.md for source
+provenance, runtime estimates, and pending full-statistics decisions.
+Build an immutable working copy outside Git using the existing Linux amd64
+image (build it with bin/test-docker.sh first):
+
+```bash
+bash tests/transportcr/build_sophia_generator_docker.sh \
+    /absolute/path/to/propagation/sources /absolute/path/to/new-output
+```
+
+The script refuses an existing output directory, hashes all copied source
+files, records the image identity and compiler versions, and builds with
+assertions enabled. It does not modify the original sources or tables.
+The resulting build/sophiatab is a Linux amd64 executable; run it in the
+same Docker image, in a separate output directory. Its CLI is:
+
+```text
+sophiatab p|n bins_per_decade kmax_GeV trials_per_cell seed
+```
+
+Small pilot tables validate format, reproducibility, and loader integration;
+they are never numerical-convergence or physical-acceptance references.
+Full table statistics and MC acceptance statistics are separate decisions.
+
+
+After both generation jobs succeed, validate them before copying into a
+TransportCR case. Each directory must contain exit-code.txt with value 0:
+
+```bash
+python3 tests/transportcr/validate_sophia_tables.py \
+    --p-directory /path/to/full200-p --n-directory /path/to/full200-n \
+    --bins-per-decade 200 --trials-per-cell 1000000 --kmax-gev 2e6 \
+    --manifest /path/to/new-validated-manifest.json
+```
+
+The manifest is created exclusively after validation and never overwrites an
+existing one. Passing this check establishes format/completeness, not physical
+or statistical accuracy. Interrupted generation has no automatic resume.
+
+
+## PSB background-grid convergence controls
+
+The scenario runner accepts `--background-step-decades` (default 0.01),
+which sets the requested logarithmic photon-energy grid spacing in
+ContinuousBackgroundIntegral. The constructor adjusts that spacing to cover
+the background bounds. The output records the requested spacing separately
+from `--accuracy`, the quadrature relative tolerance. These controls change
+numerical resolution, not the frozen-background physical assumptions.
+
+For the extended static CMB+Inoue12 PSB checks, use Fe56, L=1 Mpc,
+E/A=1e18 or 3.1622776601683794e18 eV, 20 batches of 10000 histories,
+accuracy=1e-4, and spacing=0.01. Rates are additionally probed with spacing
+0.005/0.0025 and tolerance 1e-5. The tighter tolerance succeeds for Fe56 and
+A30, but still raises GSL_EROUND for A45 at the higher energy on macOS
+and Linux amd64; it is not validated for the entire daughter chain.
+
+The all-daughter integration regression uses the working tolerance 1e-4,
+compares K/S rates and spacing 0.01/0.005 to within 0.05%, and additionally
+checks tolerance 1e-5 for the specific Fe56/A30 regression points. Read
+psb_validation_results.md for statistical limitations, reference-grid
+controls, and raw-run locations. A zero observed rare yield and zero empirical
+SE do not establish relative precision.
