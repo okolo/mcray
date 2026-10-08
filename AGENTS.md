@@ -362,3 +362,10 @@ TALYS+decay Fe56 controls pass applicable GoogleTest assertions on both;
 two-thread CRbeam smoke runs complete. Data and original/corrected generator
 outputs remain outside Git. Full CRPropa spectral agreement and rare-branch
 precision remain unestablished.
+
+Nuclear decay and combined TALYS comparison planning is recorded in
+nuclear_decay_comparison_plan.md. Proposed dual CRPropa data references,
+statistical budgets and ensemble cap require the user's new approval;
+previous GZK/PSB approvals do not automatically cover these comparisons.
+Do not launch large acceptance ensembles before freezing the observable
+families, reference data, numerical controls and validation seeds.

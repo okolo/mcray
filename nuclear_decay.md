@@ -168,3 +168,6 @@ These counts diagnose implementation consistency, not full physical acceptance.
 This implementation does not establish full CRPropa E2E agreement, precision
 of rare branches, accuracy of the ionization correction, or nuclear GZK/pair
 support. Dedicated rate, branching and spectral comparisons remain necessary.
+
+The follow-up CRPropa comparison stages and pending acceptance proposals are
+recorded in nuclear_decay_comparison_plan.md.
