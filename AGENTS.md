@@ -251,7 +251,7 @@ then CMB plus EBL, and light-nucleus PSB unit checks. Validate existing
 nucleon GZK/proton pair code first; nuclear extensions require later approval.
 
 The user approved https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_validation_plan.md and authorized execution.
-Plan commit: 327bd46. Read docs/validation/psb_validation_results.md for current regression
+Plan commit: 9d79131. Read docs/validation/psb_validation_results.md for current regression
 findings, supported E2E scenarios and numerical/statistical limitations.
 Do not mark PSB validated merely because short tests or one energy point pass.
 
@@ -344,7 +344,7 @@ omitted high-energy tail. TransportCR was not modified by this migration.
 
 ### Nuclear decay stage approved on 2026-10-08
 
-After the unified Nucleus/TALYS commit 448b48b, the user authorized nuclear
+After the unified Nucleus/TALYS commit 2167a3a, the user authorized nuclear
 decay implementation. This supersedes the earlier first-stage exclusion
 of decays, but does not approve nuclear GZK/pair production.
 Use a separate NuclearDecay process and --nuclear-decay On|Off, default Off,

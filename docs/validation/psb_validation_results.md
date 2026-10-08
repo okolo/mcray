@@ -1,9 +1,9 @@
 # PSB validation progress
 
 Date: 2026-10-01. Plan: https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_validation_plan.md, approved and committed
-as 327bd46. Scientific PSB assumptions remain weighted branching, an A-indexed
+as 9d79131. Scientific PSB assumptions remain weighted branching, an A-indexed
 chain, and approximate masses. The initial repairs and validation infrastructure
-were committed as 7f4b45f. Subsequent CMB+EBL and spectral extensions are not
+were committed as 6d8f1c4. Subsequent CMB+EBL and spectral extensions are not
 yet committed.
 
 ## Reproduced defects and repairs
@@ -437,7 +437,7 @@ at, and above the sampling boundary 2*m/(m-1), and k=2.01. It verifies finite
 rates, finite generated energies, empty output for rejected events, and
 unchanged primary energy/weight. The regression passes natively after the
 repair. This is a new production change in src/lib/PPP.cpp after commit
-9753d96; earlier statements of unchanged production code refer to the
+ce27bd5; earlier statements of unchanged production code refer to the
 preceding validation stages.
 
 
@@ -557,7 +557,7 @@ report pass, and incomplete controls correctly return failure. Log:
 /tmp/mcray-gzk-pilot-linux.log. The Linux pilot analyzes the native ensemble
 and references; no new Linux physical ensemble was generated.
 All changes in this stage are test tools and documentation. Production
-mcray and TransportCR source files remain unchanged after f6c8c80.
+mcray and TransportCR source files remain unchanged after 94322d7.
 
 
 ## Approved GZK cell reconstruction and repeated pilot

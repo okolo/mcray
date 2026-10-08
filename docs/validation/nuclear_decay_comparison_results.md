@@ -1,7 +1,7 @@
 # Nuclear decay and TALYS comparison diagnostics
 
-Date: 2026-10-08. Production baseline: mcray dba3132 (physics introduced in
-14f253d and 448b48b). Comparison adapters are working-tree additions. No
+Date: 2026-10-08. Production baseline: mcray 7b492cd (physics introduced in
+12c4f91 and 2167a3a). Comparison adapters are working-tree additions. No
 production physics source changed during these checks. These results are
 pilot diagnostics, not a completed statistical acceptance campaign.
 
