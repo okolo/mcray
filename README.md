@@ -35,3 +35,9 @@ bash bin/test-docker.sh
 
 For the environment, test coverage, and rerun instructions, see
 [docker/README.md](docker/README.md).
+
+## Documentation
+
+See the [documentation index](docs/README.md) for design, reference, usage and
+validation documents, and the [future task list](https://github.com/okolo/mcray_dev/blob/main/docs/tasks/FUTURE_TASKS.md)
+for deferred work.

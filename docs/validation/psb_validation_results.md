@@ -1,6 +1,6 @@
 # PSB validation progress
 
-Date: 2026-10-01. Plan: nuclear_validation_plan.md, approved and committed
+Date: 2026-10-01. Plan: https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_validation_plan.md, approved and committed
 as 327bd46. Scientific PSB assumptions remain weighted branching, an A-indexed
 chain, and approximate masses. The initial repairs and validation infrastructure
 were committed as 7f4b45f. Subsequent CMB+EBL and spectral extensions are not
@@ -497,7 +497,7 @@ The TransportCR executable used for the resolution-160 run has SHA-256
 
 ## Approved GZK spectral method and first pilot
 
-The user approved gzk_spectral_validation_plan.md on 2026-10-02: seven
+The user approved https://github.com/okolo/mcray_dev/blob/main/docs/validation/gzk_spectral_validation_plan.md on 2026-10-02: seven
 secondary species, four fixed intervals from 1e14 to 1e20 eV, simultaneous
 99% Bonferroni Student intervals, a 5% spectral budget, and three outcomes.
 The old 1% integrated moment criteria remain unchanged. No new physical

@@ -78,17 +78,20 @@ optional aHandleLogZeros=false parameter. Setting it to true enables the
 agreed zero-interval handling; Clone preserves the parameter. Legacy calls
 retain their behavior. The global semantics of LogScale were not changed.
 The unified identity/mass contract, pinned data and zero-padded grid policy
-were approved on 2026-10-08; see D29-D31 and talys_usage.md.
+were approved on 2026-10-08; see D29-D31 and docs/usage/talys_usage.md.
 
 Use the predecessor added by the user, `../transportcr`, for PSB validation.
 It solves one-dimensional transport equations; baseline commit:
 `00d5dd5c3b69f00fdc51330f6f81fa4b9af71791`.
-Validation is described in transportcr_psb_validation.md.
+Validation is described in https://github.com/okolo/mcray_dev/blob/main/docs/reference/transportcr_psb_validation.md.
 TransportCR is useful for checking the port, but its PSB formulas are not
 independent of mcray: check shared defects separately.
 At the user's explicit instruction, the getRate range check was fixed in
 both codes (`||` replaced with `&&`).
-Do not commit in TransportCR; obtain separate agreement for other changes there.
+The user superseded the earlier TransportCR commit prohibition on 2026-10-08:
+its existing fixes were committed by the user on master, and future authorized
+work uses the mcray-validation branch of the transportcr workspace submodule.
+Read its AGENTS.md before changes; do not modify physics without agreement.
 
 ## Working baseline and locations
 
@@ -97,11 +100,11 @@ Do not commit in TransportCR; obtain separate agreement for other changes there.
   `f62e40fcb1a62fd26377a2c416b6b9332499e8a9`.
 - Read-only reference: sibling `../CRPropa3` at commit
   `73fa865b3304113da2059755a83f5939c1039d68`.
-- `spec.md`: mcray internals and limitations of the original model.
-- `../crpropa_spec.md`: CRPropa specification, outside both Git repositories.
-- `mcray_crpropa_comparison.md`: comparison and planning questions.
-- `talys_implementation_plan.md`: interactive draft plan and decision log.
-- `transportcr_psb_validation.md`: predecessor analysis and PSB checks.
+- `https://github.com/okolo/mcray_dev/blob/main/docs/reference/spec.md`: mcray internals and limitations of the original model.
+- `https://github.com/okolo/mcray_dev/blob/main/docs/reference/crpropa_spec.md`: CRPropa specification, outside both Git repositories.
+- `https://github.com/okolo/mcray_dev/blob/main/docs/design/mcray_crpropa_comparison.md`: comparison and planning questions.
+- `https://github.com/okolo/mcray_dev/blob/main/docs/design/talys_implementation_plan.md`: interactive draft plan and decision log.
+- `https://github.com/okolo/mcray_dev/blob/main/docs/reference/transportcr_psb_validation.md`: predecessor analysis and PSB checks.
 
 ## Workflow
 
@@ -238,7 +241,7 @@ comparisons for PSB, GZK, and pair production on nuclei. Use isolated
 interactions, a point source at a nearby fixed distance (e.g. z=0.01),
 redshift losses disabled, and the TransportCR short-distance regime with
 XML input. Include mcray Monte Carlo uncertainty. See
-nuclear_validation_plan.md for the proposal and implementation gaps.
+https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_validation_plan.md for the proposal and implementation gaps.
 This expands validation planning; it does not approve new nuclear GZK/pair
 physical approximations. Existing mcray GZK supports nucleons and pair
 production supports protons; nuclear implementation requires agreement.
@@ -247,8 +250,8 @@ The user accepted CMB-only monoenergetic Fe-56 as the first PSB comparison,
 then CMB plus EBL, and light-nucleus PSB unit checks. Validate existing
 nucleon GZK/proton pair code first; nuclear extensions require later approval.
 
-The user approved nuclear_validation_plan.md and authorized execution.
-Plan commit: 327bd46. Read psb_validation_results.md for current regression
+The user approved https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_validation_plan.md and authorized execution.
+Plan commit: 327bd46. Read docs/validation/psb_validation_results.md for current regression
 findings, supported E2E scenarios and numerical/statistical limitations.
 Do not mark PSB validated merely because short tests or one energy point pass.
 
@@ -274,7 +277,7 @@ counts or shapes by silently changing either physical model.
 The predecessor generator is at /Users/ok/propagation/sources/sophia.
 Use tests/transportcr/build_sophia_generator_docker.sh to copy and hash its
 sources and build in Linux amd64 outside Git. Source provenance, pilot data,
-and pending full-generation statistics are in sophia_table_generation.md.
+and pending full-generation statistics are in docs/validation/sophia_table_generation.md.
 Do not modify the original generator or replace its sampling with mcray.
 Diagnostic 100-event tables are loader tests only, not acceptance references.
 Separate table-generation Monte Carlo uncertainty from grid discretization
@@ -290,7 +293,7 @@ complete 200000-history ensembles outside Git in
 unchanged tolerances after an A30 GSL_EROUND failure discarded histories.
 All daughter rates are checked at working tolerance 1e-4; tolerance 1e-5
 remains unsupported for A45 at the higher energy with spacing 0.01.
-See psb_validation_results.md. Neutron relative SEs are 6.919% and 1.396%;
+See docs/validation/psb_validation_results.md. Neutron relative SEs are 6.919% and 1.396%;
 keep both outputs statistically inconclusive under the unchanged 1% target.
 Do not increase the ensemble cap or reinterpret a precision-guard failure
 as a physical disagreement without a separately agreed next step.
@@ -310,7 +313,7 @@ non-nuclear primaries. First-stage primary scope remains Fe56. The CLI input
 contract is implemented with strict unsigned parsing and named --particle
 selection alongside legacy --primary. The unified migration now connects
 separate PSB/TALYS processes through --photodisintegration TALYS/PSB/Off,
-default Off. See talys_usage.md for data preparation and limitations.
+default Off. See docs/usage/talys_usage.md for data preparation and limitations.
 
 
 ### Approved TALYS data and finite coverage, 2026-10-08
@@ -329,13 +332,13 @@ These states are not asserted to be physically stable. All other missing
 required data remain errors. Nuclear decays and gamma emission are disabled
 in this stage. Existing free-neutron decay and other CRbeam processes remain.
 
-A separate future task, talys_high_energy_tail_study.md, must assess the
+A separate future task, https://github.com/okolo/mcray_dev/blob/main/docs/tasks/T1/README.md, must assess the
 unknown high-energy tail and the zero-padding transition. Do not change
 production extrapolation or add high-energy mechanisms without approval.
 
 Unified Nucleus/TALYS implementation verification: all 88 short CTest entries
 pass on macOS arm64 and Docker Linux amd64 emulation. Real-data isolated
-TALYS and CRbeam controls are documented in talys_usage.md. They do not
+TALYS and CRbeam controls are documented in docs/usage/talys_usage.md. They do not
 establish full CRPropa agreement, rare-output precision or validity of the
 omitted high-energy tail. TransportCR was not modified by this migration.
 
@@ -354,7 +357,7 @@ The user separately approved fixing the pinned generator's inclusive/exclusive
 branch normalization and adding Be11 B-P as beta-minus plus proton emission.
 Preserve the unmodified reference outside Git. Do not interpret missing decay
 data as stability or enable artificial unknown-isotope dripping.
-Read nuclear_decay.md for the data contract, preparation and validation limits.
+Read docs/usage/nuclear_decay.md for the data contract, preparation and validation limits.
 
 Nuclear decay implementation verification: all 96 short CTest entries pass
 on macOS arm64 and Docker Linux amd64 emulation. External Be8, B12 and
@@ -364,8 +367,47 @@ outputs remain outside Git. Full CRPropa spectral agreement and rare-branch
 precision remain unestablished.
 
 Nuclear decay and combined TALYS comparison planning is recorded in
-nuclear_decay_comparison_plan.md. Proposed dual CRPropa data references,
+https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_decay_comparison_plan.md. Proposed dual CRPropa data references,
 statistical budgets and ensemble cap require the user's new approval;
 previous GZK/PSB approvals do not automatically cover these comparisons.
 Do not launch large acceptance ensembles before freezing the observable
 families, reference data, numerical controls and validation seeds.
+
+### Comparison execution authorized on 2026-10-08
+
+The user authorized starting the comparison checks and required checks longer
+than 30 minutes to be provided as a separate external Linux server script.
+Use tests/crpropa/run_external_linux.sh for long ensembles; keep local runs
+below 1800 seconds. The user also approved identical tabulated photon density
+in comparison adapters, without changing production constants/backgrounds.
+Measure native-background effects separately. Short decay pilots, deterministic
+rates and TALYS numerical diagnostics are recorded in
+docs/validation/nuclear_decay_comparison_results.md. Acceptance observables and numerical
+reference treatment still need to be frozen before large TALYS ensembles.
+The shared 51-node beta-CDF bias is documented; do not silently replace the
+approved sampler. Production physics was unchanged during these diagnostics.
+
+## Documentation organization
+
+The user approved the hybrid scheme on 2026-10-08. This repository owns code,
+public usage and implemented contracts, test adapters, and confirmed validation
+results and limitations, indexed in [docs/README.md](docs/README.md).
+Keep README.md and AGENTS.md at the repository root.
+
+The private mcray_dev repository owns design, research, decision history,
+validation plans and the future task index. Its remote is
+https://github.com/okolo/mcray_dev. In the local adopted workspace, its root
+is the parent of this repository and this checkout is its mcray submodule.
+See ../AGENTS.md and ../docs/README.md when working in that private workspace.
+Do not require private access for public builds, tests or usage. Each document
+has one canonical home; link across repositories rather than maintain copies.
+Future tasks have stable T1, T2, and subsequent IDs in the private index;
+registration does not authorize implementation. T2 records the shared beta
+sampling bias. Preserve this checkout's current branch and uncommitted work.
+Do not publish a private gitlink until its mcray commit is available remotely.
+
+Private design/research/planning documents belong only in mcray_dev. Before
+publishing an unpublished development branch, verify that such files are absent
+from every commit being pushed, not merely deleted from its final tree. Preserve
+an ignored external backup before any authorized history rewrite. Never rewrite
+published history or force-push without separate explicit authorization.

@@ -170,4 +170,4 @@ of rare branches, accuracy of the ionization correction, or nuclear GZK/pair
 support. Dedicated rate, branching and spectral comparisons remain necessary.
 
 The follow-up CRPropa comparison stages and pending acceptance proposals are
-recorded in nuclear_decay_comparison_plan.md.
+recorded in https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_decay_comparison_plan.md.

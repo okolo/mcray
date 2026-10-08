@@ -110,7 +110,7 @@ library also contains a main object that delegates to user_main.
 
 ## PSB propagation against TransportCR
 
-See ../nuclear_validation_plan.md and ../psb_validation_results.md.
+See https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_validation_plan.md and ../docs/validation/psb_validation_results.md.
 The real production PropagationEngine is used by nuclear_scenario; no
 transport algorithm is duplicated in the tests.
 
@@ -163,7 +163,7 @@ check, not a proof of absolute error or of spectral-shape convergence.
 
 ## Approved GZK spectral comparison
 
-See ../gzk_spectral_validation_plan.md. Seven secondary species in four
+See https://github.com/okolo/mcray_dev/blob/main/docs/validation/gzk_spectral_validation_plan.md. Seven secondary species in four
 fixed energy intervals form a family of 28 observables. The approved method
 uses 99% simultaneous Bonferroni Student intervals and a 5% spectral budget;
 existing integrated moment checks remain unchanged.
@@ -210,7 +210,7 @@ completed physical agreement test or use it to select favorable seeds.
 ## Independent SOPHIA table generator
 
 The original TransportCR predecessor generator was found at
-~/propagation/sources/sophia. See ../sophia_table_generation.md for source
+~/propagation/sources/sophia. See ../docs/validation/sophia_table_generation.md for source
 provenance, runtime estimates, and pending full-statistics decisions.
 Build an immutable working copy outside Git using the existing Linux amd64
 image (build it with bin/test-docker.sh first):
@@ -269,7 +269,7 @@ and Linux amd64; it is not validated for the entire daughter chain.
 The all-daughter integration regression uses the working tolerance 1e-4,
 compares K/S rates and spacing 0.01/0.005 to within 0.05%, and additionally
 checks tolerance 1e-5 for the specific Fe56/A30 regression points. Read
-psb_validation_results.md for statistical limitations, reference-grid
+../docs/validation/psb_validation_results.md for statistical limitations, reference-grid
 controls, and raw-run locations. A zero observed rare yield and zero empirical
 SE do not establish relative precision.
 
@@ -292,7 +292,7 @@ positron. Supplying both selectors is an error.
 
 The earlier CLI-only stage was verified with 76 CTest entries on macOS and
 Docker Linux amd64. The unified migration now removes its nuclear run guard
-and connects separate PSB and TALYS processes; see ../talys_usage.md.
+and connects separate PSB and TALYS processes; see ../docs/usage/talys_usage.md.
 
 ## Unified nuclei and TALYS checks
 
@@ -303,7 +303,7 @@ clone behavior and failed-cascade isolation. CRbeam integration cases exercise
 actual Off and PSB nuclear runs, along with CLI validation.
 External real TALYS data are not bundled into the short suite or Docker image.
 
-Prepare and verify the pinned data as described in ../talys_usage.md. From bin,
+Prepare and verify the pinned data as described in ../docs/usage/talys_usage.md. From bin,
 run an isolated frozen-background scan and independent Planck convolution:
 
 ```sh
@@ -340,7 +340,7 @@ the existing four-standard-error check. They do not compare with TransportCR
 (which implements PSB) or establish rare-product statistical precision.
 
 Real-data controls and migration comparison artifacts are outside Git in
-../validation/unified-nucleus-20261008. See ../talys_usage.md for results,
+../validation/unified-nucleus-20261008. See ../docs/usage/talys_usage.md for results,
 physical limitations, data checksum verification and future comparisons.
 
 Final migration verification on 2026-10-08: all 88 short CTest entries pass
@@ -348,14 +348,14 @@ on macOS arm64 (28.87 s) and Docker Linux amd64 emulation (94.90 s).
 The real-data TALYS CMB and CMB+Inoue12 controls pass all three applicable
 GoogleTest E2E checks on macOS; the CMB control and two-thread CRbeam TALYS
 run also pass on Linux amd64. These results retain the physical-validation
-limitations stated above and in ../talys_usage.md.
+limitations stated above and in ../docs/usage/talys_usage.md.
 
 ## Nuclear decay controls
 
 The current short suite contains 96 CTest entries. NuclearDecay tests cover
 lifetimes, branches, beta leptons, compound channels, emission bookkeeping,
 preflight errors and exponential survival in the transport engine. See
-nuclear_decay.md for external real-data scenarios and data preparation.
+../docs/usage/nuclear_decay.md for external real-data scenarios and data preparation.
 nuclear_decay_comparison runs GoogleTest assertions on isolated scenario
 outputs, including charge with leptons; exact beta event energy conservation
 is not asserted under the approved CRPropa kinematics.

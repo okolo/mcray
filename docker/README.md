@@ -110,7 +110,7 @@ This builds a temporary clone of the pinned TransportCR reference using its
 unchanged bin/build.sh, and compares static-CMB propagation with 200,000 mcray
 primary histories in 20 independent batches. No TransportCR changes are committed.
 Results, input XML, logs, reference revision, and GoogleTest XML are saved in a
-new build/transportcr-validation.* directory. See ../psb_validation_results.md
+new build/transportcr-validation.* directory. See ../docs/validation/psb_validation_results.md
 for the physical setup, convergence checks, and remaining limitations.
 This long comparison is not part of the default short CTest suite.
 
