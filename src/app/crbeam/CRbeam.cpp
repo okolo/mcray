@@ -47,6 +47,9 @@
 #include "Stecker16Background.h"
 #include <stdlib.h>
 #include "MathUtils.h"
+#include "Nucleus.h"
+#include "PhotoDisintegration.h"
+#include "TalysPhotoDisintegration.h"
 
 #ifndef _DEBUG
 #include <sys/time.h>
@@ -78,7 +81,7 @@ enum ClineParams
 {
 	PHelp = 1,PLog,PLogFilterThread,PLogLevel,PTrajectoryLog,
     PNparticles,PBatchSize,
-    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PNoEMcascade,PSourceEvolM,
+    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix
 };
@@ -113,6 +116,11 @@ static CmdInfo commands[] = {
 																					  "\tPhoton = 2,\n"
 																					  "\tNeutron 9,\n"
 																					  "\tProton 10" },
+        { PParticle, CmdInfo::FLAG_ARGUMENT, "-particle", "--particle", "", "Primary particle name (nucleus, proton, neutron, photon, electron, positron or a neutrino name); replaces --primary when supplied" },
+        { PA, CmdInfo::FLAG_ARGUMENT, "-A", "--A", "0", "Unsigned nuclear mass number (A>=2 required for nucleus; unused otherwise)" },
+        { PZ, CmdInfo::FLAG_ARGUMENT, "-Z", "--Z", "0", "Unsigned nuclear charge number (0=choose from the PSB chain; unused unless nucleus)" },
+        { PPhotodisintegration, CmdInfo::FLAG_ARGUMENT, "-pd", "--photodisintegration", "Off", "Nuclear photodisintegration: TALYS, PSB or Off (default Off)" },
+        { PTalysData, CmdInfo::FLAG_ARGUMENT, "-talys-data", "--talys-data", "", "Prepared, pinned raw TALYS data directory (required for nuclear TALYS runs)" },
 		{ PNoEMcascade,    CmdInfo::FLAG_NULL,     "-nEM",   "--noEMcascade",   NULL,   "don't calculate spectra of electrons and photons" },
 		{ PSourceEvolM, CmdInfo::FLAG_ARGUMENT, "-m",   "--m_z",   xstr(M_POINT_SOURCE),    "if parameter is set (!=" xstr(M_POINT_SOURCE) "), use continuous source distribution ~(1+z)^m" },
 		{ PBackground,    CmdInfo::FLAG_ARGUMENT, "-b",   "--background",   "3",    "EBL used:\n"
@@ -211,6 +219,9 @@ CRbeam::CRbeam(int argc, char** argv):
 		fNoParticles(0),
         fBatchSize(0),
 		fPrimary(Proton),
+        fNuclearPrimary(false),
+        fPrimaryA(0),
+        fPrimaryZ(0),
 		fNoEM(false),
 		fMz(M_POINT_SOURCE),
 		fBackgroundModel(0),
@@ -292,10 +303,62 @@ CRbeam::CRbeam(int argc, char** argv):
 	if(primary<Electron || primary>Proton)
 		Exception::Throw("invalid primary particle type");
 	fPrimary = (ParticleType)primary;
+    const std::string particleName = static_cast<const char*>(cmd(PParticle));
+    if (cmd.has_param("--particle")) {
+        if (cmd.has_param("--primary"))
+            Exception::Throw("Use either --particle or --primary, not both");
+        if (particleName == "nucleus") fNuclearPrimary = true;
+        else {
+            bool found = false;
+            for (int type = Electron; type <= Proton; ++type)
+                if (particleName == Particle::Name(static_cast<ParticleType>(type))) {
+                    fPrimary = static_cast<ParticleType>(type);
+                    found = true;
+                    break;
+                }
+            if (!found) Exception::Throw("Unknown --particle value: " + particleName);
+        }
+    }
+    // Parse unsigned syntax even for non-nuclear inputs, but do not apply
+    // nuclear interpretation or restrictions to their A,Z values.
+    const unsigned int inputA = cmd(PA), inputZ = cmd(PZ);
+    if (fNuclearPrimary) {
+        if (inputA < 2) Exception::Throw("--particle nucleus requires --A >= 2; use proton or neutron for A=1");
+        if (inputZ > inputA) Exception::Throw("--Z must not exceed --A");
+        unsigned int resolvedZ = inputZ;
+        if (!resolvedZ) {
+            if (inputA > 56) Exception::Throw("No PSB-chain representative for --A; specify --Z explicitly");
+            resolvedZ = CNucleus::getZ(inputA);
+        }
+        if (inputA != 56 || resolvedZ != 26)
+            Exception::Throw("The first nuclear stage supports only primary Fe56 (A=56, Z=26)");
+        fPrimary = Nucleus;
+        fPrimaryA = inputA;
+        fPrimaryZ = resolvedZ;
+        std::cout << "Primary nucleus: A=" << fPrimaryA << " Z=" << fPrimaryZ
+                  << " Z_selection=" << (inputZ ? "explicit" : "PSB-chain") << std::endl;
+    }
+    fPhotodisintegration = static_cast<const char*>(cmd(PPhotodisintegration));
+    fTalysDataPath = static_cast<const char*>(cmd(PTalysData));
+    if (fPhotodisintegration != "Off" && fPhotodisintegration != "PSB" && fPhotodisintegration != "TALYS")
+        Exception::Throw("--photodisintegration must be TALYS, PSB or Off");
+    if (fNuclearPrimary && fPhotodisintegration == "TALYS" && fTalysDataPath.empty())
+        Exception::Throw("Nuclear TALYS propagation requires --talys-data");
+
 }
 
 int CRbeam::run()
 {
+    std::shared_ptr<const TalysData> talys;
+    if (fNuclearPrimary && fPhotodisintegration == "TALYS") {
+        talys = std::make_shared<TalysData>(fTalysDataPath);
+        talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
+    }
+    auto configurePrimary = [&](Particle& p) {
+        if (!fNuclearPrimary) return;
+        if (talys) talys->SetParticle(p, fPrimaryA, fPrimaryZ);
+        else p.SetPsbNucleus(fPrimaryA);
+    };
 	int kAc = 1;
 	fEBLMaxE *= units.eV;
 	double Emax = fEmax_eV*units.eV;//eV
@@ -312,7 +375,10 @@ int CRbeam::run()
 		outputDir = fOutputDir;
 	else
 	{
-		outputDir = Particle::Name(fPrimary);
+		Particle source(fPrimary, 0.);
+        configurePrimary(source);
+        outputDir = source.Name();
+        if (fNuclearPrimary) outputDir += "_PD" + fPhotodisintegration;
 		outputDir += ("_E" + ToString(fEmax_eV) + "_z" + ToString(fZmax) + "_N" + ToString(fNoParticles)) + "_EBL" + ToString(fBackgroundModel);
         if(strlen(fCustomBackground)){
             outputDir += 'c';
@@ -478,6 +544,9 @@ int CRbeam::run()
 	thinning.EnableFor(Photon);
 	pe.SetThinning(&thinning);
 	pe.AddInteraction(new RedShift());
+    if (fNuclearPrimary && fPhotodisintegration == "PSB")
+        pe.AddInteraction(new PhotoDisintegration(backgrI));
+    if (talys) pe.AddInteraction(new TalysPhotoDisintegration(backgrI, talys));
 
 	if(fNoEM) {
 		ParticleType discardedParticles[] = {Electron, Positron, Photon, ParticleTypeEOF};
@@ -526,6 +595,11 @@ int CRbeam::run()
 	pOutput->SetOutputDir(outputDir + "/z" + ToString(zMin));
 	fstream paramsOut((outputDir + "/params").c_str(), std::ios_base::out);
 	cmd.printParamValues(paramsOut);
+    paramsOut << "\n# resolved_photodisintegration=" << fPhotodisintegration;
+    if (fNuclearPrimary) paramsOut << " A=" << fPrimaryA << " Z=" << fPrimaryZ
+        << " mass_model=" << (talys ? "TALYS-tabulated" : "PSB-approximate");
+    paramsOut << '\n';
+    if (talys) paramsOut << talys->Metadata();
 	result.SetEndTime(tEnd);
 	CosmoTime tStart;
 	tStart.setZ(fZmax);
@@ -576,6 +650,7 @@ int CRbeam::run()
         ofstream out_tau((outputDir + "/tau").c_str());
         for (double E=EminSource; E<=Emax; E*=step){
             Particle particle(fPrimary, tSource.z());
+        configurePrimary(particle);
             particle.Energy = E;
             Kern k(pe, particle);
             double tau = mu.Integration_qag(k, tSource.t(),tEnd.t(), 0, 1e-3, 1000);
@@ -595,6 +670,7 @@ int CRbeam::run()
 			weight = pow(1.+z,fMz);
 		}
 		Particle particle(fPrimary, tSource.z());
+        configurePrimary(particle);
 		if(fPowerLaw<=0.){
 			particle.Energy = Emax;
 			particle.Weight = weight;
@@ -616,6 +692,8 @@ int CRbeam::run()
         if(i%fBatchSize==0 || i==fNoParticles){
             std::cerr << "batch " << (i-1)/fBatchSize + 1 << " of " << ceil(fNoParticles/(double)fBatchSize) << std::endl;
             pe.RunMultithread();
+            if (fNuclearPrimary && pe.FailureCount())
+                Exception::Throw("Nuclear propagation failed; partial output must not be used (failed cascades=" + ToString(pe.FailureCount()) + ")");
             result.Flush();
             if(result.AbortRequested())
                 break; //handling Ctrl-C
@@ -628,5 +706,4 @@ int CRbeam::run()
 CRbeam::~CRbeam() {
 
 }
-
 

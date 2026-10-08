@@ -64,6 +64,10 @@ public:
 	virtual ~CRbeam();
 	void Test();
 	int run();
+    bool IsNuclearPrimary() const { return fNuclearPrimary; }
+    unsigned int PrimaryA() const { return fPrimaryA; }
+    unsigned int PrimaryZ() const { return fPrimaryZ; }
+    const std::string& PhotodisintegrationMode() const { return fPhotodisintegration; }
 private:
 	double			fEmin_eV;
 	double			fEmax_eV;
@@ -76,6 +80,9 @@ private:
 	int				fNoParticles;
 	int				fBatchSize;
 	ParticleType 	fPrimary;
+    bool fNuclearPrimary;
+    unsigned int fPrimaryA, fPrimaryZ;
+    std::string fPhotodisintegration, fTalysDataPath;
 	bool 			fNoEM;
 	double			fMz;
 	int				fBackgroundModel;

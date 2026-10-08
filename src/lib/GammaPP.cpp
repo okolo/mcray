@@ -94,8 +94,8 @@ void GammaPP::SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSec
 	Particle sec = aParticle;
 	Particle sec2 = aParticle;
 	double rand = aRandomizer.Rand();
-	sec.Type = rand>0.5 ? Electron : Positron;
-	sec2.Type = rand>0.5 ? Positron : Electron;
+	sec.SetType(rand>0.5 ? Electron : Positron);
+	sec2.SetType(rand>0.5 ? Positron : Electron);
 	double r = SampleSecondaryFracE(aS, aRandomizer.Rand());
 	sec.Energy = aParticle.Energy*r;
 	sec2.Energy = aParticle.Energy - sec.Energy;
@@ -373,7 +373,7 @@ void GammaPP::UnitTestSampling(double aE, double aZ)
 	Particle photon(Photon, aZ);
 	photon.Energy = aE;//MeV
 	photon.Time.setZ(aZ);
-	photon.Type = Photon;
+	photon.SetType(Photon);
 	Randomizer rnd;
 	double S=2.;
 	for(int i=0; i<10000; i++)

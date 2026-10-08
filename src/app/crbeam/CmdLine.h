@@ -78,6 +78,7 @@ namespace cors
 				operator ASCII_TYPE( void );
 				operator int( void );
 				operator double( void );
+				operator unsigned int( void );
 				operator bool( void );
 				operator CmdInfoPtr( void );
 

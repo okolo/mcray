@@ -46,7 +46,8 @@ PropagationEngine::PropagationEngine(ParticleStack &aStack, IResult &aResult, un
         fAccuracy(0.01),
         fMinStep(0.),
         fInfoPrinted(false),
-        fLogger(0)
+        fLogger(0),
+        fFailureCount(std::make_shared<std::atomic<unsigned long long>>(0))
 {
 	if(!aRandSeed)
 		fLastRandSeed++;
@@ -61,7 +62,9 @@ PropagationEngine::PropagationEngine(PropagationEngine &aEngine, unsigned long i
 		fRandomizer(aRandSeed ? aRandSeed:fLastRandSeed),
 		fAccuracy(aEngine.fAccuracy),
         fMinStep(aEngine.fMinStep),
-        fLogger(aEngine.fLogger)
+        fInfoPrinted(false),
+        fLogger(aEngine.fLogger),
+        fFailureCount(aEngine.fFailureCount)
 {
 	if(!aRandSeed)
 		fLastRandSeed++;
@@ -104,10 +107,13 @@ void PropagationEngine::Run(double aMaxRateVariation) {
                 }
 
             }catch(Exception* ex){
-                fFinalParticles.clear();//don't save current paricle cascade
+                ++(*fFailureCount);
+                fSecondaryParticles.clear();
+                fFinalParticles.clear();//discard the entire failed cascade
                 std::string message = ex->Message() + "\tprimary " + p.ToString();
                 LOG_ERROR(message);
                 std::cerr << message << std::endl;
+                delete ex;
             }
             if(fFinalParticles.size()){
                 fResult.Add(fFinalParticles);
@@ -116,8 +122,11 @@ void PropagationEngine::Run(double aMaxRateVariation) {
         }
     }catch(Exception* ex)
     {
+        ++(*fFailureCount);
+        fFinalParticles.clear(); fSecondaryParticles.clear();
         LOG_ERROR(ex->Message());
         std::cerr << ex->Message() << std::endl;
+        delete ex;
     }
 }
 
@@ -279,6 +288,7 @@ void PropagationEngine::RunParticle(Particle& aParticle)
                     }
                     std::cerr << ex->Message() << "\n\tattempting to recover" << std::endl;
                     secondaries.clear();
+                    delete ex;
                 }
             }
             if(interactionOccurred) {
@@ -479,6 +489,7 @@ void PropagationEngine::RunParticleWithVariableRate(Particle& aParticle, double 
                     }
                     LOG_WARNING(ex->Message() + "\tattempting to recover");
                     secondaries.clear();
+                    delete ex;
                 }
             }
             if(interactionOccurred) {
@@ -499,6 +510,7 @@ void PropagationEngine::RunParticleWithVariableRate(Particle& aParticle, double 
 
 void PropagationEngine::HandleSecondaries(Particle& aPrimary, vector<Particle>& aSecondaries, double aWeightMultiplier)
 {
+    for (const auto& p : aSecondaries) p.ValidateIdentity();
 	long numberOfInteractions = aPrimary.Ninteractions + 1;
 	if(fFilter)
 		for(int i=aSecondaries.size()-1; i>=0; i--) {

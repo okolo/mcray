@@ -272,3 +272,80 @@ checks tolerance 1e-5 for the specific Fe56/A30 regression points. Read
 psb_validation_results.md for statistical limitations, reference-grid
 controls, and raw-run locations. A zero observed rare yield and zero empirical
 SE do not establish relative precision.
+
+
+## CRbeam nuclear source input
+
+CRbeam accepts `--particle nucleus --A 56 --Z 26`. Both nuclear numbers are
+unsigned integers with defaults 0. `--A 56` alone, or `--A 56 --Z 0`, chooses
+Z=26 through the PSB-chain representative table. Source redshift still uses
+lowercase `--z`. Negative integers, fractional/scientific notation, trailing
+characters, missing values, and unsigned overflow are rejected.
+
+The first-stage source is limited to Fe56. A nucleus requires A>=2; explicit
+Z must not exceed A, and automatic selection requires a PSB-table entry.
+The resolved A,Z and Z-selection method are printed. For other particles,
+A,Z values have no physical effect, although their unsigned syntax is checked.
+Existing numeric `--primary` remains supported. Named `--particle` accepts
+existing Particle::Name values such as proton, neutron, photon, electron and
+positron. Supplying both selectors is an error.
+
+The earlier CLI-only stage was verified with 76 CTest entries on macOS and
+Docker Linux amd64. The unified migration now removes its nuclear run guard
+and connects separate PSB and TALYS processes; see ../talys_usage.md.
+
+## Unified nuclei and TALYS checks
+
+Short GoogleTest cases include identity/mass copying and mutation errors,
+PSB/TALYS mass-model separation, isotope output and trajectory columns,
+synthetic data/network validation, exclusive-channel selection, conservation,
+clone behavior and failed-cascade isolation. CRbeam integration cases exercise
+actual Off and PSB nuclear runs, along with CLI validation.
+External real TALYS data are not bundled into the short suite or Docker image.
+
+Prepare and verify the pinned data as described in ../talys_usage.md. From bin,
+run an isolated frozen-background scan and independent Planck convolution:
+
+```sh
+../build/Release/tests/nuclear_scenario --process talys \
+  --talys-data ../../validation/talys-fe56-34b10e2 --scan \
+  --output ../../validation/talys-cmb-scan.tsv
+python3 ../tests/talys/check_cmb_rates.py \
+  --data ../../validation/talys-fe56-34b10e2 \
+  --scan ../../validation/talys-cmb-scan.tsv \
+  --output ../../validation/talys-cmb-independent.tsv
+```
+
+The independent script uses analytic CMB density and composite Simpson
+quadrature in log(K), with its own log/zero interpolation. It reports
+numerical differences and reference convergence without declaring a physical
+TALYS acceptance threshold. mcray's existing unit constants are held fixed.
+
+An isolated E2E control and GoogleTest verification, from bin:
+
+```sh
+../build/Release/tests/nuclear_scenario --process talys \
+  --talys-data ../../validation/talys-fe56-34b10e2 --distance-mpc 1 \
+  --energy-per-nucleon 3.9810717055349857e18 --primaries 1000 --batches 1 \
+  --output ../../validation/talys-cmb-e2e.tsv
+../build/Release/tests/nuclear_comparison --process talys \
+  --mc ../../validation/talys-cmb-e2e.tsv --primaries 1000 --batches 1 \
+  --energy-per-nucleon 3.9810717055349857e18
+```
+
+Use --background cmb-inoue for the agreed frozen Inoue12 background. The
+TALYS E2E checks assert per-history A,Z and energy conservation, complete
+history counts, and Fe56 survival against the static attenuation law using
+the existing four-standard-error check. They do not compare with TransportCR
+(which implements PSB) or establish rare-product statistical precision.
+
+Real-data controls and migration comparison artifacts are outside Git in
+../validation/unified-nucleus-20261008. See ../talys_usage.md for results,
+physical limitations, data checksum verification and future comparisons.
+
+Final migration verification on 2026-10-08: all 88 short CTest entries pass
+on macOS arm64 (28.87 s) and Docker Linux amd64 emulation (94.90 s).
+The real-data TALYS CMB and CMB+Inoue12 controls pass all three applicable
+GoogleTest E2E checks on macOS; the CMB control and two-thread CRbeam TALYS
+run also pass on Linux amd64. These results retain the physical-validation
+limitations stated above and in ../talys_usage.md.

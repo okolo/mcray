@@ -67,7 +67,7 @@ namespace Interactions {
         RandomInteraction* Clone() const;
         virtual ~PhotoDisintegration();
         double Rate(const Particle& aParticle) const;
-        static void UnitTest(ParticleType aPrimary, bool aPrintRates, bool aPropagate, bool aSplit, double aEmin, double aEmax, double aZmax, int nParticles=1000);
+        static void UnitTest(unsigned int aPrimary, bool aPrintRates, bool aPropagate, bool aSplit, double aEmin, double aEmax, double aZmax, int nParticles=1000);
         static int UnitTest();
         bool SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer) const;
         bool GetSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, Randomizer& aRandomizer) const;

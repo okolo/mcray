@@ -53,11 +53,12 @@ SpectrumOutput::~SpectrumOutput() {
 
 void SpectrumOutput::AddParticle(const Particle& aParticle)
 {
+    aParticle.ValidateIdentity();
 	int iBin = log(aParticle.Energy/fEmin)/fLogStep;
 	if(iBin<0)
 		return;//skip output of particles with E<Emin
-	Vector& spec = fSpectra[aParticle.Type];
-	std::vector<int>& numbers = fNumberOfParticles[aParticle.Type];
+	Vector& spec = aParticle.Type == Nucleus ? fNuclearSpectra[aParticle.Name()] : fSpectra[aParticle.Type];
+	std::vector<int>& numbers = aParticle.Type == Nucleus ? fNuclearNumbers[aParticle.Name()] : fNumberOfParticles[aParticle.Type];
 	while((int)spec.size()<=iBin)
 	{
 		spec.push_back(0);
@@ -84,13 +85,20 @@ void SpectrumOutput::Flush(bool aFinal)
 		if(size>nBins)
 			nBins = size;
 	}
+    for (const auto& entry : fNuclearSpectra) nBins = std::max(nBins, static_cast<unsigned>(entry.second.size()));
+    if (!fNuclearSpectra.empty()) {
+        fileOut << "# E/eV";
+        for (int p = 0; p < Nucleus; ++p) fileOut << "\t" << Particle::Name(static_cast<ParticleType>(p)) << "_E2dN/dE\tN";
+        for (const auto& entry : fNuclearSpectra) fileOut << "\t" << entry.first << "_E2dN/dE\tN";
+        fileOut << '\n';
+    }
 	double mult = exp(fLogStep);
 	double E=fEmin*sqrt(mult);
 	double deltaEmult = sqrt(mult) - 1./sqrt(mult);
 	for(unsigned int iE=0; iE<nBins; iE++, E*=mult)
 	{
 		fileOut << E*units.Eunit*1e6;//eV
-		for(unsigned int p=0; p<ParticleTypeEOF; p++)
+		for(unsigned int p=0; p<Nucleus; p++)
 		{
 			double intFlux = 0;
 			int	nParticles = 0;
@@ -101,6 +109,11 @@ void SpectrumOutput::Flush(bool aFinal)
 			}
 			fileOut << "\t" << intFlux*deltaEmult*E << "\t" << nParticles;//print dN(E)/dE * E^2
 		}
+        for (const auto& entry : fNuclearSpectra) {
+            const bool present = entry.second.size() > iE;
+            fileOut << "\t" << (present ? entry.second[iE] * deltaEmult * E : 0.)
+                    << "\t" << (present ? fNuclearNumbers.at(entry.first)[iE] : 0);
+        }
 		fileOut << '\n';
 	}
 	fileOut << "\n\n";/// delimiters between consequent spectra outputs
@@ -111,7 +124,6 @@ RawOutput::RawOutput(std::string aDir, bool aCheckRepetitions, bool aOverwriteEx
 		fParticles(0),
 		fDir(aDir),
 		fCheckRepetitions(aCheckRepetitions),
-        fHeaderWritten(ParticleTypeEOF,false),
         fFlushInProgress(false)
 {
 	SetOutputDir(aDir, aOverwriteExisting);
@@ -126,6 +138,7 @@ RawOutput::~RawOutput()
 void RawOutput::SetOutputDir(std::string aDir, bool aOverwriteExisting)
 {
 	fDir = aDir;
+    fHeaderWritten.clear();
 	if(mkdir(fDir.c_str(),0777))
 	{
 		if(aOverwriteExisting)
@@ -150,6 +163,7 @@ void RawOutput::CopyToStack(ParticleStack& aStack)
 
 void RawOutput::AddParticle(const Particle& aParticle)
 {
+    aParticle.ValidateIdentity();
 	fParticles[aParticle.Type].push_back(aParticle);
 }
 
@@ -162,32 +176,29 @@ void RawOutput::Flush(bool aFinal)
         LookForRepetitions(fParticles);
 
 
-	for(int p=0; p<ParticleTypeEOF; p++)
-	{
-		std::vector<Particle>& particles = fParticles[p];
-		if(particles.size()==0)
-			continue;
-		std::string fileName = fDir + "/" + Particle::Name((ParticleType)p);
-		std::ofstream file;
-		file.open(fileName.c_str(), std::ios::app);
-		if(!file) {
-            fFlushInProgress = false;
-            Exception::Throw("Failed to open " + fileName + " for writing");
+    for (int p = 0; p < ParticleTypeEOF; ++p) {
+        auto& particles = fParticles[p];
+        std::map<std::string, std::vector<const Particle*>> groups;
+        for (const auto& particle : particles) groups[particle.Name()].push_back(&particle);
+        for (const auto& group : groups) {
+            const std::string fileName = fDir + "/" + group.first;
+            std::ofstream file(fileName, std::ios::app);
+            if (!file) {
+                fFlushInProgress = false;
+                Exception::Throw("Failed to open " + fileName + " for writing");
+            }
+            if (!fHeaderWritten.count(group.first)) {
+                WriteHeader(file, *group.second.front());
+                file << "\n";
+                fHeaderWritten.insert(group.first);
+            }
+            for (const auto* particle : group.second) {
+                Write(file, *particle);
+                file << "\n";
+            }
         }
-		std::vector<Particle>::const_iterator pit = particles.begin();
-        if(!fHeaderWritten[p]) {
-            WriteHeader(file, *pit);
-            file << "\n";
-            fHeaderWritten[p] = true;
-        }
-		for(; pit != particles.end(); pit++)
-		{
-			Write(file, *pit);
-			file << "\n";
-		}
-		file.close();
-		particles.clear();
-	}
+        particles.clear();
+    }
     fFlushInProgress = false;
 }
 
@@ -259,7 +270,7 @@ void RawOutput::LookForRepetitions(std::vector<Particle>* aParticles)
 	}
 
 	void RawOutput3D::WriteHeader(std::ostream& aOut, const Particle& aFirstParticle){
-		aOut << "# " << Particle::Name(aFirstParticle.Type);
+		aOut << "# " << aFirstParticle.Name();
 		if(!fSaveSourceZ){
 			aOut << "\tz_src = "<< aFirstParticle.SourceParticle->Time.z();
 		}

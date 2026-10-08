@@ -1141,7 +1141,7 @@ double MonochromaticBackgroundIntegral::GetRateK(const Function &aSigmaK, const 
 	double eps = fEnergy.f(z);
 	double KminSigma = aSigmaK.Xmin();
 	ASSERT_VALID_NO(KminSigma);
-	double KmaxSigma = aSigmaK.Xmin();
+	double KmaxSigma = aSigmaK.Xmax();
 	double beta = aParticle.beta();
 	double m=aParticle.Mass();
 	double KmaxKinematic = aParticle.Energy * eps * (1. + beta)/m;

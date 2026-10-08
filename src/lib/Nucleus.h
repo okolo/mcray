@@ -101,7 +101,7 @@ namespace Interactions {
 
 		void getEnergyLoss(std::vector<double> &aOutput);
 
-		inline ParticleType getParticle() const { return (ParticleType)(StartNuclei + iIsotope.A - 2); };
+		inline int massNumber() const { return iIsotope.A; };
 
 		inline TPhotoDisintegrationChanalType type() { return iType; };
 
@@ -203,9 +203,9 @@ namespace Interactions {
 	public:
 		static double PPPmultiplierR(int aA);
 
-		static int getZ(ParticleType aNucleus);
+		static int getZ(unsigned int a);
 
-		static int getA(ParticleType aNucleus);
+		static constexpr int MaxA = 56;
 
 		static void getPhotopionMultipliers(int aA, double &aRn, double &aRp, double &aRN);
 

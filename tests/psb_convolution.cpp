@@ -8,6 +8,24 @@ namespace {
 using namespace mcray;
 using namespace Interactions;
 
+TEST(BackgroundConvolution, MonochromaticKUsesTheUpperCrossSectionBound) {
+    class BoundedSigma : public Utils::Function {
+    public:
+        double f(double) const override { return 2.; }
+        double Xmin() const override { return units.MeV; }
+        double Xmax() const override { return 3*units.MeV; }
+    } sigma;
+    Utils::ConstFunction density(3.), energy(units.MeV);
+    MonochromaticBackgroundIntegral background(density,energy,1.1,1e-6);
+    Particle p(Proton,0.); p.Energy=10*p.Mass();
+    // Integral K*sigma dK = sigma*(Kmax^2-Kmin^2)/2.
+    const double expected=0.5*2.*(9.-1.)/2.*3./(100.*p.beta());
+    EXPECT_NEAR(background.GetRateK(sigma,p)/expected,1.,1e-12);
+    Randomizer random(20261008); double k=0.;
+    EXPECT_NEAR(background.GetRateAndSampleK(sigma,p,random,k)/expected,1.,1e-5);
+    EXPECT_GE(k,units.MeV); EXPECT_LE(k,3*units.MeV);
+}
+
 TEST(PsbConvolution, ProductionInoueExtendsToZeroInsideCompoundBackground) {
     Backgrounds::Inoue12BaselineIROSpectrum direct;
     ASSERT_DOUBLE_EQ(direct.MinZ(), 0.);
@@ -44,7 +62,7 @@ TEST(PsbConvolution, FrozenInoueRatesDoNotEvolveAlongThePath) {
         EXPECT_DOUBLE_EQ(photons.n(1. * units.eV, z), frozen.n(1. * units.eV, 0.));
     PhotoDisintegration interaction(new ContinuousBackgroundIntegral(
         photons, 0.02, std::pow(10., 0.01), 0.02, 1e-4));
-    Particle p(A56, 0.);
+    Particle p(56u, 0.);
     p.Energy = 56 * 2.238721138568347e18 * units.eV;
     const double rate = interaction.Rate(p);
     ASSERT_GT(rate, 0.);
@@ -62,7 +80,7 @@ TEST(PsbConvolution, FrozenCmbAndKSAreConsistent) {
         cmb, 0.02, std::pow(10., 0.01), 0.02, 1e-5);
     PhotoDisintegration byK(integral, true), byS(integral, false);
     for (double gamma : {1e9, 1e10}) {
-        Particle p(A56, 0.);
+        Particle p(56u, 0.);
         p.Energy = p.Mass() * gamma;
         const double rate = byK.Rate(p);
         ASSERT_GT(rate, 0.);
@@ -95,7 +113,7 @@ TEST(PsbConvolution, DaughterSamplingCompletesWithoutDiscardingHistories) {
     PlankBackground cmb(t, t * 1e-3, t * 1e3, 0., 0.02, true);
     PhotoDisintegration interaction(new ContinuousBackgroundIntegral(
         cmb, 0.02, std::pow(10., 0.01), 0.02, 1e-4));
-    Particle p(A55, 0.);
+    Particle p(55u, 0.);
     p.Energy = 55 * 2.238721138568347e18 * units.eV;
     p.Time.setZ(0.0044801);
     Randomizer random(1);
@@ -127,7 +145,7 @@ TEST(PsbConvolution, InoueDaughterRatesConvergeAndAgreeInKAndS) {
     for (double energy : {1e18, std::pow(10., 18.5)}) {
         for (int a = 2; a <= 56; ++a) {
             SCOPED_TRACE(::testing::Message() << "A=" << a << " E/A=" << energy);
-            Particle p(static_cast<ParticleType>(A02 + a - 2), 0.01);
+            Particle p(static_cast<unsigned int>(a), 0.01);
             p.Energy = a * energy * units.eV;
             try {
                 const double rate = byK.Rate(p);

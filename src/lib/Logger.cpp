@@ -37,6 +37,7 @@ namespace mcray {
     }
 
     void Logger::log(const Particle &p) {
+        p.ValidateIdentity();
 #pragma omp critical (ParticleStack)
         {
             if(!fHeaderPrinted){
@@ -63,10 +64,11 @@ namespace mcray {
         std::streamsize orig_pr = aOut.precision(12);
         aOut << t/units.Mpc << std::setprecision(orig_pr) << "\t" << p.ElectricCharge()
              << "\t" << p.Energy/units.eV << "\t" << p.Pdir[0] << "\t" << p.Pdir[1] << "\t" << t_1*p.X[0]
-             << "\t" << t_1*p.X[1]  << "\t" << zDif;
+             << "\t" << t_1*p.X[1]  << "\t" << zDif
+             << "\t" << p.MassNumber() << "\t" << p.AtomicNumber() << "\t" << p.Mass()/units.MeV;
     }
 
     void Logger::print_header(std::ostream& aOut){
-        aOut << "type\tt/Mpc\tcharge\tE/eV\tp[0]/p\tp[1]/p\tx/t\ty/t\t1-z/t";
+        aOut << "type\tt/Mpc\tcharge\tE/eV\tp[0]/p\tp[1]/p\tx/t\ty/t\t1-z/t\tA\tZ\tmass/MeV";
     }
 }

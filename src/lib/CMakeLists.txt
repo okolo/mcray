@@ -133,6 +133,8 @@ Utils.h
 main.cpp
 PhotoDisintegration.cpp
 PhotoDisintegration.h
+TalysPhotoDisintegration.cpp
+TalysPhotoDisintegration.h
 SteckerEBL.cpp
 SteckerEBL.h
 Stecker16Background.cpp

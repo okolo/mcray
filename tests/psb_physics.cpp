@@ -40,7 +40,7 @@ public:
 };
 
 Particle nucleus(int a) {
-    Particle p(static_cast<ParticleType>(A02 + a - 2), 0.);
+    Particle p(static_cast<unsigned int>(a), 0.);
     p.Energy = 1e20 * units.eV;
     p.Weight = 2.5;
     return p;
@@ -85,9 +85,9 @@ TEST(PsbNetwork, IdentityMassAndExpectedBaryonYieldAcrossTheChain) {
     CPhotoDisintegrationMap map;
     for (int a = 2; a <= 56; ++a) {
         Particle p = nucleus(a);
-        ASSERT_EQ(CNucleus::getA(p.Type), a);
-        EXPECT_GE(CNucleus::getZ(p.Type), 0);
-        EXPECT_LE(CNucleus::getZ(p.Type), a);
+        ASSERT_EQ(p.MassNumber(), a);
+        EXPECT_GE(p.AtomicNumber(), 0);
+        EXPECT_LE(p.AtomicNumber(), a);
         EXPECT_DOUBLE_EQ(p.Mass(), a * 0.5 * (Particle::Mass(Proton) + Particle::Mass(Neutron)));
         const auto* channels = map.getOutcome(a);
         ASSERT_NE(channels, nullptr);
@@ -130,7 +130,7 @@ TEST(PsbSampling, HighEnergyChannelDoesNotIncludeGaussianBeyondItsUpperLimit) {
         std::array<double, 57> observed{};
         double energy = 0.;
         for (const auto& product : products) {
-            const int a = product.Type == Neutron ? 0 : CNucleus::getA(product.Type);
+            const int a = product.Type == Neutron ? 0 : product.MassNumber();
             observed[a] += product.Weight / p.Weight;
             EXPECT_NEAR(product.Energy / p.Energy, product.Mass() / p.Mass(), 1e-15);
             energy += product.Energy * product.Weight;
@@ -161,9 +161,9 @@ TEST(PsbSampling, LightNucleiHaveCorrectWeightedMultiplicities) {
                     expected[product] += entry->iRate;
         double baryons = 0.;
         for (const auto& product : products) {
-            const int output = product.Type == Neutron ? 0 : CNucleus::getA(product.Type);
+            const int output = product.Type == Neutron ? 0 : product.MassNumber();
             observed[output] += product.Weight / p.Weight;
-            baryons += CNucleus::getA(product.Type) * product.Weight / p.Weight;
+            baryons += product.MassNumber() * product.Weight / p.Weight;
         }
         for (int i = 0; i <= 56; ++i) EXPECT_NEAR(observed[i], expected[i], 1e-12);
         EXPECT_NEAR(baryons, a, 1e-12);

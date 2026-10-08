@@ -34,6 +34,8 @@
 #include "Thinning.h"
 #include "Filter.h"
 #include "ParticleStack.h"
+#include <atomic>
+#include <memory>
 #include "Randomizer.h"
 #include "Utils.h"
 #include "Logger.h"
@@ -62,6 +64,7 @@ public:
     inline void SetMinimalStep(double aMinStep) { fMinStep = aMinStep; }
     inline void SetLogger(ILogger* aLogger){fLogger=aLogger;}
     double GetInteractionRate(const Particle &aParticle) const;
+    unsigned long long FailureCount() const { return fFailureCount->load(); }
 private:
     void RunParticle(Particle& aParticle);
     void move(Particle &aParticle, cosmo_time aDt, double aElossRate);
@@ -85,6 +88,7 @@ private:
     static unsigned long int			fLastRandSeed;
     bool                                fInfoPrinted;
     ILogger*                            fLogger;
+    std::shared_ptr<std::atomic<unsigned long long>> fFailureCount;
 };
 
 }

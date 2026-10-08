@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "gzk_spectral_statistics.h"
 #include <cmath>
+#include <array>
 #include <fstream>
 #include <iomanip>
 #include <map>
@@ -332,11 +333,42 @@ TEST(NuclearEndToEnd, PsbSurvivalMatchesStaticAttenuation) {
     ASSERT_GT(distance, 0.);
     const double expected = std::exp(-eventRate * distance);
     double survivors = 0.;
-    for (const auto& r : rows) if (r.species == "A56") survivors += r.yield;
+    for (const auto& r : rows) if (group(r.species) == "Fe56") survivors += r.yield;
     const double count = static_cast<double>(options.batches) * options.primaries;
     const double observed = survivors / count;
     const double se = std::sqrt(expected * (1.-expected) / count);
     EXPECT_LE(std::abs(observed-expected), 4*se + 1e-4);
+}
+
+TEST(NuclearEndToEnd, TalysPreservesBaryonsChargeAndEnergyPerHistory) {
+    if (options.process != "talys") GTEST_SKIP();
+    std::map<std::pair<int,int>, std::array<double,3>> sums;
+    for (const auto& r : rows) {
+        int a=0,z=0;
+        if (r.species=="proton") { a=1; z=1; }
+        else if (r.species=="neutron") a=1;
+        else {
+            std::smatch match;
+            ASSERT_TRUE(std::regex_match(r.species,match,std::regex("A([0-9]+)Z([0-9]+)")));
+            a=std::stoi(match[1]); z=std::stoi(match[2]);
+        }
+        auto& sum=sums[{r.batch,r.history}];
+        sum[0]+=a*r.yield; sum[1]+=z*r.yield; sum[2]+=r.energy;
+    }
+    for (const auto& item:sums) {
+        EXPECT_DOUBLE_EQ(item.second[0],56.); EXPECT_DOUBLE_EQ(item.second[1],26.);
+        EXPECT_NEAR(item.second[2]/(56*options.energyPerNucleon),1.,1e-12);
+    }
+}
+TEST(NuclearEndToEnd, TalysSurvivalMatchesStaticAttenuation) {
+    if (options.process != "talys") GTEST_SKIP();
+    ASSERT_GE(eventRate,0.); ASSERT_GT(distance,0.);
+    const double expected=std::exp(-eventRate*distance);
+    const double count=static_cast<double>(options.batches)*options.primaries;
+    double survivors=0.;
+    for (const auto& r:rows) if (r.species=="A56Z26") survivors+=r.yield;
+    const double se=std::sqrt(expected*(1.-expected)/count);
+    EXPECT_LE(std::abs(survivors/count-expected),4*se+1e-4);
 }
 
 TEST(NuclearEndToEnd, NucleonEnergyMomentsAgreeWithTransportCR) {

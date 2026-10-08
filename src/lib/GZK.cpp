@@ -112,7 +112,7 @@ void GZK::SampleSecondaries(mcray::Particle &aParticle,
     while(--noSecondaries>=0)
     {
         Particle sec = aParticle;
-        sec.Type = (ParticleType)secTypes[noSecondaries];
+        sec.SetType((ParticleType)secTypes[noSecondaries]);
         sec.Energy *= secEfrac[noSecondaries];
         sec.fCascadeProductionTime = aParticle.Time;
         aSecondaries.push_back(sec);

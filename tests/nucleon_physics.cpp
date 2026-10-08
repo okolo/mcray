@@ -42,7 +42,7 @@ TEST(NucleonGzk, SupportedRatesAndClonePreserveCrossSections) {
         ASSERT_GT(interaction.Rate(p), 0.);
         EXPECT_DOUBLE_EQ(clone->Rate(p), interaction.Rate(p));
     }
-    EXPECT_DOUBLE_EQ(interaction.Rate(Particle(A56, 0.)), 0.);
+    EXPECT_DOUBLE_EQ(interaction.Rate(Particle(56u, 0.)), 0.);
 }
 
 TEST(NucleonGzk, SophiaEventsPreserveNucleonNumberWeightAndEnergy) {
@@ -105,8 +105,9 @@ TEST(ProtonPairs, CelCloneAndUnsupportedSpeciesAreExplicit) {
     ASSERT_GT(cel.Rate(p), 0.);
     EXPECT_DOUBLE_EQ(clone->Rate(p), cel.Rate(p));
     PPP random(new FixedRestFramePhoton(10. * units.MeV));
-    for (auto type : {Neutron, A56}) {
+    for (auto type : {Neutron, Nucleus}) {
         Particle unsupported(type, 0.);
+        if (type == Nucleus) unsupported.SetPsbNucleus(56);
         EXPECT_DOUBLE_EQ(cel.Rate(unsupported), 0.);
         EXPECT_DOUBLE_EQ(random.Rate(unsupported), 0.);
     }

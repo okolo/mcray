@@ -76,7 +76,7 @@ void ICS::SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSeconda
 	double r = SampleSecondaryGammaFracE(aS, rMin, aRandomizer.Rand());
 	Particle secLepton = aParticle;
 	Particle secPhoton = aParticle;
-	secPhoton.Type = Photon;
+	secPhoton.SetType(Photon);
     secPhoton.Energy = aParticle.Energy*r;
     secLepton.Energy = aParticle.Energy - secPhoton.Energy;
 	aSecondaries.push_back(secPhoton);

@@ -55,7 +55,7 @@ namespace Interactions {
 
         //proton
         Particle proton = aParticle;
-        proton.Type = Proton;
+        proton.SetType(Proton);
         proton.Energy *= Particle::Mass(Proton)/Particle::Mass(Neutron);
         double gamma = aParticle.Energy/aParticle.Mass();
         double beta = aParticle.beta();
@@ -65,12 +65,12 @@ namespace Interactions {
         double angle_e = aRandomizer.Rand()*M_PI;
         double cos_e = cos(angle_e);
         Particle electron = aParticle;
-        electron.Type = Electron;
+        electron.SetType(Electron);
         electron.Energy = gamma*(n_decay_E-beta*cos_e*n_decay_k);
 
         //neutrino
         Particle nu = aParticle;
-        nu.Type = NeutrinoAE;
+        nu.SetType(NeutrinoAE);
         nu.Energy = gamma*n_decay_k*(1.0+beta*cos_e);//cos_nu=-cos_e
 
         aSecondaries.push_back(proton);

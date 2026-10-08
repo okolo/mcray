@@ -49,11 +49,11 @@ processes later; this intermediate result is not a complete nuclear transport mo
 Primary nuclei in the first version are limited to Fe-56, with the required
 daughter isotopes. Initially use raw CRPropa3-data cross sections and
 convolution with mcray backgrounds.
-Agreed: add explicit A,Z to Particle while retaining ParticleType compatibility;
-select one exclusive TALYS channel per event.
-Legacy particles remain specified through ParticleType; explicit isotopes are
-set through a method that keeps A,Z,Type consistent. Use tabulated CRPropa
-masses for TALYS and E_i=E_parent*A_i/A_parent.
+Current agreed direction (D27, 2026-10-08): one Nucleus ParticleType with
+explicit A,Z, superseding the old per-A enum compatibility requirement.
+Free p,n retain their types. Set isotope identity through a method that keeps
+A,Z,Type consistent. Select one exclusive TALYS channel per event. Use
+tabulated CRPropa masses for TALYS nuclei and E_i=E_parent*A_i/A_parent.
 PSB retains weighted branching, its chain indexed by A, and approximate masses;
 fix implementation errors. PSB and TALYS are separate processes sharing
 particle helpers and background integrals.
@@ -77,8 +77,8 @@ At the user's instruction, no new class was created: LinearFunc received an
 optional aHandleLogZeros=false parameter. Setting it to true enables the
 agreed zero-interval handling; Clone preserves the parameter. Legacy calls
 retain their behavior. The global semantics of LogScale were not changed.
-Field details and consistency checks, out-of-grid behavior, and class names
-have not yet been agreed.
+The unified identity/mass contract, pinned data and zero-padded grid policy
+were approved on 2026-10-08; see D29-D31 and talys_usage.md.
 
 Use the predecessor added by the user, `../transportcr`, for PSB validation.
 It solves one-dimensional transport equations; baseline commit:
@@ -294,3 +294,47 @@ See psb_validation_results.md. Neutron relative SEs are 6.919% and 1.396%;
 keep both outputs statistically inconclusive under the unchanged 1% target.
 Do not increase the ensemble cap or reinterpret a precision-guard failure
 as a physical disagreement without a separately agreed next step.
+
+
+### Unified nuclear identity and CLI approval on 2026-10-08
+
+The initial A-group Type proposal (D24) was superseded by D27 after the user
+removed the legacy nuclear API compatibility requirement. Target one Nucleus
+Type with explicit A,Z; migrate PSB and nuclear output/filtering together.
+Free p,n retain Proton/Neutron and existing mcray masses. The user subsequently
+approved D25/D26: store numeric nuclear mass with A,Z and preserve it on copy.
+
+D28 approves unsigned CRbeam --A/--Z with defaults 0, A>=2 for nucleus,
+Z=0 selecting the PSB-chain representative, and ignored physical A,Z for
+non-nuclear primaries. First-stage primary scope remains Fe56. The CLI input
+contract is implemented with strict unsigned parsing and named --particle
+selection alongside legacy --primary. The unified migration now connects
+separate PSB/TALYS processes through --photodisintegration TALYS/PSB/Off,
+default Off. See talys_usage.md for data preparation and limitations.
+
+
+### Approved TALYS data and finite coverage, 2026-10-08
+
+Pin CRPropa3-data 34b10e27375c0e9894d7c984ac15fb96e12975ef. Use
+PD_Talys1.8_Khan full totals and thin exclusive channels, PD_external for A<12,
+and tabulated nuclear masses. Prepare the Fe56 network outside Git with
+checksums using tools/prepare_talys_data.py. Extend logarithmic grids with
+zero cross sections to 513 nodes as in CRPropa; sigma=0 outside that grid.
+Keep the agreed LinearFunc interpolation and zero handling.
+
+The user explicitly approved a photodisintegration-only terminal whitelist
+for missing tables: (A,Z)=(5,2),(5,3),(6,2),(8,4),(9,5),(12,5),(16,9),(20,11),
+(39,20),(42,21),(46,23),(47,24),(50,25). Warn and record it in metadata.
+These states are not asserted to be physically stable. All other missing
+required data remain errors. Nuclear decays and gamma emission are disabled
+in this stage. Existing free-neutron decay and other CRbeam processes remain.
+
+A separate future task, talys_high_energy_tail_study.md, must assess the
+unknown high-energy tail and the zero-padding transition. Do not change
+production extrapolation or add high-energy mechanisms without approval.
+
+Unified Nucleus/TALYS implementation verification: all 88 short CTest entries
+pass on macOS arm64 and Docker Linux amd64 emulation. Real-data isolated
+TALYS and CRbeam controls are documented in talys_usage.md. They do not
+establish full CRPropa agreement, rare-output precision or validity of the
+omitted high-energy tail. TransportCR was not modified by this migration.
