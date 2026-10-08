@@ -7,6 +7,7 @@
 #include "PropagationEngine.h"
 #include "Output.h"
 #include "frozen_inoue.h"
+#include "shared_photon_table.h"
 #include <array>
 #include <fstream>
 #include <iomanip>
@@ -41,7 +42,7 @@ private:
 };
 
 struct Options {
-    std::string process = "none", output, background = "cmb", talysData;
+    std::string process = "none", output, background = "cmb", talysData, photonTable;
     int z = 0, a = 56, batches = 1, primaries = 100;
     unsigned long seed = 20261001;
     double perNucleon = 1e19, distance = 0., accuracy = 1e-4;
@@ -59,6 +60,7 @@ Options parse(int argc, char** argv) {
         const std::string value = argv[++i];
         if (arg == "--process") o.process = value;
         else if (arg == "--talys-data") o.talysData = value;
+        else if (arg == "--photon-table") o.photonTable = value;
         else if (arg == "--background") o.background = value;
         else if (arg == "--output") o.output = value;
         else if (arg == "--a") o.a = std::stoi(value);
@@ -109,9 +111,12 @@ int main(int argc, char** argv) {
         const double temperature = 2.7255 * units.K;
         // Fixed-temperature support already exists in the production background.
         CompoundBackground photons;
-        photons.AddComponent(new PlankBackground(temperature, 1e-3 * temperature,
-                                                 1e3 * temperature, 0., 0.02, true));
-        if (o.background == "cmb-inoue") photons.AddComponent(new FrozenInoueBaseline);
+        if (!o.photonTable.empty()) photons.AddComponent(new SharedPhotonTable(o.photonTable));
+        else {
+            photons.AddComponent(new PlankBackground(temperature, 1e-3 * temperature,
+                                                     1e3 * temperature, 0., 0.02, true));
+            if (o.background == "cmb-inoue") photons.AddComponent(new FrozenInoueBaseline);
+        }
         PBackgroundIntegral background = new ContinuousBackgroundIntegral(
             photons, 0.02, std::pow(10., o.backgroundStepDecades), 0.02, o.accuracy);
         std::shared_ptr<const TalysData> talys;
@@ -148,6 +153,7 @@ int main(int argc, char** argv) {
             << " primary=" << primary.Name()
             << " seed=" << o.seed << " accuracy=" << o.accuracy
             << " background_step_decades=" << o.backgroundStepDecades << '\n';
+        if (!o.photonTable.empty()) out << "# shared_photon_table=" << o.photonTable << '\n';
         out << "# particle_rows=" << o.particles << '\n';
         if (talys) out << talys->Metadata();
         if (decay) out << decay->Metadata();
