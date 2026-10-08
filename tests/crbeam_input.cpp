@@ -142,4 +142,11 @@ TEST_F(CRbeamInputTest, NuclearOffAndPsbRunsProduceIsotopeFiles) {
         std::filesystem::remove_all(dir);
     }
 }
+TEST_F(CRbeamInputTest, NuclearDecayRequiresExplicitCompatibleInput) {
+    ExpectError([&] { Parse({"--nuclear-decay","unknown"}); }, "must be On or Off");
+    ExpectError([&] { Parse({"--nuclear-decay","On"}); }, "requires a nuclear primary");
+    ExpectError([&] { Parse({"--particle","nucleus","--A","56","--nuclear-decay","On"}); }, "--talys-data");
+    ExpectError([&] { Parse({"--particle","nucleus","--A","56","--photodisintegration","PSB","--nuclear-decay","On","--talys-data","unused"}); }, "photodisintegration TALYS or Off");
+    Parse({"--particle","nucleus","--A","56","--nuclear-decay","On","--talys-data","unused"});
+}
 } // namespace

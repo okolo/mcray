@@ -41,6 +41,7 @@
 #include "CRbeam.h"
 #include "Test.h"
 #include "NeutronDecay.h"
+#include "NuclearDecay.h"
 #include "Deflection3D.h"
 #include "SteckerEBL.h"
 #include "CmdLine.h"
@@ -81,7 +82,7 @@ enum ClineParams
 {
 	PHelp = 1,PLog,PLogFilterThread,PLogLevel,PTrajectoryLog,
     PNparticles,PBatchSize,
-    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNoEMcascade,PSourceEvolM,
+    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix
 };
@@ -120,6 +121,7 @@ static CmdInfo commands[] = {
         { PA, CmdInfo::FLAG_ARGUMENT, "-A", "--A", "0", "Unsigned nuclear mass number (A>=2 required for nucleus; unused otherwise)" },
         { PZ, CmdInfo::FLAG_ARGUMENT, "-Z", "--Z", "0", "Unsigned nuclear charge number (0=choose from the PSB chain; unused unless nucleus)" },
         { PPhotodisintegration, CmdInfo::FLAG_ARGUMENT, "-pd", "--photodisintegration", "Off", "Nuclear photodisintegration: TALYS, PSB or Off (default Off)" },
+        { PNuclearDecay, CmdInfo::FLAG_ARGUMENT, "-nd", "--nuclear-decay", "Off", "Nuclear decays: On or Off (default Off); requires tabulated TALYS masses and decay data" },
         { PTalysData, CmdInfo::FLAG_ARGUMENT, "-talys-data", "--talys-data", "", "Prepared, pinned raw TALYS data directory (required for nuclear TALYS runs)" },
 		{ PNoEMcascade,    CmdInfo::FLAG_NULL,     "-nEM",   "--noEMcascade",   NULL,   "don't calculate spectra of electrons and photons" },
 		{ PSourceEvolM, CmdInfo::FLAG_ARGUMENT, "-m",   "--m_z",   xstr(M_POINT_SOURCE),    "if parameter is set (!=" xstr(M_POINT_SOURCE) "), use continuous source distribution ~(1+z)^m" },
@@ -340,6 +342,11 @@ CRbeam::CRbeam(int argc, char** argv):
     }
     fPhotodisintegration = static_cast<const char*>(cmd(PPhotodisintegration));
     fTalysDataPath = static_cast<const char*>(cmd(PTalysData));
+    fNuclearDecay = static_cast<const char*>(cmd(PNuclearDecay));
+    if (fNuclearDecay != "Off" && fNuclearDecay != "On")
+        Exception::Throw("--nuclear-decay must be On or Off");
+    if (fNuclearDecay == "On" && (!fNuclearPrimary || fPhotodisintegration == "PSB" || fTalysDataPath.empty()))
+        Exception::Throw("--nuclear-decay On requires a nuclear primary, --talys-data and photodisintegration TALYS or Off");
     if (fPhotodisintegration != "Off" && fPhotodisintegration != "PSB" && fPhotodisintegration != "TALYS")
         Exception::Throw("--photodisintegration must be TALYS, PSB or Off");
     if (fNuclearPrimary && fPhotodisintegration == "TALYS" && fTalysDataPath.empty())
@@ -350,9 +357,13 @@ CRbeam::CRbeam(int argc, char** argv):
 int CRbeam::run()
 {
     std::shared_ptr<const TalysData> talys;
-    if (fNuclearPrimary && fPhotodisintegration == "TALYS") {
+    std::shared_ptr<const NuclearDecayData> decay;
+    if (fNuclearPrimary && (fPhotodisintegration == "TALYS" || fNuclearDecay == "On")) {
         talys = std::make_shared<TalysData>(fTalysDataPath);
-        talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
+        if (fNuclearDecay == "On") {
+            decay = std::make_shared<NuclearDecayData>(fTalysDataPath,talys);
+            decay->ValidateNetwork(fPrimaryA,fPrimaryZ,fPhotodisintegration == "TALYS");
+        } else talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
     }
     auto configurePrimary = [&](Particle& p) {
         if (!fNuclearPrimary) return;
@@ -546,7 +557,8 @@ int CRbeam::run()
 	pe.AddInteraction(new RedShift());
     if (fNuclearPrimary && fPhotodisintegration == "PSB")
         pe.AddInteraction(new PhotoDisintegration(backgrI));
-    if (talys) pe.AddInteraction(new TalysPhotoDisintegration(backgrI, talys));
+    if (talys && fPhotodisintegration == "TALYS") pe.AddInteraction(new TalysPhotoDisintegration(backgrI, talys));
+    if (decay) pe.AddInteraction(new NuclearDecay(decay));
 
 	if(fNoEM) {
 		ParticleType discardedParticles[] = {Electron, Positron, Photon, ParticleTypeEOF};
@@ -599,6 +611,8 @@ int CRbeam::run()
     if (fNuclearPrimary) paramsOut << " A=" << fPrimaryA << " Z=" << fPrimaryZ
         << " mass_model=" << (talys ? "TALYS-tabulated" : "PSB-approximate");
     paramsOut << '\n';
+    paramsOut << "# resolved_nuclear_decay=" << fNuclearDecay << "\n";
+    if (decay) paramsOut << decay->Metadata();
     if (talys) paramsOut << talys->Metadata();
 	result.SetEndTime(tEnd);
 	CosmoTime tStart;

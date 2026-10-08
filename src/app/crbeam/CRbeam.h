@@ -82,7 +82,7 @@ private:
 	ParticleType 	fPrimary;
     bool fNuclearPrimary;
     unsigned int fPrimaryA, fPrimaryZ;
-    std::string fPhotodisintegration, fTalysDataPath;
+    std::string fPhotodisintegration, fTalysDataPath, fNuclearDecay;
 	bool 			fNoEM;
 	double			fMz;
 	int				fBackgroundModel;

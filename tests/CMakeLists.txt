@@ -7,7 +7,7 @@ FetchContent_Declare(googletest
     URL_HASH SHA256=6e3191c1455468b3fc35a417fb565c1c5071aee1b7e7f85e30cf48a98d37d8b5)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(mcray_unit_tests table_function_log_zeros.cpp psb_branching_bounds.cpp psb_physics.cpp nucleon_physics.cpp gzk_spectral_statistics.cpp nuclear_identity.cpp talys_physics.cpp)
+add_executable(mcray_unit_tests table_function_log_zeros.cpp psb_branching_bounds.cpp psb_physics.cpp nucleon_physics.cpp gzk_spectral_statistics.cpp nuclear_identity.cpp talys_physics.cpp nuclear_decay.cpp)
 target_include_directories(mcray_unit_tests PRIVATE ../src/lib)
 # Resolve main from GoogleTest before searching mcray's legacy main object.
 target_link_libraries(mcray_unit_tests PRIVATE GTest::gtest_main mcray)
@@ -57,3 +57,7 @@ gtest_discover_tests(mcray_integration_tests
     TEST_PREFIX "integration." DISCOVERY_TIMEOUT 30
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
     PROPERTIES TIMEOUT 30 LABELS "integration")
+
+# External real-data decay controls use GoogleTest output assertions.
+add_executable(nuclear_decay_comparison nuclear_decay_comparison.cpp)
+target_link_libraries(nuclear_decay_comparison PRIVATE GTest::gtest)

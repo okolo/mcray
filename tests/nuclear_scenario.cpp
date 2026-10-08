@@ -1,5 +1,6 @@
 #include "PhotoDisintegration.h"
 #include "TalysPhotoDisintegration.h"
+#include "NuclearDecay.h"
 #include "GZK.h"
 #include "PPP.h"
 #include "ProtonPP.h"
@@ -41,7 +42,7 @@ private:
 
 struct Options {
     std::string process = "none", output, background = "cmb", talysData;
-    int a = 56, batches = 1, primaries = 100;
+    int z = 0, a = 56, batches = 1, primaries = 100;
     unsigned long seed = 20261001;
     double perNucleon = 1e19, distance = 0., accuracy = 1e-4;
     double backgroundStepDecades = 0.01;
@@ -61,6 +62,7 @@ Options parse(int argc, char** argv) {
         else if (arg == "--background") o.background = value;
         else if (arg == "--output") o.output = value;
         else if (arg == "--a") o.a = std::stoi(value);
+        else if (arg == "--charge") o.z = std::stoi(value);
         else if (arg == "--batches") o.batches = std::stoi(value);
         else if (arg == "--primaries") o.primaries = std::stoi(value);
         else if (arg == "--seed") o.seed = std::stoul(value);
@@ -70,7 +72,7 @@ Options parse(int argc, char** argv) {
         else if (arg == "--background-step-decades") o.backgroundStepDecades = std::stod(value);
         else throw std::runtime_error("Unknown option: " + arg);
     }
-    if (o.a < 0 || o.a > 56 || o.batches < 1 || o.primaries < 1 ||
+    if (o.a < 0 || o.a > 56 || o.z < 0 || o.z > o.a || o.batches < 1 || o.primaries < 1 ||
         !std::isfinite(o.perNucleon) || o.perNucleon <= 0 ||
         !std::isfinite(o.distance) || o.distance < 0 ||
         !std::isfinite(o.accuracy) || o.accuracy <= 0 || o.accuracy > 0.01 ||
@@ -78,14 +80,15 @@ Options parse(int argc, char** argv) {
         o.backgroundStepDecades > 0.1)
         throw std::runtime_error("Invalid scenario parameters");
     if (o.process != "none" && o.process != "psb" && o.process != "gzk" &&
-        o.process != "pair-cel" && o.process != "pair" && o.process != "talys")
+        o.process != "pair-cel" && o.process != "pair" && o.process != "talys" &&
+        o.process != "decay" && o.process != "talys-decay")
         throw std::runtime_error("Unknown process");
     if ((o.process == "gzk" && o.a > 1) ||
         ((o.process == "pair-cel" || o.process == "pair") && o.a != 1))
         throw std::runtime_error("Nuclear GZK/pair support is not implemented");
     if (o.process == "psb" && o.a < 2)
         throw std::runtime_error("PSB requires a nucleus");
-    if (o.process == "talys" && (o.a != 56 || o.talysData.empty()))
+    if ((o.process == "talys" || o.process == "talys-decay") && (o.a != 56 || (o.z != 0 && o.z != 26) || o.talysData.empty()))
         throw std::runtime_error("TALYS requires Fe56 and --talys-data");
     if (o.output.empty()) throw std::runtime_error("--output is required");
     if (o.background != "cmb" && o.background != "cmb-inoue")
@@ -112,19 +115,24 @@ int main(int argc, char** argv) {
         PBackgroundIntegral background = new ContinuousBackgroundIntegral(
             photons, 0.02, std::pow(10., o.backgroundStepDecades), 0.02, o.accuracy);
         std::shared_ptr<const TalysData> talys;
-        if (o.process == "talys") {
+        std::shared_ptr<const NuclearDecayData> decay;
+        if (o.process == "talys" || o.process == "decay" || o.process == "talys-decay") {
             talys = std::make_shared<TalysData>(o.talysData);
-            talys->ValidateNetwork(56,26);
+            if (o.a<2 || o.talysData.empty()) throw std::runtime_error("Nuclear decays require --a >= 2 and --talys-data");
+            if (o.process != "talys") {
+                decay=std::make_shared<NuclearDecayData>(o.talysData,talys);
+                decay->ValidateNetwork(o.a,(o.z ? o.z : CNucleus::getZ(o.a)),o.process=="talys-decay");
+            } else talys->ValidateNetwork(56,26);
         }
         auto configure = [&](Particle& p) {
             if (type != Nucleus) return;
-            if (talys) talys->SetParticle(p,56,26);
+            if (talys) talys->SetParticle(p,o.a,(o.z ? o.z : CNucleus::getZ(o.a)));
             else p.SetPsbNucleus(o.a);
         };
         PRandomInteraction randomInteraction;
         PCELInteraction cel;
         if (o.process == "psb") randomInteraction = new PhotoDisintegration(background);
-        else if (o.process == "talys") randomInteraction = new TalysPhotoDisintegration(background, talys);
+        else if (o.process == "talys" || o.process == "talys-decay") randomInteraction = new TalysPhotoDisintegration(background, talys);
         else if (o.process == "gzk") randomInteraction = new GZK(background, static_cast<int>(o.seed));
         else if (o.process == "pair-cel" || o.process == "pair") {
             cel = new ProtonPPcel(background);
@@ -142,16 +150,18 @@ int main(int argc, char** argv) {
             << " background_step_decades=" << o.backgroundStepDecades << '\n';
         out << "# particle_rows=" << o.particles << '\n';
         if (talys) out << talys->Metadata();
+        if (decay) out << decay->Metadata();
+        if (o.process == "decay") randomInteraction=new NuclearDecay(decay);
         if (o.scan) {
             out << "# E_per_nucleon_eV event_rate_per_Mpc fractional_loss_per_Mpc";
-            if (talys) out << " exclusive_sum_per_Mpc exclusive_sum_over_total";
+            if (talys && o.process != "decay") out << " exclusive_sum_per_Mpc exclusive_sum_over_total";
             out << '\n';
             for (int i = 0; i <= 60; ++i) {
                 primary.Energy = std::pow(10., 16. + i * 0.1) * (o.a ? o.a : 1) * units.eV;
                 out << primary.Energy / units.eV / (o.a ? o.a : 1) << '\t'
                     << (randomInteraction ? randomInteraction->Rate(primary) * units.Mpc : 0.) << '\t'
                     << (cel ? cel->Rate(primary) * units.Mpc : 0.);
-                if (talys) {
+                if (talys && o.process != "decay") {
                     const auto rates=static_cast<TalysPhotoDisintegration*>(static_cast<RandomInteraction*>(randomInteraction))->ChannelRates(primary);
                     out << '\t' << rates.exclusiveSum*units.Mpc << '\t'
                         << (rates.total > 0. ? rates.exclusiveSum/rates.total : 0.);
@@ -174,13 +184,14 @@ int main(int argc, char** argv) {
             PropagationEngine engine(stack, result, o.seed + batch);
             if (randomInteraction) engine.AddInteraction(randomInteraction);
             if (cel) engine.AddInteraction(cel);
+            if (o.process == "talys-decay") engine.AddInteraction(new NuclearDecay(decay));
             for (int i = 0; i < o.primaries; ++i) {
                 Particle injected(type, 0.01);
                 configure(injected);
                 injected.Energy = primary.Energy;
                 stack.AddPrimary(injected);
             }
-            engine.Run(o.process == "psb" || o.process == "talys" || o.process == "none" ? 0. : 1e-3);
+            engine.Run(o.process == "psb" || o.process == "talys" || o.process == "decay" || o.process == "talys-decay" || o.process == "none" ? 0. : 1e-3);
             if (engine.FailureCount() || output->histories.size() != static_cast<size_t>(o.primaries))
                 throw std::runtime_error("Propagation discarded one or more primary histories; comparison is invalid");
             int history = 0;

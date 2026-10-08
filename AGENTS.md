@@ -338,3 +338,27 @@ pass on macOS arm64 and Docker Linux amd64 emulation. Real-data isolated
 TALYS and CRbeam controls are documented in talys_usage.md. They do not
 establish full CRPropa agreement, rare-output precision or validity of the
 omitted high-energy tail. TransportCR was not modified by this migration.
+
+### Nuclear decay stage approved on 2026-10-08
+
+After the unified Nucleus/TALYS commit 448b48b, the user authorized nuclear
+decay implementation. This supersedes the earlier first-stage exclusion
+of decays, but does not approve nuclear GZK/pair production.
+Use a separate NuclearDecay process and --nuclear-decay On|Off, default Off,
+with tabulated TALYS masses; keep PSB unchanged and free-neutron decay separate.
+The user approved CRPropa beta kinematics (same daughter gamma, no recoil),
+energy sharing by A for nuclear emissions, compound channels, e+/e- and
+neutrino products, with decay photons disabled. Exact event energy balance
+is not guaranteed for beta decays under this approximation.
+The user separately approved fixing the pinned generator's inclusive/exclusive
+branch normalization and adding Be11 B-P as beta-minus plus proton emission.
+Preserve the unmodified reference outside Git. Do not interpret missing decay
+data as stability or enable artificial unknown-isotope dripping.
+Read nuclear_decay.md for the data contract, preparation and validation limits.
+
+Nuclear decay implementation verification: all 96 short CTest entries pass
+on macOS arm64 and Docker Linux amd64 emulation. External Be8, B12 and
+TALYS+decay Fe56 controls pass applicable GoogleTest assertions on both;
+two-thread CRbeam smoke runs complete. Data and original/corrected generator
+outputs remain outside Git. Full CRPropa spectral agreement and rare-branch
+precision remain unestablished.

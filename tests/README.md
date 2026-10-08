@@ -349,3 +349,13 @@ The real-data TALYS CMB and CMB+Inoue12 controls pass all three applicable
 GoogleTest E2E checks on macOS; the CMB control and two-thread CRbeam TALYS
 run also pass on Linux amd64. These results retain the physical-validation
 limitations stated above and in ../talys_usage.md.
+
+## Nuclear decay controls
+
+The current short suite contains 96 CTest entries. NuclearDecay tests cover
+lifetimes, branches, beta leptons, compound channels, emission bookkeeping,
+preflight errors and exponential survival in the transport engine. See
+nuclear_decay.md for external real-data scenarios and data preparation.
+nuclear_decay_comparison runs GoogleTest assertions on isolated scenario
+outputs, including charge with leptons; exact beta event energy conservation
+is not asserted under the approved CRPropa kinematics.

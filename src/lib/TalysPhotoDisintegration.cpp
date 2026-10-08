@@ -84,7 +84,7 @@ TalysData::TalysData(const std::string& directory) {
             Exception::Throw("Unapproved, massless or duplicate TALYS terminal state");
         fIsotopes.at(key).terminal = true;
         std::cerr << "TALYS: photodisintegration disabled for terminal A" << key.first << "Z" << key.second
-                  << "; nuclear decays are disabled in this stage\n";
+                  << "; nuclear decays require a separately enabled process\n";
     }
     for (const auto& line : ReadLines(directory + "/total.tsv")) {
         std::istringstream row(line); const auto key = ReadIdentity(row);

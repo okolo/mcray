@@ -187,3 +187,12 @@ checks. Logs, image identity and source-file hashes are retained in
 Detailed ensembles, acceptance criteria, rate/grid convergence and a direct
 CRPropa comparison remain to be planned/validated. This implementation is a
 first-stage photodisintegration model, not complete nuclear transport.
+
+## Optional nuclear decay extension
+
+The separate --nuclear-decay On|Off process defaults to Off. It requires
+an extended data bundle with decay channels and explicit stable-state records;
+see nuclear_decay.md for preparation, approved kinematics and corrections to
+the CRPropa decay generator. Photodisintegration-only data remain supported
+when nuclear decays are Off. The previous statement that decays are absent
+applies to the original photodisintegration-only stage.
