@@ -62,22 +62,30 @@ double CheckedRate(double value) {
 }
 }
 
-TalysData::TalysData(const std::string& directory, bool loadCrossSections) {
+TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool crpropaFallback)
+    : fCRPropaFallback(crpropaFallback) {
     const auto metadata = ReadLines(directory + "/provenance.txt");
     if (metadata.size() < 3 || metadata[0] != "mcray-talys-v1" ||
         metadata[1] != "34b10e27375c0e9894d7c984ac15fb96e12975ef" ||
         metadata[2] != "grid_policy=crpropa-padding")
         Exception::Throw("Unsupported TALYS data format, revision or grid policy");
     for (const auto& line : metadata) fMetadata += "# TALYS " + line + '\n';
+    fGzkBundle = std::find(metadata.begin(), metadata.end(), "gzk_compatibility=true") != metadata.end();
+    if (crpropaFallback && !fGzkBundle)
+        Exception::Throw("CRPropa residual policy requires a prepared GZK compatibility bundle");
+    fMetadata += std::string("# nuclear_residual_policy=") + (crpropaFallback ? "CRPropa\n" : "Strict\n");
     for (const auto& line : ReadLines(directory + "/manifest.json")) fMetadata += "# TALYS manifest " + line + '\n';
     for (const auto& line : ReadLines(directory + "/masses.tsv")) {
         std::istringstream row(line); const auto key = ReadIdentity(row);
         double mass; std::string source;
         if (!(row >> mass >> source) || !std::isfinite(mass) || mass <= 0. ||
-            (source != "NIST" && source != "NuDat3")) Exception::Throw("Invalid or unsupported TALYS mass");
+            (source != "NIST" && source != "NuDat3" && !(fGzkBundle && source == "CRPropaApprox")))
+            Exception::Throw("Invalid or unsupported TALYS mass");
         RequireEnd(row);
+        if (source == "CRPropaApprox" && !crpropaFallback) continue;
         if (!fIsotopes.emplace(key, Isotope{}).second) Exception::Throw("Duplicate TALYS mass");
         fIsotopes.at(key).mass = mass * units.MeV;
+        fIsotopes.at(key).approximateMass = source == "CRPropaApprox";
     }
     fMetadata += std::string("# TALYS load_cross_sections=") + (loadCrossSections ? "On\n" : "Off\n");
     if (!loadCrossSections) return;
@@ -128,6 +136,11 @@ TalysData::TalysData(const std::string& directory, bool loadCrossSections) {
         channel.sigma = ReadSigma(row, key.first < 12 ? external : talys);
         isotope.channels.push_back(std::move(channel));
     }
+}
+
+const TalysData::Isotope* TalysData::Find(unsigned int a, unsigned int z) const {
+    const auto it = fIsotopes.find({a,z});
+    return it == fIsotopes.end() ? nullptr : &it->second;
 }
 
 const TalysData::Isotope& TalysData::Get(unsigned int a, unsigned int z) const {

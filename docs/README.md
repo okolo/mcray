@@ -8,6 +8,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 - [Unified nuclei and TALYS](usage/talys_usage.md)
 - [Nuclear decays and data preparation](usage/nuclear_decay.md)
+- [Nuclear pair production](usage/nuclear_pair_production.md)
+- [Nuclear GZK and residual policies](usage/nuclear_gzk.md)
 - [Tests and validation tools](../tests/README.md)
 - [CRPropa adapters and external Linux runs](../tests/crpropa/README.md)
 - [Docker Linux amd64](../docker/README.md)
@@ -17,6 +19,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [PSB and nucleon results](validation/psb_validation_results.md)
 - [SOPHIA table generation](validation/sophia_table_generation.md)
 - [Nuclear decay / TALYS diagnostics](validation/nuclear_decay_comparison_results.md)
+- [Nuclear transport regression baseline](validation/nuclear_transport_baseline.md)
 
 Results distinguish confirmed checks from remaining limitations and pilot
 observations. Read their version and configuration scope before reuse.

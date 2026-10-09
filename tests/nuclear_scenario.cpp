@@ -3,6 +3,7 @@
 #include "NuclearDecay.h"
 #include "GZK.h"
 #include "PPP.h"
+#include "NuclearPPP.h"
 #include "ProtonPP.h"
 #include "PropagationEngine.h"
 #include "Output.h"
@@ -42,23 +43,25 @@ private:
 };
 
 struct Options {
-    std::string process = "none", output, background = "cmb", talysData, photonTable;
+    std::string process = "none", output, background = "cmb", talysData, photonTable, gzkResiduals = "Strict";
     int z = 0, a = 56, batches = 1, primaries = 100;
     unsigned long seed = 20261001;
     double perNucleon = 1e19, distance = 0., accuracy = 1e-4;
     double backgroundStepDecades = 0.01;
-    bool scan = false, particles = false;
+    bool scan = false, particles = false, preflight = false;
 };
 
 Options parse(int argc, char** argv) {
     Options o;
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
+        if (arg == "--preflight") { o.preflight = true; continue; }
         if (arg == "--scan") { o.scan = true; continue; }
         if (arg == "--particle-output") { o.particles = true; continue; }
         if (i + 1 == argc) throw std::runtime_error("Missing value for " + arg);
         const std::string value = argv[++i];
         if (arg == "--process") o.process = value;
+        else if (arg == "--gzk-residuals") o.gzkResiduals = value;
         else if (arg == "--talys-data") o.talysData = value;
         else if (arg == "--photon-table") o.photonTable = value;
         else if (arg == "--background") o.background = value;
@@ -81,13 +84,21 @@ Options parse(int argc, char** argv) {
         !std::isfinite(o.backgroundStepDecades) || o.backgroundStepDecades <= 0 ||
         o.backgroundStepDecades > 0.1)
         throw std::runtime_error("Invalid scenario parameters");
-    if (o.process != "none" && o.process != "psb" && o.process != "gzk" &&
-        o.process != "pair-cel" && o.process != "pair" && o.process != "talys" &&
+    if (o.process != "none" && o.process != "psb" && o.process != "gzk" && o.process != "nuclear-gzk" &&
+        o.process != "pair-cel" && o.process != "pair" && o.process != "nuclear-pair" && o.process != "nuclear-pair-cel" && o.process != "talys" &&
         o.process != "decay" && o.process != "talys-decay")
         throw std::runtime_error("Unknown process");
     if ((o.process == "gzk" && o.a > 1) ||
         ((o.process == "pair-cel" || o.process == "pair") && o.a != 1))
         throw std::runtime_error("Nuclear GZK/pair support is not implemented");
+    if ((o.process == "nuclear-pair" || o.process == "nuclear-pair-cel") && (o.a < 2 || o.talysData.empty()))
+        throw std::runtime_error("Nuclear pairs require --a >= 2 and --talys-data");
+    if (o.gzkResiduals != "Strict" && o.gzkResiduals != "CRPropa")
+        throw std::runtime_error("--gzk-residuals must be Strict or CRPropa");
+    if (o.gzkResiduals == "CRPropa" && o.process != "nuclear-gzk")
+        throw std::runtime_error("CRPropa residuals require nuclear-gzk");
+    if (o.process == "nuclear-gzk" && (o.a < 2 || o.talysData.empty()))
+        throw std::runtime_error("Nuclear GZK requires a nucleus and --talys-data");
     if (o.process == "psb" && o.a < 2)
         throw std::runtime_error("PSB requires a nucleus");
     if ((o.process == "talys" || o.process == "talys-decay") && (o.a != 56 || (o.z != 0 && o.z != 26) || o.talysData.empty()))
@@ -129,6 +140,14 @@ int main(int argc, char** argv) {
                 decay->ValidateNetwork(o.a,(o.z ? o.z : CNucleus::getZ(o.a)),o.process=="talys-decay");
             } else talys->ValidateNetwork(56,26);
         }
+        if (o.process == "nuclear-pair" || o.process == "nuclear-pair-cel")
+            talys = std::make_shared<TalysData>(o.talysData, false);
+        std::set<TalysData::Identity> gzkNetwork;
+        if (o.process == "nuclear-gzk") {
+            talys=std::make_shared<TalysData>(o.talysData,false,o.gzkResiduals=="CRPropa");
+            decay=std::make_shared<NuclearDecayData>(o.talysData,talys);
+            gzkNetwork=decay->ValidateNetwork(o.a,o.z ? o.z : CNucleus::getZ(o.a),false,true);
+        }
         auto configure = [&](Particle& p) {
             if (type != Nucleus) return;
             if (talys) talys->SetParticle(p,o.a,(o.z ? o.z : CNucleus::getZ(o.a)));
@@ -138,10 +157,15 @@ int main(int argc, char** argv) {
         PCELInteraction cel;
         if (o.process == "psb") randomInteraction = new PhotoDisintegration(background);
         else if (o.process == "talys" || o.process == "talys-decay") randomInteraction = new TalysPhotoDisintegration(background, talys);
+        else if (o.process == "nuclear-gzk") randomInteraction = new GZK(background,static_cast<int>(o.seed),decay);
         else if (o.process == "gzk") randomInteraction = new GZK(background, static_cast<int>(o.seed));
         else if (o.process == "pair-cel" || o.process == "pair") {
             cel = new ProtonPPcel(background);
             if (o.process == "pair") randomInteraction = new PPP(background);
+        }
+        else if (o.process == "nuclear-pair" || o.process == "nuclear-pair-cel") {
+            cel = new NuclearPPPcel(background);
+            if (o.process == "nuclear-pair") randomInteraction = new NuclearPPP(background);
         }
         std::ofstream out(o.output);
         if (!out) throw std::runtime_error("Cannot create output: " + o.output);
@@ -157,17 +181,19 @@ int main(int argc, char** argv) {
         out << "# particle_rows=" << o.particles << '\n';
         if (talys) out << talys->Metadata();
         if (decay) out << decay->Metadata();
+        if (o.process == "nuclear-gzk") out << "# residual_policy=" << o.gzkResiduals << " closure_states=" << gzkNetwork.size() << " missing_PD=error; PD=Off\n";
+        if (o.preflight) return 0;
         if (o.process == "decay") randomInteraction=new NuclearDecay(decay);
         if (o.scan) {
             out << "# E_per_nucleon_eV event_rate_per_Mpc fractional_loss_per_Mpc";
-            if (talys && o.process != "decay") out << " exclusive_sum_per_Mpc exclusive_sum_over_total";
+            if (o.process == "talys" || o.process == "talys-decay") out << " exclusive_sum_per_Mpc exclusive_sum_over_total";
             out << '\n';
             for (int i = 0; i <= 60; ++i) {
                 primary.Energy = std::pow(10., 16. + i * 0.1) * (o.a ? o.a : 1) * units.eV;
                 out << primary.Energy / units.eV / (o.a ? o.a : 1) << '\t'
                     << (randomInteraction ? randomInteraction->Rate(primary) * units.Mpc : 0.) << '\t'
                     << (cel ? cel->Rate(primary) * units.Mpc : 0.);
-                if (talys && o.process != "decay") {
+                if (o.process == "talys" || o.process == "talys-decay") {
                     const auto rates=static_cast<TalysPhotoDisintegration*>(static_cast<RandomInteraction*>(randomInteraction))->ChannelRates(primary);
                     out << '\t' << rates.exclusiveSum*units.Mpc << '\t'
                         << (rates.total > 0. ? rates.exclusiveSum/rates.total : 0.);
@@ -190,7 +216,7 @@ int main(int argc, char** argv) {
             PropagationEngine engine(stack, result, o.seed + batch);
             if (randomInteraction) engine.AddInteraction(randomInteraction);
             if (cel) engine.AddInteraction(cel);
-            if (o.process == "talys-decay") engine.AddInteraction(new NuclearDecay(decay));
+            if (o.process == "talys-decay" || o.process == "nuclear-gzk") engine.AddInteraction(new NuclearDecay(decay));
             for (int i = 0; i < o.primaries; ++i) {
                 Particle injected(type, 0.01);
                 configure(injected);

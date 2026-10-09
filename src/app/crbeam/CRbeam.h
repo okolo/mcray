@@ -67,6 +67,9 @@ public:
     bool IsNuclearPrimary() const { return fNuclearPrimary; }
     unsigned int PrimaryA() const { return fPrimaryA; }
     unsigned int PrimaryZ() const { return fPrimaryZ; }
+    const std::string& NuclearGZKMode() const { return fNuclearGZK; }
+    const std::string& GZKResidualPolicy() const { return fGzkResiduals; }
+    const std::string& NuclearPPPMode() const { return fNuclearPPP; }
     const std::string& PhotodisintegrationMode() const { return fPhotodisintegration; }
 private:
 	double			fEmin_eV;
@@ -82,7 +85,7 @@ private:
 	ParticleType 	fPrimary;
     bool fNuclearPrimary;
     unsigned int fPrimaryA, fPrimaryZ;
-    std::string fPhotodisintegration, fTalysDataPath, fNuclearDecay;
+    std::string fPhotodisintegration, fTalysDataPath, fNuclearDecay, fNuclearPPP, fNuclearGZK, fGzkResiduals;
 	bool 			fNoEM;
 	double			fMz;
 	int				fBackgroundModel;

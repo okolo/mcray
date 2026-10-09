@@ -200,3 +200,37 @@ TEST_F(CRbeamInputTest, NuclearDecayRequiresExplicitCompatibleInput) {
     Parse({"--particle","nucleus","--A","56","--nuclear-decay","On","--talys-data","unused"});
 }
 } // namespace
+
+namespace {
+TEST_F(CRbeamInputTest, NuclearPppControlsValidateMassesCascadeAndDefaults) {
+    Parse({}); EXPECT_EQ(program->NuclearPPPMode(),"Off");
+    ExpectError([&]{Parse({"--nuclear-ppp","On"});},"must be Off, Losses or Full");
+    ExpectError([&]{Parse({"--nuclear-ppp","Losses"});},"requires a nuclear primary");
+    ExpectError([&]{Parse({"--particle","nucleus","--A","56","--nuclear-ppp","Losses"});},"--talys-data");
+    ExpectError([&]{Parse({"--particle","nucleus","--A","56","--talys-data","unused","--photodisintegration","PSB","--nuclear-ppp","Losses"});},"photodisintegration TALYS or Off");
+    ExpectError([&]{Parse({"--particle","nucleus","--A","56","--talys-data","unused","--nuclear-ppp","Full","--noEMcascade"});},"requires EM cascade");
+    ExpectError([&]{Parse({"--particle","nucleus","--A","238","--Z","92","--talys-data","unused","--nuclear-ppp","Losses"});},"A<=56");
+    for (const auto mode : {"Losses","Full"}) {
+        Parse({"--particle","nucleus","--A","56","--talys-data","unused","--nuclear-ppp",mode});
+        EXPECT_EQ(program->NuclearPPPMode(),mode);
+    }
+    Parse({"--particle","nucleus","--A","56","--talys-data","unused","--nuclear-ppp","Losses","--noEMcascade"});
+    EXPECT_EQ(program->NuclearPPPMode(),"Losses");
+}
+}
+
+namespace {
+TEST_F(CRbeamInputTest, NuclearGzkPolicyDefaultsAndValidation) {
+    Parse({}); EXPECT_EQ(program->NuclearGZKMode(),"Off");EXPECT_EQ(program->GZKResidualPolicy(),"Strict");
+    ExpectError([&]{Parse({"--nuclear-gzk","Full"});},"must be On or Off");
+    ExpectError([&]{Parse({"--nuclear-gzk-residuals","1"});},"must be Strict or CRPropa");
+    ExpectError([&]{Parse({"--nuclear-gzk","On"});},"requires a nuclear primary");
+    ExpectError([&]{Parse({"--particle","nucleus","--A","56","--nuclear-gzk","On"});},"--talys-data");
+    ExpectError([&]{Parse({"--particle","nucleus","--A","56","--talys-data","unused","--nuclear-gzk","On","--nuclear-gzk-residuals","CRPropa"});},"--nuclear-decay On");
+    ExpectError([&]{Parse({"--nuclear-gzk-residuals","CRPropa"});},"--nuclear-gzk On");
+    for (const auto policy:{"Strict","CRPropa"}) {
+        Parse({"--particle","nucleus","--A","56","--talys-data","unused","--nuclear-gzk","On","--nuclear-decay","On","--nuclear-gzk-residuals",policy});
+        EXPECT_EQ(program->NuclearGZKMode(),"On");EXPECT_EQ(program->GZKResidualPolicy(),policy);
+    }
+}
+}

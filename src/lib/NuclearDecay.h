@@ -15,12 +15,15 @@ public:
     NuclearDecayData(const std::string& directory, std::shared_ptr<const TalysData> nuclei);
     const std::vector<Channel>& Get(unsigned int a, unsigned int z) const;
     std::set<TalysData::Identity> ValidateNetwork(unsigned int a, unsigned int z,
-                                                bool photodisintegration) const;
+                                                bool photodisintegration, bool gzk = false) const;
+    void AppendResidual(const mcray::Particle& parent, unsigned int a, unsigned int z,
+                        double energy, std::vector<mcray::Particle>& products) const;
     const TalysData& Nuclei() const { return *fNuclei; }
     const std::string& Metadata() const { return fMetadata; }
 private:
     std::shared_ptr<const TalysData> fNuclei;
     std::map<TalysData::Identity, std::vector<Channel>> fChannels;
+    std::set<TalysData::Identity> fUnsupported;
     std::string fMetadata;
 };
 

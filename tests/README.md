@@ -363,3 +363,44 @@ preflight errors and exponential survival in the transport engine. See
 nuclear_decay_comparison runs GoogleTest assertions on isolated scenario
 outputs, including charge with leptons; exact beta event energy conservation
 is not asserted under the approved CRPropa kinematics.
+
+
+## Nuclear PPP
+
+`NuclearPairs` unit cases exercise equal-gamma scaling using tabulated masses,
+secondary energy/weight and ancestry, unchanged parent identity/energy,
+thresholds, unsupported species and clone behavior. CLI tests validate the
+Off/Losses/Full modes, tabulated-mass requirement and EM/PSB exclusions.
+`nuclear_scenario --process nuclear-pair-cel|nuclear-pair` provides isolated
+loss/secondary diagnostics without redshift losses or EM transport. See
+[the public contract](../docs/usage/nuclear_pair_production.md) and
+[regression results](../docs/validation/nuclear_transport_baseline.md).
+
+For a one-step GZK spectator data inventory (not full reachability), run:
+
+```sh
+python3 tools/audit_nuclear_gzk_residuals.py --data /path/to/combined-bundle \
+  --output /tmp/gzk-spectators.json
+```
+
+The output must not already exist. Exit 1 means coverage gaps were found;
+it does not authorize stability assumptions, missing-table exceptions or
+artificial dripping. The report hashes its four input tables.
+
+
+## Nuclear GZK and policy comparison
+
+`NuclearGzk` cases check modifiers at A=8/9, equal-gamma target rates,
+free-nucleon regression, clones, pure-spectator breakup, both mass/decay
+policies, missing data and unsupported modes. Two hundred sampled events
+check baryon number, charge including leptons, energy (relative tolerance
+1e-6), inherited weights and target frequencies (five binomial standard
+errors). These are short implementation checks, not spectral acceptance.
+
+`nuclear_scenario --process nuclear-gzk --gzk-residuals Strict|CRPropa`
+provides isolated GZK plus nuclear decay, with redshift losses, EM transport
+and free-neutron decay disabled. It accepts `--a`, `--charge` and the common
+`--talys-data` bundle. Add `--preflight` to write the reachable identity count
+and metadata without transport. Counts include pure-spectator markers and
+free nucleons. Use identical primary histories/configurations for effect
+studies. See [the public GZK contract](../docs/usage/nuclear_gzk.md).

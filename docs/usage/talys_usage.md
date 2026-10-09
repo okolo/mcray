@@ -28,8 +28,11 @@ On, every source uses a tabulated mass. PSB accepts only its representative
 isotope at each A<=56 and rejects other Z values without projection.
 The mode does not disable redshift losses or existing electromagnetic,
 free-nucleon GZK/pair, magnetic-deflection or free-neutron-decay processes.
-Nuclear GZK, nuclear pair production and decay photon emission remain outside
-this implementation. Nuclear decays are available separately through
+Opt-in nuclear GZK and its switchable residual policy are described in
+[nuclear_gzk.md](nuclear_gzk.md). PD and decay photon emission remain pending.
+Nuclear pair production is available through `--nuclear-ppp Off|Losses|Full`;
+see [nuclear_pair_production.md](nuclear_pair_production.md).
+Nuclear decays are available separately through
 --nuclear-decay On|Off; see [nuclear_decay.md](nuclear_decay.md).
 
 Nuclear raw output files are AXXZYY, for example A56Z26 and A04Z02. Different

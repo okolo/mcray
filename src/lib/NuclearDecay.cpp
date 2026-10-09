@@ -32,7 +32,7 @@ std::vector<TalysData::Identity> Products(TalysData::Identity parent, const std:
     int a=parent.first,z=parent.second;
     std::vector<TalysData::Identity> products;
     auto add=[&] {
-        if (a<1 || z<0 || z>a || (a>1 && z==0))
+        if (a<1 || z<0 || z>a)
             Exception::Throw("Invalid residual in nuclear decay channel");
         products.emplace_back(a,z);
     };
@@ -58,19 +58,40 @@ NuclearDecayData::NuclearDecayData(const std::string& directory, std::shared_ptr
     for (const auto& line:provenance) fMetadata+="# NuclearDecay "+line+'\n';
     for (const auto& line:Lines(directory+"/decay_manifest.json"))
         fMetadata+="# NuclearDecay manifest "+line+'\n';
+    if (fNuclei->GzkBundle()) for (const auto& line:Lines(directory+"/unsupported_decays.tsv")) {
+        std::istringstream row(line); const auto key=Identity(row); std::string mode;
+        if (!(row>>mode)) Exception::Throw("Invalid unsupported nuclear decay record");
+        End(row); fUnsupported.insert(key);
+    }
     for (const auto& line:Lines(directory+"/decay_stable.tsv")) {
         std::istringstream row(line); auto key=Identity(row); End(row);
         fNuclei->Get(key.first,key.second);
         if (!fChannels.emplace(key,std::vector<Channel>{}).second)
             Exception::Throw("Duplicate nuclear decay stable state");
     }
-    for (const auto& line:Lines(directory+"/decays.tsv")) {
+    auto decayLines=Lines(directory+"/decays.tsv");
+    if (fNuclei->GzkBundle() && fNuclei->CRPropaFallback()) {
+        const auto fallback=Lines(directory+"/fallback_decays.tsv");
+        for (const auto& line:fallback) {
+            std::istringstream row(line); auto key=Identity(row); std::string code; double tau=0.;
+            if (!(row>>code>>tau) || tau!=1e-99 ||
+                code!=(key.second>key.first-key.second ? "00010" : "00001"))
+                Exception::Throw("Invalid CRPropa fallback decay");
+            End(row);
+        }
+        decayLines.insert(decayLines.end(),fallback.begin(),fallback.end());
+        fMetadata+="# NuclearDecay artificial-dripping=CRPropa; tau_s=1e-99\n";
+    }
+    for (const auto& line:decayLines) {
         std::istringstream row(line); auto key=Identity(row); Channel channel; double tau=0.;
         if (!(row>>channel.code>>tau) || channel.code.size()!=5 ||
             channel.code.find_first_not_of("0123456789")!=std::string::npos ||
             channel.code=="00000" || !std::isfinite(tau) || tau<=0.)
             Exception::Throw("Invalid nuclear decay channel or partial lifetime");
         End(row);
+        if (tau<1e-90 && !fNuclei->CRPropaFallback())
+            Exception::Throw("Artificial nuclear dripping requires CRPropa residual policy");
+        if (fNuclei->GzkBundle() && !fNuclei->Find(key.first,key.second)) continue;
         fNuclei->Get(key.first,key.second);
         auto found=fChannels.find(key);
         if (found!=fChannels.end() && found->second.empty())
@@ -81,7 +102,11 @@ NuclearDecayData::NuclearDecayData(const std::string& directory, std::shared_ptr
         channel.restRate=1./(tau*units.second);
         if (!std::isfinite(channel.restRate) || channel.restRate<=0.)
             Exception::Throw("Unrepresentable nuclear decay rate");
+        // A compatibility bundle contains states outside the selected root's
+        // network. Validate their daughters only when the state is reached.
+        if (fNuclei->GzkBundle()) { channels.push_back(channel); continue; }
         for (const auto& id:Products(key,channel.code)) {
+            if (id.first>1 && (id.second==0 || id.second==id.first)) continue;
             Particle product(Nucleus,0.); fNuclei->SetParticle(product,id.first,id.second);
         }
         Particle previous(Nucleus,0.); fNuclei->SetParticle(previous,key.first,key.second);
@@ -97,18 +122,40 @@ NuclearDecayData::NuclearDecayData(const std::string& directory, std::shared_ptr
     }
 }
 const std::vector<NuclearDecayData::Channel>& NuclearDecayData::Get(unsigned int a,unsigned int z) const {
+    if (fUnsupported.count({a,z})) Exception::Throw("Unsupported source decay mode for A"+
+        Utils::ToString(a)+"Z"+Utils::ToString(z));
     const auto found=fChannels.find({a,z});
     if (found==fChannels.end()) Exception::Throw("Missing nuclear decay or stable-state data for A"+
         Utils::ToString(a)+"Z"+Utils::ToString(z));
+    if (fNuclei->GzkBundle()) for (const auto& channel:found->second) {
+        for (const auto& id:Products({a,z},channel.code))
+            if (id.first>1 && id.second && id.second<id.first) fNuclei->Get(id.first,id.second);
+        Particle previous(Nucleus,0.); fNuclei->SetParticle(previous,a,z);
+        for (size_t beta=0;beta<2;++beta) for (int count=0;count<channel.code[beta]-'0';++count) {
+            Particle next=previous;
+            fNuclei->SetParticle(next,a,previous.AtomicNumber()+(beta?-1:1));
+            if (previous.Mass()-next.Mass()<=Particle::Mass(Electron))
+                Exception::Throw("Nonpositive nuclear beta decay endpoint");
+            previous=next;
+        }
+    }
     return found->second;
 }
-std::set<TalysData::Identity> NuclearDecayData::ValidateNetwork(unsigned int a,unsigned int z,bool pd) const {
+std::set<TalysData::Identity> NuclearDecayData::ValidateNetwork(unsigned int a,unsigned int z,bool pd,bool gzk) const {
     std::set<TalysData::Identity> reached;
     std::vector<TalysData::Identity> pending{{a,z}};
     while (!pending.empty()) {
         const auto key=pending.back(); pending.pop_back();
         if (!reached.insert(key).second || key.first==1) continue;
+        if (key.second==0 || key.second==key.first) {
+            pending.emplace_back(1,key.second ? 1 : 0);
+            continue;
+        }
         const auto& isotope=fNuclei->Get(key.first,key.second);
+        if (gzk) {
+            if (key.second) pending.emplace_back(key.first-1,key.second-1);
+            if (key.first>key.second) pending.emplace_back(key.first-1,key.second);
+        }
         for (const auto& channel:Get(key.first,key.second)) {
             const auto ids=Products(key,channel.code); pending.insert(pending.end(),ids.begin(),ids.end());
         }
@@ -122,6 +169,19 @@ std::set<TalysData::Identity> NuclearDecayData::ValidateNetwork(unsigned int a,u
         }
     }
     return reached;
+}
+void NuclearDecayData::AppendResidual(const Particle& parent,unsigned int a,unsigned int z,
+                                      double energy,std::vector<Particle>& products) const {
+    if (a<1 || z>a || !std::isfinite(energy) || energy<=0.)
+        Exception::Throw("Invalid nuclear spectator identity or energy");
+    if (z==0 || z==a) {
+        Particle nucleon=parent; nucleon.SetType(z ? Proton : Neutron);
+        nucleon.Energy=energy/a;
+        for (unsigned int i=0;i<a;++i) products.push_back(nucleon);
+    } else {
+        Particle residual=parent; fNuclei->SetParticle(residual,a,z);
+        residual.Energy=energy; products.push_back(residual);
+    }
 }
 NuclearDecay::NuclearDecay(std::shared_ptr<const NuclearDecayData> data):fData(std::move(data)) {
     if (!fData) Exception::Throw("NuclearDecay requires immutable decay data");
@@ -183,6 +243,11 @@ bool NuclearDecay::GetSecondaries(Particle& p,std::vector<Particle>& products,Ra
             const double energyPerA=residual.Energy/a;
             Particle fragment=residual; fData->Nuclei().SetParticle(fragment,emitted[i].first,emitted[i].second);
             fragment.Energy=energyPerA*emitted[i].first; products.push_back(fragment);
+            const auto nextA=a-emitted[i].first,nextZ=z-emitted[i].second;
+            if (nextA>1 && (nextZ==0 || nextZ==nextA)) {
+                fData->AppendResidual(residual,nextA,nextZ,energyPerA*nextA,products);
+                return true;
+            }
             fData->Nuclei().SetParticle(residual,a-emitted[i].first,z-emitted[i].second);
             residual.Energy=energyPerA*(a-emitted[i].first);
         }

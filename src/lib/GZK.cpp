@@ -39,7 +39,9 @@
 using namespace mcray;
 namespace Interactions{
 
-GZK::GZK(BackgroundIntegral* aBackground, int aRandSeed):fBackground(aBackground)
+GZK::GZK(BackgroundIntegral* aBackground, int aRandSeed,
+         std::shared_ptr<const NuclearDecayData> nuclearData)
+    :fBackground(aBackground),fNuclearData(std::move(nuclearData))
 {
     fMpSophia = SOPHIA::Mass(Proton);
     fMnSophia = SOPHIA::Mass(Neutron);
@@ -67,6 +69,12 @@ Function* GZK::InitSigma(ParticleType aPrim)
 }
 
 double GZK::Rate(const mcray::Particle &aParticle) const {
+    if (aParticle.Type==Nucleus && fNuclearData) {
+        const auto rates=NuclearTargetRates(aParticle);
+        const double total=rates[0]+rates[1];
+        if (!std::isfinite(total)) Utils::Exception::Throw("Invalid nuclear GZK total rate");
+        return total;
+    }
     if(aParticle.Type!=Proton && aParticle.Type!=Neutron)
         return 0.;
     const Function* sigma = (aParticle.Type==Proton) ? fSigmaP : fSigmaN;
@@ -74,7 +82,51 @@ double GZK::Rate(const mcray::Particle &aParticle) const {
 }
 
 RandomInteraction *GZK::Clone() const {
-    return new GZK(fBackground->Clone());
+    return new GZK(fBackground->Clone(),0,fNuclearData);
+}
+
+double GZK::NuclearModifier(unsigned int a,unsigned int count) {
+    if (!a || count>a) Utils::Exception::Throw("Invalid bound-nucleon count");
+    if (!count) return 0.;
+    if (a==1) return 1.;
+    return 0.85*(a<=8 ? std::pow(static_cast<double>(count),2./3.) : count);
+}
+std::array<double,2> GZK::NuclearTargetRates(const Particle& p) const {
+    if (!fNuclearData || p.Type!=Nucleus) return {{0.,0.}};
+    p.ValidateIdentity();
+    if (p.MassNumber()>56 || p.MassModel()!=Particle::NuclearMassModel::TALYS ||
+        p.Mass()!=fNuclearData->Nuclei().Get(p.MassNumber(),p.AtomicNumber()).mass ||
+        !std::isfinite(p.Energy) || p.Energy<p.Mass())
+        Utils::Exception::Throw("Nuclear GZK requires A<=56 and the selected nuclear-data mass");
+    std::array<double,2> rates{};
+    for (size_t i=0;i<2;++i) {
+        const unsigned int count=i ? p.MassNumber()-p.AtomicNumber() : p.AtomicNumber();
+        if (!count) continue;
+        Particle target=p; target.SetType(i ? Neutron : Proton);
+        target.Energy=p.Energy*(target.Mass()/p.Mass()); // Rate at equal gamma.
+        rates[i]=NuclearModifier(p.MassNumber(),count)*Rate(target);
+        if (!std::isfinite(rates[i]) || rates[i]<0.) Utils::Exception::Throw("Invalid nuclear GZK target rate");
+    }
+    return rates;
+}
+bool GZK::GetSecondaries(Particle& p,std::vector<Particle>& products,Randomizer& random) const {
+    if (p.Type!=Nucleus) return RandomInteractionS::GetSecondaries(p,products,random);
+    const auto rates=NuclearTargetRates(p);
+    const double total=rates[0]+rates[1];
+    if (!std::isfinite(total)) Utils::Exception::Throw("Invalid nuclear GZK total rate");
+    if (!(total>0.)) return false;
+    const bool onProton=random.Rand()*total<rates[0];
+    Particle target=p; target.SetType(onProton ? Proton : Neutron);
+    target.Energy=p.Energy/p.MassNumber(); // CRPropa's bound-nucleon kinematics.
+    double s=0.;
+    if (!SampleS(target,s,random)) return false;
+    std::vector<Particle> generated;
+    SampleSecondaries(target,generated,s,random);
+    if (generated.empty()) Utils::Exception::Throw("SOPHIA returned no products for nuclear GZK");
+    fNuclearData->AppendResidual(p,p.MassNumber()-1,p.AtomicNumber()-(onProton?1:0),
+                                p.Energy-target.Energy,generated);
+    products.insert(products.end(),generated.begin(),generated.end());
+    return true;
 }
 
 bool GZK::SampleS(const mcray::Particle &aParticle, double &aS,
@@ -102,13 +154,19 @@ void GZK::SampleSecondaries(mcray::Particle &aParticle,
     double M = aParticle.Type==Proton?fMpSophia:fMnSophia;
     double epsPrimeGeV = 0.5*(aS/M-M)/units.GeV;
     int noSecondaries = 0;
-    double secEfrac[250];
-    int secTypes[250];
+    std::vector<double> secEfrac(SOPHIA::MaxNumberOfProducts);
+    std::vector<int> secTypes(SOPHIA::MaxNumberOfProducts);
 #pragma omp critical (SOPHIA)
     {//SOPHIA class is not thread-safe
         //todo: separately collect protons and neutrons in two queues and try to handle the queues one after another with critical section disabled
-        SOPHIA::SamplePhotopionRel(aParticle.Type, epsPrimeGeV, noSecondaries, secEfrac, secTypes);
+        SOPHIA::SamplePhotopionRel(aParticle.Type, epsPrimeGeV, noSecondaries, secEfrac.data(), secTypes.data());
     }
+    if (noSecondaries<0 || noSecondaries>SOPHIA::MaxNumberOfProducts)
+        Utils::Exception::Throw("Invalid SOPHIA product count");
+    for (int i=0;i<noSecondaries;++i)
+        if (secTypes[i]<Electron || secTypes[i]>=Nucleus ||
+            !std::isfinite(secEfrac[i]) || secEfrac[i]<0.)
+            Utils::Exception::Throw("Unsupported SOPHIA product or invalid energy fraction");
     while(--noSecondaries>=0)
     {
         Particle sec = aParticle;

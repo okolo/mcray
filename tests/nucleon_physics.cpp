@@ -1,4 +1,5 @@
 #include "GZK.h"
+#include <functional>
 #include "PPP.h"
 #include "ProtonPP.h"
 #include <gtest/gtest.h>
@@ -216,3 +217,84 @@ TEST_P(ProtonPppSampling, MatchesIndependentRestFrameQuadrature) {
 INSTANTIATE_TEST_SUITE_P(RestFrameEnergies, ProtonPppSampling,
                         ::testing::Values(2.2, 3., 5., 10., 20., 50.));
 } // namespace
+
+// Nuclear scaling is checked against the unchanged proton process at equal
+// gamma, with non-A*mp masses to detect accidental energy-per-nucleon scaling.
+#include "NuclearPPP.h"
+namespace {
+TEST(NuclearPairs, EqualGammaRatesUseChargeAndTabulatedMassAndClone) {
+    const double photon = 10.*Particle::Mass(Electron);
+    NuclearPPPcel loss(new FixedRestFramePhoton(photon));
+    NuclearPPP pairs(new FixedRestFramePhoton(photon), 7.);
+    ProtonPPcel protonLoss(new FixedRestFramePhoton(photon));
+    PPP protonPairs(new FixedRestFramePhoton(photon), 7.);
+    std::unique_ptr<CELInteraction> lc(loss.Clone());
+    std::unique_ptr<RandomInteraction> pc(pairs.Clone());
+    for (const auto az : {std::pair<unsigned,unsigned>{2,1},{4,2},{8,4},{9,4},{12,6},{56,26}}) {
+        Particle p(Nucleus,0.);
+        p.SetNucleus(az.first,az.second,(az.first*0.98)*Particle::Mass(Proton),Particle::NuclearMassModel::TALYS);
+        p.Energy = p.Mass()*1e10;
+        Particle proton(Proton,0.); proton.Energy=proton.Mass()*1e10;
+        const double z2=az.second*az.second;
+        EXPECT_NEAR(loss.Rate(p)/protonLoss.Rate(proton),z2*proton.Mass()/p.Mass(),1e-12);
+        EXPECT_NEAR(pairs.Rate(p)/protonPairs.Rate(proton),z2,1e-10);
+        EXPECT_DOUBLE_EQ(lc->Rate(p),loss.Rate(p));
+        EXPECT_DOUBLE_EQ(pc->Rate(p),pairs.Rate(p));
+        EXPECT_TRUE(std::isfinite(loss.Rate(p))); EXPECT_GT(loss.Rate(p),0.);
+        EXPECT_FALSE(pairs.KillsPrimary());
+    }
+    for (auto type : {Proton,Neutron,Photon}) {
+        Particle p(type,0.);
+        EXPECT_DOUBLE_EQ(loss.Rate(p),0.); EXPECT_DOUBLE_EQ(pairs.Rate(p),0.);
+    }
+}
+TEST(NuclearPairs, SecondarySamplingPreservesNucleusAndHistoryAtEqualGamma) {
+    const double photon=10.*Particle::Mass(Electron);
+    NuclearPPP process(new FixedRestFramePhoton(photon),7.);
+    PPP protonProcess(new FixedRestFramePhoton(photon),7.);
+    Particle nucleus(Nucleus,0.);
+    nucleus.SetNucleus(56,26,52103.,Particle::NuclearMassModel::TALYS);
+    nucleus.Energy=1e10*nucleus.Mass(); nucleus.Weight=2.5;
+    nucleus.Time.setZ(0.1); nucleus.X[0]=4.; nucleus.fPrevId=42;
+    auto proton=nucleus; proton.SetType(Proton); proton.Energy=1e10*proton.Mass();
+    Randomizer nuclearRandom(20261009), protonRandom(20261009);
+    for (int i=0;i<100;++i) {
+        double s=0.,ps=0.;
+        ASSERT_TRUE(process.SampleS(nucleus,s,nuclearRandom));
+        ASSERT_TRUE(protonProcess.SampleS(proton,ps,protonRandom));
+        EXPECT_DOUBLE_EQ(s,ps);
+        std::vector<Particle> out,pout;
+        process.SampleSecondaries(nucleus,out,s,nuclearRandom);
+        protonProcess.SampleSecondaries(proton,pout,ps,protonRandom);
+        ASSERT_EQ(out.size(),1u); ASSERT_EQ(pout.size(),1u);
+        EXPECT_EQ(out[0].Type,pout[0].Type);
+        EXPECT_NEAR(out[0].Energy/pout[0].Energy,1.,1e-14);
+        EXPECT_DOUBLE_EQ(out[0].Weight,35.);
+        EXPECT_EQ(out[0].SourceParticle,nucleus.SourceParticle);
+        EXPECT_EQ(out[0].id,nucleus.id); // The engine assigns child IDs.
+        EXPECT_EQ(out[0].fPrevId,nucleus.fPrevId);
+        EXPECT_DOUBLE_EQ(out[0].X[0],nucleus.X[0]);
+        EXPECT_DOUBLE_EQ(out[0].Time.z(),nucleus.Time.z());
+        EXPECT_DOUBLE_EQ(out[0].fCascadeProductionTime.z(),nucleus.Time.z());
+        EXPECT_EQ(nucleus.MassNumber(),56u); EXPECT_EQ(nucleus.AtomicNumber(),26u);
+        EXPECT_DOUBLE_EQ(nucleus.Energy,1e10*52103.);
+        EXPECT_DOUBLE_EQ(nucleus.Weight,2.5);
+    }
+}
+TEST(NuclearPairs, ThresholdAndInvalidMassEnergyAndThinningAreExplicit) {
+    NuclearPPPcel loss(new FixedRestFramePhoton(Particle::Mass(Electron)));
+    NuclearPPP pairs(new FixedRestFramePhoton(Particle::Mass(Electron)));
+    Particle p(Nucleus,0.); p.SetNucleus(4,2,3727.,Particle::NuclearMassModel::TALYS); p.Energy=1e10*p.Mass();
+    EXPECT_DOUBLE_EQ(loss.Rate(p),0.); EXPECT_DOUBLE_EQ(pairs.Rate(p),0.);
+    Randomizer random(20261009); double s=0.; EXPECT_FALSE(pairs.SampleS(p,s,random));
+    auto fails = [](const std::function<void()>& action) {
+        try { action(); FAIL()<<"Expected nuclear PPP contract error"; }
+        catch (Utils::Exception* e) { delete e; }
+    };
+    p.SetPsbNucleus(4); fails([&]{loss.Rate(p);}); fails([&]{pairs.Rate(p);});
+    p.SetNucleus(4,2,3727.,Particle::NuclearMassModel::TALYS);p.Energy=0.; fails([&]{loss.Rate(p);});
+    p.Energy=std::numeric_limits<double>::quiet_NaN(); fails([&]{pairs.Rate(p);});
+    for (double scale : {0.,-1.,std::numeric_limits<double>::infinity()})
+        fails([&]{NuclearPPP invalid(new FixedRestFramePhoton(1.),scale);});
+}
+}

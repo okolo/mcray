@@ -35,6 +35,7 @@
 #include <GZK.h>
 #include <Inoue12IROSpectrum.h>
 #include "PPP.h"
+#include "NuclearPPP.h"
 #include "ProtonPP.h"
 #include "TableBackgrounds.h"
 #include "ICS.h"
@@ -82,7 +83,7 @@ enum ClineParams
 {
 	PHelp = 1,PLog,PLogFilterThread,PLogLevel,PTrajectoryLog,
     PNparticles,PBatchSize,
-    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNoEMcascade,PSourceEvolM,
+    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix
 };
@@ -122,6 +123,9 @@ static CmdInfo commands[] = {
         { PZ, CmdInfo::FLAG_ARGUMENT, "-Z", "--Z", "0", "Unsigned nuclear charge number (0=choose from the PSB chain; unused unless nucleus)" },
         { PPhotodisintegration, CmdInfo::FLAG_ARGUMENT, "-pd", "--photodisintegration", "Off", "Nuclear photodisintegration: TALYS, PSB or Off (default Off)" },
         { PNuclearDecay, CmdInfo::FLAG_ARGUMENT, "-nd", "--nuclear-decay", "Off", "Nuclear decays: On or Off (default Off); requires tabulated TALYS masses and decay data" },
+        { PNuclearGZK, CmdInfo::FLAG_ARGUMENT, "-ngzk", "--nuclear-gzk", "Off", "Bound-nucleon GZK: On or Off; requires a nuclear primary and nuclear data" },
+        { PGzkResiduals, CmdInfo::FLAG_ARGUMENT, "-ngzk-residuals", "--nuclear-gzk-residuals", "Strict", "Nuclear residual policy: Strict or CRPropa; CRPropa enables tagged approximate masses and artificial dripping and requires nuclear decays On" },
+        { PNuclearPPP, CmdInfo::FLAG_ARGUMENT, "-nppp", "--nuclear-ppp", "Off", "Nuclear pair production: Off, Losses or Full; requires tabulated masses and TALYS or Off; Full requires EM cascade" },
         { PTalysData, CmdInfo::FLAG_ARGUMENT, "-talys-data", "--talys-data", "", "Pinned data directory: cross sections for TALYS, decay tables for decays, or masses for Off outside the PSB chain" },
 		{ PNoEMcascade,    CmdInfo::FLAG_NULL,     "-nEM",   "--noEMcascade",   NULL,   "don't calculate spectra of electrons and photons" },
 		{ PSourceEvolM, CmdInfo::FLAG_ARGUMENT, "-m",   "--m_z",   xstr(M_POINT_SOURCE),    "if parameter is set (!=" xstr(M_POINT_SOURCE) "), use continuous source distribution ~(1+z)^m" },
@@ -341,6 +345,27 @@ CRbeam::CRbeam(int argc, char** argv):
     fPhotodisintegration = static_cast<const char*>(cmd(PPhotodisintegration));
     fTalysDataPath = static_cast<const char*>(cmd(PTalysData));
     fNuclearDecay = static_cast<const char*>(cmd(PNuclearDecay));
+    fNuclearPPP = static_cast<const char*>(cmd(PNuclearPPP));
+    fNuclearGZK = static_cast<const char*>(cmd(PNuclearGZK));
+    fGzkResiduals = static_cast<const char*>(cmd(PGzkResiduals));
+    if (fNuclearGZK != "On" && fNuclearGZK != "Off")
+        Exception::Throw("--nuclear-gzk must be On or Off");
+    if (fGzkResiduals != "Strict" && fGzkResiduals != "CRPropa")
+        Exception::Throw("--nuclear-gzk-residuals must be Strict or CRPropa");
+    if (fNuclearGZK == "On" && (!fNuclearPrimary || fPrimaryA > 56 || fTalysDataPath.empty() || fPhotodisintegration == "PSB"))
+        Exception::Throw("--nuclear-gzk On requires a nuclear primary with A<=56, --talys-data and photodisintegration TALYS or Off");
+    if (fGzkResiduals == "CRPropa" && (fNuclearGZK != "On" || fNuclearDecay != "On"))
+        Exception::Throw("CRPropa residual policy requires --nuclear-gzk On and --nuclear-decay On");
+    if (fNuclearPPP != "Off" && fNuclearPPP != "Losses" && fNuclearPPP != "Full")
+        Exception::Throw("--nuclear-ppp must be Off, Losses or Full");
+    if (fNuclearPPP != "Off" && (!fNuclearPrimary || fPhotodisintegration == "PSB" || fTalysDataPath.empty()))
+        Exception::Throw("--nuclear-ppp requires a nuclear primary, --talys-data and photodisintegration TALYS or Off");
+    if (fNuclearPPP != "Off" && fPrimaryA > 56)
+        Exception::Throw("Nuclear PPP currently requires A<=56");
+    if (fNuclearPPP == "Full" && fNoEM)
+        Exception::Throw("--nuclear-ppp Full requires EM cascade; use Losses with --noEMcascade");
+    if (fNuclearPPP != "Off" && (!std::isfinite(fPPPrescaleCoef) || fPPPrescaleCoef <= 0.))
+        Exception::Throw("Nuclear PPP thinning must be finite and positive");
     if (fNuclearDecay != "Off" && fNuclearDecay != "On")
         Exception::Throw("--nuclear-decay must be On or Off");
     if (fNuclearDecay == "On" && (!fNuclearPrimary || fPhotodisintegration == "PSB" || fTalysDataPath.empty()))
@@ -364,11 +389,11 @@ int CRbeam::run()
     std::shared_ptr<const NuclearDecayData> decay;
     const bool psbPrimary = fNuclearPrimary && fPrimaryA <= CNucleus::MaxA &&
                             fPrimaryZ == CNucleus::getZ(fPrimaryA);
-    if (fNuclearPrimary && (fPhotodisintegration == "TALYS" || fNuclearDecay == "On" || !psbPrimary)) {
-        talys = std::make_shared<TalysData>(fTalysDataPath,fPhotodisintegration == "TALYS");
-        if (fNuclearDecay == "On") {
+    if (fNuclearPrimary && (fPhotodisintegration == "TALYS" || fNuclearDecay == "On" || fNuclearPPP != "Off" || fNuclearGZK == "On" || !psbPrimary)) {
+        talys = std::make_shared<TalysData>(fTalysDataPath,fPhotodisintegration == "TALYS",fGzkResiduals == "CRPropa");
+        if (fNuclearDecay == "On" || fNuclearGZK == "On") {
             decay = std::make_shared<NuclearDecayData>(fTalysDataPath,talys);
-            decay->ValidateNetwork(fPrimaryA,fPrimaryZ,fPhotodisintegration == "TALYS");
+            decay->ValidateNetwork(fPrimaryA,fPrimaryZ,fPhotodisintegration == "TALYS",fNuclearGZK == "On");
         } else if (fPhotodisintegration == "TALYS") talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
         else talys->Get(fPrimaryA, fPrimaryZ);
     }
@@ -570,7 +595,9 @@ int CRbeam::run()
     if (fNuclearPrimary && fPhotodisintegration == "PSB")
         pe.AddInteraction(new PhotoDisintegration(backgrI));
     if (talys && fPhotodisintegration == "TALYS") pe.AddInteraction(new TalysPhotoDisintegration(backgrI, talys));
-    if (decay) pe.AddInteraction(new NuclearDecay(decay));
+    if (decay && fNuclearDecay == "On") pe.AddInteraction(new NuclearDecay(decay));
+    if (fNuclearPPP != "Off") pe.AddInteraction(new NuclearPPPcel(backgrI));
+    if (fNuclearPPP == "Full") pe.AddInteraction(new NuclearPPP(backgrI, fPPPrescaleCoef));
 
 	if(fNoEM) {
 		ParticleType discardedParticles[] = {Electron, Positron, Photon, ParticleTypeEOF};
@@ -584,7 +611,7 @@ int CRbeam::run()
 		pe.AddInteraction(new PPP(backgrI, fPPPrescaleCoef));//secondaries only
 	}
 	if (fPrimary >= Neutron) {
-        pe.AddInteraction(new GZK(backgrI));
+        pe.AddInteraction(new GZK(backgrI,0,fNuclearGZK == "On" ? decay : nullptr));
         pe.AddInteraction(new NeutronDecay());
         pe.AddInteraction(new ProtonPPcel(backgrI));
     }
@@ -621,9 +648,13 @@ int CRbeam::run()
 	cmd.printParamValues(paramsOut);
     paramsOut << "\n# resolved_photodisintegration=" << fPhotodisintegration;
     if (fNuclearPrimary) paramsOut << " A=" << fPrimaryA << " Z=" << fPrimaryZ
-        << " mass_model=" << (talys ? "TALYS-tabulated" : "PSB-approximate");
+        << " mass_model=" << (fGzkResiduals == "CRPropa" ? "CRPropa-compatible-bundle" : talys ? "TALYS-tabulated" : "PSB-approximate");
     paramsOut << '\n';
     paramsOut << "# resolved_nuclear_decay=" << fNuclearDecay << "\n";
+    paramsOut << "# resolved_nuclear_ppp=" << fNuclearPPP
+        << " model=native-proton-equal-gamma loss=Z2*mp/M secondary_rate=Z2 energy_owner=CEL\n";
+    paramsOut << "# resolved_nuclear_gzk=" << fNuclearGZK << " residual_policy=" << fGzkResiduals
+        << " pure_spectators=prompt-free-nucleons missing_PD=error\n";
     if (decay) paramsOut << decay->Metadata();
     if (talys) paramsOut << talys->Metadata();
 	result.SetEndTime(tEnd);
