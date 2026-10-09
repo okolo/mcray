@@ -49,6 +49,25 @@ protected:
         }
     }
 };
+TEST_F(TalysTest, MassOnlyLoadingSupportsHeavyIsotopesWithoutCrossSections) {
+    Write("masses.tsv","238 92 221700 NIST\n26 13 24200 NuDat3\n");
+    Write("grid_talys.tsv","not a grid\n");
+    auto data=std::make_shared<TalysData>(dir.string(),false);
+    Particle p(Nucleus,0.);data->SetParticle(p,238,92);
+    EXPECT_EQ(p.MassNumber(),238u);EXPECT_EQ(p.AtomicNumber(),92u);
+    EXPECT_EQ(p.Name(),"A238Z92");EXPECT_DOUBLE_EQ(p.Mass(),221700*units.MeV);
+    EXPECT_EQ(p.MassModel(),Particle::NuclearMassModel::TALYS);
+    ExpectError([&] { data->Get(239,92); },"Missing TALYS isotope");
+    ExpectError([&] { data->ValidateNetwork(238,92); },"Incomplete reachable");
+    TalysPhotoDisintegration process(new FixedK,data);p.Energy=1e21*units.eV;
+    ExpectError([&] { process.Rate(p); },"Incomplete TALYS isotope");
+}
+TEST_F(TalysTest, MassIdentityRejectsSignedAndOverflowingTokens) {
+    for (const auto& identity : {"-2 1","+2 1","2 -1","4294967296 1","18446744073709551616 1"}) {
+        Write("masses.tsv",std::string(identity)+" 1864 NIST\n");
+        ExpectError([&] { TalysData data(dir.string(),false); },"Invalid nuclear identity");
+    }
+}
 TEST_F(TalysTest, NetworkMassesRatesAndInterpolationUseTheAgreedContracts) {
     auto data = std::make_shared<TalysData>(dir.string());
     EXPECT_EQ(data->ValidateNetwork(56,26).size(),9u);

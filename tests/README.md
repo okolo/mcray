@@ -9,6 +9,10 @@ CMake 3.16 or newer is required for test configuration; bin/build.sh uses
 
 ## Run tests
 
+For fresh remote checkouts and archived results on an external Linux amd64
+server, see [the server runner](server/README.md). Never launch calculations
+expected to exceed 30 minutes on the workstation.
+
 From the repository root:
 
 ```bash

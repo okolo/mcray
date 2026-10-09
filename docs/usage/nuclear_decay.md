@@ -11,8 +11,11 @@ use the existing NeutronDecay process in CRbeam.
 
 Include beta-minus, beta-plus, alpha, proton/neutron emission and compound
 channels. Create charged leptons and electron neutrinos/antineutrinos;
-decay photons are disabled. Primary production runs remain limited to Fe56.
-The test scenario runner also accepts daughter isotopes to isolate decays.
+decay photons are disabled. CRbeam accepts different primary isotopes when
+their complete required mass/decay/photodisintegration network is available.
+The prepared decay format currently covers A<=56; a mass-only bundle is not
+decay data. The test scenario runner also accepts daughter isotopes to isolate
+decays.
 
 ## Rates and event handling
 

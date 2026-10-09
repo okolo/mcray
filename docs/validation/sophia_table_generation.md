@@ -105,6 +105,14 @@ statistics only after reference convergence is resolved.
 
 ## Completion and validation
 
+Update dated 2026-10-08: the user stopped both local full-generation containers
+at 13:00:38 UTC (exit code 137). Partial tables were subsequently deleted at the user's request; generation
+logs, source/build provenance and interruption-20261008.json remain. The earlier
+running-status description is historical. Restart into fresh directories on
+an external native Linux amd64 server: no checkpoint/resume exists. Do not
+launch calculations expected to exceed 30 minutes on the workstation. The
+deferred restart and comparison are tracked as T4 in the private task index.
+
 Run tests/transportcr/validate_sophia_tables.py only after both exit-code
 files record success. It validates primary/secondary identities, density,
 trials, nonnegative counts, energy-fraction index range, identical photon

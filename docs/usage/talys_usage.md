@@ -11,19 +11,26 @@ CRbeam --particle nucleus --A 56 --Z 26 --photodisintegration PSB --z 0.01
 ```
 
 Both A and Z default to zero. For nucleus, A>=2 is mandatory and Z=0 selects
-the PSB-chain representative. The first stage accepts only primary Fe56;
-`--A 56` therefore resolves Z=26. Lowercase --z specifies source redshift.
+the PSB-chain representative for 2<=A<=56; `--A 56` resolves Z=26.
+Other mass numbers require explicit Z. The Fe56-only input restriction has
+been removed: explicit A,Z are accepted subject to the selected mass source
+and complete process data. Lowercase --z specifies source redshift.
 For other particles A,Z are physically unused. Existing named particles and
 numeric --primary remain available; do not supply both selectors.
 
 --photodisintegration accepts exactly TALYS, PSB or Off and defaults to Off.
 PSB preserves weighted branching and approximate nuclear masses. TALYS samples
 one exclusive channel per event and uses pinned tabulated nuclear masses.
-Off disables photodisintegration and uses the approximate PSB source mass.
+Off disables photodisintegration. With nuclear decays Off, PSB-chain isotopes
+retain their approximate source masses; other isotopes require --talys-data
+with a tabulated mass, without approximate substitution. With nuclear decays
+On, every source uses a tabulated mass. PSB accepts only its representative
+isotope at each A<=56 and rejects other Z values without projection.
 The mode does not disable redshift losses or existing electromagnetic,
 free-nucleon GZK/pair, magnetic-deflection or free-neutron-decay processes.
-Nuclear GZK, nuclear pair production, nuclear decays and photon emission are
-not implemented in this stage.
+Nuclear GZK, nuclear pair production and decay photon emission remain outside
+this implementation. Nuclear decays are available separately through
+--nuclear-decay On|Off; see [nuclear_decay.md](nuclear_decay.md).
 
 Nuclear raw output files are AXXZYY, for example A56Z26 and A04Z02. Different
 isotopes at the same A receive different files. Existing non-nuclear filenames
@@ -81,6 +88,57 @@ Example from bin, with an output directory that does not already exist:
   --z 0.0001 --emax 1e21 --nparticles 8 --background 0 \
   --noEMcascade --output ../../validation/example-talys
 ```
+
+## Other primary nuclei and mass-only data
+
+The preparer defaults to Fe56. Select a different photodisintegration network
+with explicit --A and --Z; for example, from the mcray repository root:
+
+```sh
+python3 tools/prepare_talys_data.py \
+  --repo ../validation/crpropa-data-34b10e2 \
+  --output ../validation/talys-c12 \
+  --grid-policy crpropa-padding --A 12 --Z 6
+```
+
+The original full/reduced cross sections, interpolation, mass precedence and
+approved terminal whitelist are unchanged. Only reachable terminals are
+exported. Missing cross sections, unapproved terminals or missing masses fail
+preparation. CRbeam independently validates the reachable network from its
+selected A,Z before propagation. Existing Fe56 bundles can be used for other
+primaries when their complete required network is included.
+
+For Off propagation outside the PSB chain, export all available tabulated
+masses without requiring photodisintegration data:
+
+```sh
+python3 tools/prepare_talys_data.py \
+  --repo ../validation/crpropa-data-34b10e2 \
+  --output ../validation/nuclear-masses \
+  --grid-policy crpropa-padding --mass-only
+python3 tools/prepare_talys_data.py --output ../validation/nuclear-masses --verify
+```
+
+This bundle contains masses.tsv, provenance.txt and manifest.json. The existing
+TalysData loader accepts loadCrossSections=false to load only these files;
+its default remains full loading. A mass-only bundle cannot enable TALYS or
+nuclear decays. In CRbeam it is selected automatically for non-PSB Off primaries:
+
+```sh
+# From bin, with a new output directory:
+../build/Release/CRbeam --particle nucleus --A 208 --Z 82 \
+  --photodisintegration Off --talys-data ../../validation/nuclear-masses \
+  --z 0.0001 --emax 1e21 --nparticles 64 --background 0 --noEMcascade \
+  --output ../../validation/pb208-off
+```
+
+The pinned sources provide 2926 valid bound-isotope masses, including Pb208,
+but not U238; unavailable masses produce an explicit error. Acceptance of
+unsigned A,Z does not imply that every conceivable isotope has physical data.
+The selected TALYS1.8 cross sections end at A=56. Heavy-nucleus
+photodisintegration needs a separately approved data extension. Off propagation
+of a heavy nucleus tests injection/transport and is not a complete model of
+its intergalactic interactions.
 
 ## Particle and process contracts
 
@@ -196,3 +254,22 @@ see nuclear_decay.md for preparation, approved kinematics and corrections to
 the CRPropa decay generator. Photodisintegration-only data remain supported
 when nuclear decays are Off. The previous statement that decays are absent
 applies to the original photodisintegration-only stage.
+
+## Arbitrary-primary verification (2026-10-08)
+
+All 104 CTest entries pass on macOS arm64 and Docker Linux amd64 emulation.
+The Linux checks also include a separate 36-case targeted run covering CRbeam
+input, TALYS, decay and nuclear identity.
+Coverage includes alternate PSB representatives, rejection of unsupported PSB
+identities, explicit light/heavy Off injection with synthetic mass fixtures,
+missing-mass errors and rejection of a mass-only bundle for TALYS propagation.
+Synthetic fixture masses are test data, not physical mass references.
+
+Prepared real-data controls include a 19-state C12 network and the 2926-mass
+bundle. C12 TALYS and Pb208 Off CRbeam runs with 64 primaries complete on both
+platforms; Pb208 output retains all 64 histories under A208Z82. U238 is rejected
+because its mass is absent from the pinned sources. Re-preparing default Fe56
+produces byte-identical physical tables and provenance; the manifest adds
+primary-root metadata. These checks establish source handling and regression
+behavior, not complete physical validation of every primary. Calculation
+artifacts remain outside Git in the sibling validation directory.

@@ -27,7 +27,7 @@ public:
         std::shared_ptr<const Utils::LinearFunc> total;
         std::vector<Channel> channels;
     };
-    explicit TalysData(const std::string& directory);
+    explicit TalysData(const std::string& directory, bool loadCrossSections = true);
     const Isotope& Get(unsigned int a, unsigned int z) const;
     void SetParticle(mcray::Particle& p, unsigned int a, unsigned int z) const;
     std::set<Identity> ValidateNetwork(unsigned int a, unsigned int z) const;

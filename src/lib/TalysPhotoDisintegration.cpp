@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <sstream>
 
 namespace Interactions {
@@ -23,9 +24,20 @@ std::vector<std::string> ReadLines(const std::string& file) {
     return lines;
 }
 TalysData::Identity ReadIdentity(std::istringstream& row) {
-    unsigned int a = 0, z = 0;
-    if (!(row >> a >> z) || a < 2 || a > 56 || !z || z > a)
-        Exception::Throw("Invalid nuclear identity in TALYS data");
+    std::string tokens[2];
+    unsigned int values[2]{};
+    for (int i=0;i<2;++i) {
+        if (!(row >> tokens[i]) || tokens[i].find_first_not_of("0123456789") != std::string::npos)
+            Exception::Throw("Invalid nuclear identity in TALYS data");
+        try {
+            const auto value=std::stoull(tokens[i]);
+            if (value>std::numeric_limits<unsigned int>::max())
+                Exception::Throw("Invalid nuclear identity in TALYS data");
+            values[i]=static_cast<unsigned int>(value);
+        } catch (const std::exception&) { Exception::Throw("Invalid nuclear identity in TALYS data"); }
+    }
+    const auto a=values[0],z=values[1];
+    if (a < 2 || !z || z > a) Exception::Throw("Invalid nuclear identity in TALYS data");
     return {a,z};
 }
 void RequireEnd(std::istringstream& row) {
@@ -50,7 +62,7 @@ double CheckedRate(double value) {
 }
 }
 
-TalysData::TalysData(const std::string& directory) {
+TalysData::TalysData(const std::string& directory, bool loadCrossSections) {
     const auto metadata = ReadLines(directory + "/provenance.txt");
     if (metadata.size() < 3 || metadata[0] != "mcray-talys-v1" ||
         metadata[1] != "34b10e27375c0e9894d7c984ac15fb96e12975ef" ||
@@ -58,6 +70,17 @@ TalysData::TalysData(const std::string& directory) {
         Exception::Throw("Unsupported TALYS data format, revision or grid policy");
     for (const auto& line : metadata) fMetadata += "# TALYS " + line + '\n';
     for (const auto& line : ReadLines(directory + "/manifest.json")) fMetadata += "# TALYS manifest " + line + '\n';
+    for (const auto& line : ReadLines(directory + "/masses.tsv")) {
+        std::istringstream row(line); const auto key = ReadIdentity(row);
+        double mass; std::string source;
+        if (!(row >> mass >> source) || !std::isfinite(mass) || mass <= 0. ||
+            (source != "NIST" && source != "NuDat3")) Exception::Throw("Invalid or unsupported TALYS mass");
+        RequireEnd(row);
+        if (!fIsotopes.emplace(key, Isotope{}).second) Exception::Throw("Duplicate TALYS mass");
+        fIsotopes.at(key).mass = mass * units.MeV;
+    }
+    fMetadata += std::string("# TALYS load_cross_sections=") + (loadCrossSections ? "On\n" : "Off\n");
+    if (!loadCrossSections) return;
     std::vector<double> external, talys;
     for (const auto& label : {"external", "talys"}) {
         auto& grid = std::string(label) == "external" ? external : talys;
@@ -68,15 +91,6 @@ TalysData::TalysData(const std::string& directory) {
             RequireEnd(row); grid.push_back(k * units.MeV);
         }
         if (grid.size() != 513) Exception::Throw("TALYS grid must contain 513 padded nodes");
-    }
-    for (const auto& line : ReadLines(directory + "/masses.tsv")) {
-        std::istringstream row(line); const auto key = ReadIdentity(row);
-        double mass; std::string source;
-        if (!(row >> mass >> source) || !std::isfinite(mass) || mass <= 0. ||
-            (source != "NIST" && source != "NuDat3")) Exception::Throw("Invalid or unsupported TALYS mass");
-        RequireEnd(row);
-        if (!fIsotopes.emplace(key, Isotope{}).second) Exception::Throw("Duplicate TALYS mass");
-        fIsotopes.at(key).mass = mass * units.MeV;
     }
     for (const auto& line : ReadLines(directory + "/terminals.tsv")) {
         std::istringstream row(line); const auto key = ReadIdentity(row); RequireEnd(row);

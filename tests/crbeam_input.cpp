@@ -79,10 +79,35 @@ TEST_F(CRbeamInputTest, ChargeCannotExceedMassNumber) {
 TEST_F(CRbeamInputTest, MissingPsbEntryRequiresExplicitCharge) {
     ExpectError([&] { Parse({"--particle", "nucleus", "--A", "57"}); }, "specify --Z explicitly");
 }
-TEST_F(CRbeamInputTest, UnsupportedPrimariesAreNotSilentlyProjected) {
-    ExpectError([&] { Parse({"--particle", "nucleus", "--A", "55"}); }, "only primary Fe56");
-    ExpectError([&] { Parse({"--particle", "nucleus", "--A", "56", "--Z", "25"}); }, "only primary Fe56");
-    ExpectError([&] { Parse({"--particle", "nucleus", "--A", "57", "--Z", "26"}); }, "only primary Fe56");
+TEST_F(CRbeamInputTest, DifferentPsbChainPrimariesAreAccepted) {
+    for (const auto& isotope : std::vector<std::pair<unsigned,unsigned>>{{2,1},{4,2},{12,6},{16,8},{55,25}}) {
+        Parse({"--particle", "nucleus", "--A", std::to_string(isotope.first)});
+        EXPECT_EQ(program->PrimaryA(),isotope.first);
+        EXPECT_EQ(program->PrimaryZ(),isotope.second);
+        Parse({"--particle", "nucleus", "--A", std::to_string(isotope.first),
+               "--photodisintegration", "PSB"});
+        EXPECT_EQ(program->PrimaryA(),isotope.first);
+    }
+}
+TEST_F(CRbeamInputTest, PsbRejectsUnsupportedIdentityWithoutProjection) {
+    for (const auto& isotope : std::vector<std::pair<unsigned,unsigned>>{{56,25},{57,26}})
+        ExpectError([&] { Parse({"--particle", "nucleus", "--A", std::to_string(isotope.first),
+             "--Z", std::to_string(isotope.second), "--photodisintegration", "PSB"}); }, "PSB requires its representative isotope");
+}
+TEST_F(CRbeamInputTest, TalysInputAcceptsExplicitIsotopesAndChecksDataAtRunTime) {
+    for (const auto& isotope : std::vector<std::pair<unsigned,unsigned>>{{12,6},{56,25},{57,26},{238,92}}) {
+        Parse({"--particle", "nucleus", "--A", std::to_string(isotope.first),
+               "--Z", std::to_string(isotope.second), "--photodisintegration", "TALYS", "--talys-data", "unused"});
+        EXPECT_EQ(program->PrimaryA(),isotope.first);
+        EXPECT_EQ(program->PrimaryZ(),isotope.second);
+    }
+}
+TEST_F(CRbeamInputTest, OffDoesNotSilentlySubstituteAnUnsupportedIsotope) {
+    for (const auto& isotope : std::vector<std::pair<unsigned,unsigned>>{{26,13},{56,25},{238,92}}) {
+        ExpectError([&] { Parse({"--particle", "nucleus", "--A", std::to_string(isotope.first),
+               "--Z", std::to_string(isotope.second), "--photodisintegration", "Off"}); },
+               "requires a tabulated nuclear mass");
+    }
 }
 TEST_F(CRbeamInputTest, UnsignedInputsRejectSignsFractionsJunkAndOverflow) {
     const auto overflow = std::to_string(static_cast<unsigned long long>(std::numeric_limits<unsigned int>::max()) + 1);
@@ -141,6 +166,31 @@ TEST_F(CRbeamInputTest, NuclearOffAndPsbRunsProduceIsotopeFiles) {
         }
         std::filesystem::remove_all(dir);
     }
+}
+TEST_F(CRbeamInputTest, OffPropagatesExplicitLightAndHeavyIsotopesWithMassOnlyData) {
+    omp_set_num_threads(1);
+    const auto root=std::filesystem::temp_directory_path() / ("mcray-crbeam-masses-"+std::to_string(getpid()));
+    std::filesystem::remove_all(root);std::filesystem::create_directory(root);
+    std::ofstream(root/"provenance.txt")<<"mcray-talys-v1\n34b10e27375c0e9894d7c984ac15fb96e12975ef\ngrid_policy=crpropa-padding\n";
+    std::ofstream(root/"manifest.json")<<"{}\n";
+    std::ofstream(root/"masses.tsv")<<"26 13 24200 NIST\n238 92 221700 NIST\n";
+    for (const auto& isotope : std::vector<std::pair<unsigned,unsigned>>{{26,13},{238,92}}) {
+        const std::string name="A"+std::to_string(isotope.first)+"Z"+std::to_string(isotope.second);
+        const auto output=root/name;
+        Parse({"--particle","nucleus","--A",std::to_string(isotope.first),"--Z",std::to_string(isotope.second),
+               "--talys-data",root.string(),"--photodisintegration","Off","--z","0.0001",
+               "--emax","1e21","--nparticles","8","--noEMcascade","--background","0","--output",output.string()});
+        ASSERT_EQ(program->run(),0);
+        std::ifstream file(output/"z0"/name);ASSERT_TRUE(file.good());
+        unsigned rows=0;
+        for (std::string line;std::getline(file,line);) if (!line.empty() && line[0]!='#') ++rows;
+        EXPECT_EQ(rows,8u);
+    }
+    Parse({"--particle","nucleus","--A","239","--Z","92","--talys-data",root.string()});
+    ExpectError([&] { program->run(); },"Missing TALYS isotope");
+    Parse({"--particle","nucleus","--A","26","--Z","13","--talys-data",root.string(),"--photodisintegration","TALYS"});
+    ExpectError([&] { program->run(); },"Cannot read TALYS data");
+    std::filesystem::remove_all(root);
 }
 TEST_F(CRbeamInputTest, NuclearDecayRequiresExplicitCompatibleInput) {
     ExpectError([&] { Parse({"--nuclear-decay","unknown"}); }, "must be On or Off");

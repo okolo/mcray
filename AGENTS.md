@@ -197,6 +197,13 @@ Primary-platform Linux verification is described below.
 ### Primary platform: Linux amd64
 
 The user specified Linux amd64 as the primary target platform.
+User instruction dated 2026-10-08: never launch calculations expected to take
+longer than 30 minutes on the workstation, including background Docker jobs.
+Prepare scripts for an external Linux amd64 server instead. Server workflows
+must fetch the requested current Git revision, freeze its exact commit, run
+tests and compress results into the configured test-data directory. Preserve
+input/source hashes, seeds, logs and failure status. Artifact publication and
+DVC remote configuration require a separately selected storage destination.
 The Ubuntu 24.04 Docker environment is defined in
 `docker/linux-amd64.Dockerfile`.
 Run `bash bin/test-docker.sh` from the root; see docker/README.md.
@@ -411,3 +418,18 @@ publishing an unpublished development branch, verify that such files are absent
 from every commit being pushed, not merely deleted from its final tree. Preserve
 an ignored external backup before any authorized history rewrite. Never rewrite
 published history or force-push without separate explicit authorization.
+
+
+### Arbitrary primary input approved on 2026-10-08
+
+The user removed the Fe56-only CRbeam input restriction. Accept unsigned A,Z
+with A>=2 and 0<Z<=A after resolution; Z=0 still chooses the PSB representative
+only for A<=56. PSB requires that exact representative and rejects other
+identities. TALYS/decays require complete reachable data from the selected root.
+For Off with decays Off, preserve approximate PSB masses for chain isotopes;
+other identities require tabulated masses from --talys-data, without fallback.
+With decays On, use tabulated masses for every nucleus. The user approved
+selectable primary roots in data preparation and heavy Off injection with
+explicit Z and a tabulated mass. Extending photodisintegration beyond the
+pinned TALYS1.8 A<=56 data requires a separate data decision. Read
+docs/usage/talys_usage.md for the current commands and source coverage.

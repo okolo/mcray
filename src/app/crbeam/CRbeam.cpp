@@ -122,7 +122,7 @@ static CmdInfo commands[] = {
         { PZ, CmdInfo::FLAG_ARGUMENT, "-Z", "--Z", "0", "Unsigned nuclear charge number (0=choose from the PSB chain; unused unless nucleus)" },
         { PPhotodisintegration, CmdInfo::FLAG_ARGUMENT, "-pd", "--photodisintegration", "Off", "Nuclear photodisintegration: TALYS, PSB or Off (default Off)" },
         { PNuclearDecay, CmdInfo::FLAG_ARGUMENT, "-nd", "--nuclear-decay", "Off", "Nuclear decays: On or Off (default Off); requires tabulated TALYS masses and decay data" },
-        { PTalysData, CmdInfo::FLAG_ARGUMENT, "-talys-data", "--talys-data", "", "Prepared, pinned raw TALYS data directory (required for nuclear TALYS runs)" },
+        { PTalysData, CmdInfo::FLAG_ARGUMENT, "-talys-data", "--talys-data", "", "Pinned data directory: cross sections for TALYS, decay tables for decays, or masses for Off outside the PSB chain" },
 		{ PNoEMcascade,    CmdInfo::FLAG_NULL,     "-nEM",   "--noEMcascade",   NULL,   "don't calculate spectra of electrons and photons" },
 		{ PSourceEvolM, CmdInfo::FLAG_ARGUMENT, "-m",   "--m_z",   xstr(M_POINT_SOURCE),    "if parameter is set (!=" xstr(M_POINT_SOURCE) "), use continuous source distribution ~(1+z)^m" },
 		{ PBackground,    CmdInfo::FLAG_ARGUMENT, "-b",   "--background",   "3",    "EBL used:\n"
@@ -332,8 +332,6 @@ CRbeam::CRbeam(int argc, char** argv):
             if (inputA > 56) Exception::Throw("No PSB-chain representative for --A; specify --Z explicitly");
             resolvedZ = CNucleus::getZ(inputA);
         }
-        if (inputA != 56 || resolvedZ != 26)
-            Exception::Throw("The first nuclear stage supports only primary Fe56 (A=56, Z=26)");
         fPrimary = Nucleus;
         fPrimaryA = inputA;
         fPrimaryZ = resolvedZ;
@@ -349,6 +347,12 @@ CRbeam::CRbeam(int argc, char** argv):
         Exception::Throw("--nuclear-decay On requires a nuclear primary, --talys-data and photodisintegration TALYS or Off");
     if (fPhotodisintegration != "Off" && fPhotodisintegration != "PSB" && fPhotodisintegration != "TALYS")
         Exception::Throw("--photodisintegration must be TALYS, PSB or Off");
+    if (fNuclearPrimary && fPhotodisintegration == "PSB" &&
+        (fPrimaryA > CNucleus::MaxA || fPrimaryZ != CNucleus::getZ(fPrimaryA)))
+        Exception::Throw("PSB requires its representative isotope with 2 <= A <= 56; use TALYS or Off for other nuclei");
+    if (fNuclearPrimary && fPhotodisintegration == "Off" && fTalysDataPath.empty() &&
+        (fPrimaryA > CNucleus::MaxA || fPrimaryZ != CNucleus::getZ(fPrimaryA)))
+        Exception::Throw("This primary requires a tabulated nuclear mass; supply --talys-data with mass data");
     if (fNuclearPrimary && fPhotodisintegration == "TALYS" && fTalysDataPath.empty())
         Exception::Throw("Nuclear TALYS propagation requires --talys-data");
 
@@ -358,13 +362,21 @@ int CRbeam::run()
 {
     std::shared_ptr<const TalysData> talys;
     std::shared_ptr<const NuclearDecayData> decay;
-    if (fNuclearPrimary && (fPhotodisintegration == "TALYS" || fNuclearDecay == "On")) {
-        talys = std::make_shared<TalysData>(fTalysDataPath);
+    const bool psbPrimary = fNuclearPrimary && fPrimaryA <= CNucleus::MaxA &&
+                            fPrimaryZ == CNucleus::getZ(fPrimaryA);
+    if (fNuclearPrimary && (fPhotodisintegration == "TALYS" || fNuclearDecay == "On" || !psbPrimary)) {
+        talys = std::make_shared<TalysData>(fTalysDataPath,fPhotodisintegration == "TALYS");
         if (fNuclearDecay == "On") {
             decay = std::make_shared<NuclearDecayData>(fTalysDataPath,talys);
             decay->ValidateNetwork(fPrimaryA,fPrimaryZ,fPhotodisintegration == "TALYS");
-        } else talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
+        } else if (fPhotodisintegration == "TALYS") talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
+        else talys->Get(fPrimaryA, fPrimaryZ);
     }
+    // Never silently replace an explicitly selected isotope by a PSB-chain
+    // representative when the selected mass source cannot describe it.
+    if (fNuclearPrimary && !talys &&
+        (fPrimaryA > CNucleus::MaxA || fPrimaryZ != CNucleus::getZ(fPrimaryA)))
+        Exception::Throw("The selected primary requires a tabulated nuclear mass; the PSB mass source cannot represent this A,Z");
     auto configurePrimary = [&](Particle& p) {
         if (!fNuclearPrimary) return;
         if (talys) talys->SetParticle(p, fPrimaryA, fPrimaryZ);
