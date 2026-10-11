@@ -107,4 +107,4 @@ nucleon masses are unchanged, and existing SOPHIA and decay approximations
 remain. Exact beta-decay event energy conservation is not imposed.
 
 See [implementation diagnostics](../validation/nuclear_transport_baseline.md)
-and [test tools](../../tests/README.md). PD and decay photons remain pending.
+and [test tools](../../tests/README.md). Photon controls and their limitations are described in [nuclear_photons.md](nuclear_photons.md).

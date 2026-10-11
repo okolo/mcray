@@ -234,3 +234,18 @@ TEST_F(CRbeamInputTest, NuclearGzkPolicyDefaultsAndValidation) {
     }
 }
 }
+
+namespace {
+TEST_F(CRbeamInputTest, NuclearPhotonControlsAndYieldPolicy) {
+    Parse({});EXPECT_EQ(program->PDPhotonMode(),"Off");EXPECT_EQ(program->DecayPhotonMode(),"Off");EXPECT_EQ(program->PDPhotonYieldPolicy(),"CRPropa");
+    ExpectError([&]{Parse({"--photodisintegration-photons","invalid"});},"must be On or Off");
+    ExpectError([&]{Parse({"--decay-photons","On"});},"--nuclear-decay On");
+    ExpectError([&]{Parse({"--photodisintegration-photons","On"});},"nuclear TALYS primary");
+    ExpectError([&]{Parse({"--pd-photon-yields","invalid"});},"must be Strict or CRPropa");
+    for(const auto policy:{"Strict","CRPropa"}) {
+        Parse({"--particle","nucleus","--A","56","--photodisintegration","TALYS","--talys-data","unused",
+               "--nuclear-decay","On","--photodisintegration-photons","On","--decay-photons","On","--pd-photon-yields",policy,"--noEMcascade"});
+        EXPECT_EQ(program->PDPhotonYieldPolicy(),policy);EXPECT_EQ(program->PDPhotonMode(),"On");
+    }
+}
+}

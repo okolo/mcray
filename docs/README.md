@@ -10,6 +10,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Nuclear decays and data preparation](usage/nuclear_decay.md)
 - [Nuclear pair production](usage/nuclear_pair_production.md)
 - [Nuclear GZK and residual policies](usage/nuclear_gzk.md)
+- [Nuclear process photons](usage/nuclear_photons.md)
 - [Tests and validation tools](../tests/README.md)
 - [CRPropa adapters and external Linux runs](../tests/crpropa/README.md)
 - [Docker Linux amd64](../docker/README.md)
@@ -20,6 +21,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [SOPHIA table generation](validation/sophia_table_generation.md)
 - [Nuclear decay / TALYS diagnostics](validation/nuclear_decay_comparison_results.md)
 - [Nuclear transport regression baseline](validation/nuclear_transport_baseline.md)
+- [Nuclear photon diagnostics](validation/nuclear_photon_results.md)
 
 Results distinguish confirmed checks from remaining limitations and pilot
 observations. Read their version and configuration scope before reuse.

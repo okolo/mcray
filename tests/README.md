@@ -404,3 +404,22 @@ and free-neutron decay disabled. It accepts `--a`, `--charge` and the common
 and metadata without transport. Counts include pure-spectator markers and
 free nucleons. Use identical primary histories/configurations for effect
 studies. See [the public GZK contract](../docs/usage/nuclear_gzk.md).
+
+
+## Nuclear photons
+
+`NuclearPhotonsTest` covers native conditional convolution, Strict/CRPropa
+saturation (including a zero denominator), Bernoulli line multiplicities,
+rest-frame boosts, weights/ancestry, clone settings, missing coverage,
+explicit exceptions, compound-decay line association and photon-free RNG
+regression. CLI checks cover defaults, process requirements and creation with
+`--noEMcascade` filtering. Statistical checks use the stated five-standard-error
+bounds; they do not establish astrophysical spectral acceptance.
+
+`nuclear_scenario` accepts `--photodisintegration-photons On|Off`,
+`--decay-photons On|Off` and `--pd-photon-yields Strict|CRPropa`. Its photons
+are retained without EM propagation. `nuclear_photon_probe DATA A Z E_PER_A_EV
+Strict|CRPropa` reports native CMB conditional yields for one isotope, without
+full-network transport or transition-frequency weighting. Both use the
+[public photon data contract](../docs/usage/nuclear_photons.md). Failed
+propagation and incomplete probe outputs must not be used as complete results.

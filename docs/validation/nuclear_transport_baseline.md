@@ -90,3 +90,12 @@ Source patch/file hashes, bundle manifests, commands, seeds, logs and outputs
 are retained outside Git. See [usage](../usage/nuclear_gzk.md) for public
 preparation and reproduction commands. PD/decay photons and physical
 acceptance of the new processes remain pending.
+
+
+## Photon implementation follow-up (2026-10-11)
+
+PD and decay photon controls, native conditional convolution, selectable
+Strict/CRPropa yields and explicit light-transition exclusions are now
+implemented. All 125 entries pass on macOS and Docker Linux amd64 emulation.
+See [photon diagnostics](nuclear_photon_results.md) for the independent dated
+scope, short controls and remaining physical-validation limitations.

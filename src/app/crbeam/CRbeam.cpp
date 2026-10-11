@@ -83,7 +83,7 @@ enum ClineParams
 {
 	PHelp = 1,PLog,PLogFilterThread,PLogLevel,PTrajectoryLog,
     PNparticles,PBatchSize,
-    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PNoEMcascade,PSourceEvolM,
+    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix
 };
@@ -123,6 +123,9 @@ static CmdInfo commands[] = {
         { PZ, CmdInfo::FLAG_ARGUMENT, "-Z", "--Z", "0", "Unsigned nuclear charge number (0=choose from the PSB chain; unused unless nucleus)" },
         { PPhotodisintegration, CmdInfo::FLAG_ARGUMENT, "-pd", "--photodisintegration", "Off", "Nuclear photodisintegration: TALYS, PSB or Off (default Off)" },
         { PNuclearDecay, CmdInfo::FLAG_ARGUMENT, "-nd", "--nuclear-decay", "Off", "Nuclear decays: On or Off (default Off); requires tabulated TALYS masses and decay data" },
+        { PPDPhotonYields, CmdInfo::FLAG_ARGUMENT, "-pd-photon-yields", "--pd-photon-yields", "CRPropa", "PD photon yields: CRPropa (saturate above one) or Strict (diagnose inconsistent ratios)" },
+        { PPDPhotons, CmdInfo::FLAG_ARGUMENT, "-pd-photons", "--photodisintegration-photons", "Off", "TALYS de-excitation photons: On or Off; requires photon data" },
+        { PDecayPhotons, CmdInfo::FLAG_ARGUMENT, "-decay-photons", "--decay-photons", "Off", "Nuclear decay photons: On or Off; requires nuclear decays On and photon data" },
         { PNuclearGZK, CmdInfo::FLAG_ARGUMENT, "-ngzk", "--nuclear-gzk", "Off", "Bound-nucleon GZK: On or Off; requires a nuclear primary and nuclear data" },
         { PGzkResiduals, CmdInfo::FLAG_ARGUMENT, "-ngzk-residuals", "--nuclear-gzk-residuals", "Strict", "Nuclear residual policy: Strict or CRPropa; CRPropa enables tagged approximate masses and artificial dripping and requires nuclear decays On" },
         { PNuclearPPP, CmdInfo::FLAG_ARGUMENT, "-nppp", "--nuclear-ppp", "Off", "Nuclear pair production: Off, Losses or Full; requires tabulated masses and TALYS or Off; Full requires EM cascade" },
@@ -348,6 +351,17 @@ CRbeam::CRbeam(int argc, char** argv):
     fNuclearPPP = static_cast<const char*>(cmd(PNuclearPPP));
     fNuclearGZK = static_cast<const char*>(cmd(PNuclearGZK));
     fGzkResiduals = static_cast<const char*>(cmd(PGzkResiduals));
+    fPDPhotonYields=static_cast<const char*>(cmd(PPDPhotonYields));
+    if (fPDPhotonYields!="Strict" && fPDPhotonYields!="CRPropa") Exception::Throw("--pd-photon-yields must be Strict or CRPropa");
+    fPDPhotons=static_cast<const char*>(cmd(PPDPhotons));
+    fDecayPhotons=static_cast<const char*>(cmd(PDecayPhotons));
+    if ((fPDPhotons!="On" && fPDPhotons!="Off") || (fDecayPhotons!="On" && fDecayPhotons!="Off"))
+        Exception::Throw("Nuclear photon controls must be On or Off");
+    if (fPDPhotons=="On" && (!fNuclearPrimary || fPhotodisintegration!="TALYS" || fTalysDataPath.empty()))
+        Exception::Throw("--photodisintegration-photons On requires a nuclear TALYS primary and photon data");
+    if (fDecayPhotons=="On" && fNuclearDecay!="On")
+        Exception::Throw("--decay-photons On requires --nuclear-decay On");
+
     if (fNuclearGZK != "On" && fNuclearGZK != "Off")
         Exception::Throw("--nuclear-gzk must be On or Off");
     if (fGzkResiduals != "Strict" && fGzkResiduals != "CRPropa")
@@ -390,9 +404,9 @@ int CRbeam::run()
     const bool psbPrimary = fNuclearPrimary && fPrimaryA <= CNucleus::MaxA &&
                             fPrimaryZ == CNucleus::getZ(fPrimaryA);
     if (fNuclearPrimary && (fPhotodisintegration == "TALYS" || fNuclearDecay == "On" || fNuclearPPP != "Off" || fNuclearGZK == "On" || !psbPrimary)) {
-        talys = std::make_shared<TalysData>(fTalysDataPath,fPhotodisintegration == "TALYS",fGzkResiduals == "CRPropa");
+        talys = std::make_shared<TalysData>(fTalysDataPath,fPhotodisintegration == "TALYS",fGzkResiduals == "CRPropa",fPDPhotons=="On");
         if (fNuclearDecay == "On" || fNuclearGZK == "On") {
-            decay = std::make_shared<NuclearDecayData>(fTalysDataPath,talys);
+            decay = std::make_shared<NuclearDecayData>(fTalysDataPath,talys,fDecayPhotons=="On");
             decay->ValidateNetwork(fPrimaryA,fPrimaryZ,fPhotodisintegration == "TALYS",fNuclearGZK == "On");
         } else if (fPhotodisintegration == "TALYS") talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
         else talys->Get(fPrimaryA, fPrimaryZ);
@@ -594,8 +608,8 @@ int CRbeam::run()
 	pe.AddInteraction(new RedShift());
     if (fNuclearPrimary && fPhotodisintegration == "PSB")
         pe.AddInteraction(new PhotoDisintegration(backgrI));
-    if (talys && fPhotodisintegration == "TALYS") pe.AddInteraction(new TalysPhotoDisintegration(backgrI, talys));
-    if (decay && fNuclearDecay == "On") pe.AddInteraction(new NuclearDecay(decay));
+    if (talys && fPhotodisintegration == "TALYS") pe.AddInteraction(new TalysPhotoDisintegration(backgrI, talys,fPDPhotons=="On",fPDPhotonYields=="Strict"));
+    if (decay && fNuclearDecay == "On") pe.AddInteraction(new NuclearDecay(decay,fDecayPhotons=="On"));
     if (fNuclearPPP != "Off") pe.AddInteraction(new NuclearPPPcel(backgrI));
     if (fNuclearPPP == "Full") pe.AddInteraction(new NuclearPPP(backgrI, fPPPrescaleCoef));
 
@@ -655,6 +669,8 @@ int CRbeam::run()
         << " model=native-proton-equal-gamma loss=Z2*mp/M secondary_rate=Z2 energy_owner=CEL\n";
     paramsOut << "# resolved_nuclear_gzk=" << fNuclearGZK << " residual_policy=" << fGzkResiduals
         << " pure_spectators=prompt-free-nucleons missing_PD=error\n";
+    paramsOut << "# resolved_photodisintegration_photons=" << fPDPhotons << " decay_photons=" << fDecayPhotons
+        << " PD_photon_yields=" << fPDPhotonYields << " boost=CRPropa-isotropic-ultrarelativistic nuclear_energy_debit=Off photon_transport=" << (fNoEM?"filtered":"EM-cascade") << "\n";
     if (decay) paramsOut << decay->Metadata();
     if (talys) paramsOut << talys->Metadata();
 	result.SetEndTime(tEnd);

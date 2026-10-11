@@ -59,11 +59,15 @@ extern std::string tables_dir;
 class Exception
 {
 public:
-	Exception(std::string aErrorMessage):fMessage(aErrorMessage){}
+	Exception(std::string aErrorMessage, bool retryable=true):fMessage(aErrorMessage),fRetryable(retryable){}
 	std::string Message() const { return fMessage; }
 	inline static void Throw(std::string aErrorMessage) { throw new Exception(aErrorMessage); }
+    // Data/model errors must not be bypassed by resampling another event.
+    inline static void ThrowFatal(std::string message) { throw new Exception(message,false); }
+    bool Retryable() const { return fRetryable; }
 private:
 	std::string fMessage;
+    bool fRetryable;
 };
 
 typedef std::vector<double> Vector;

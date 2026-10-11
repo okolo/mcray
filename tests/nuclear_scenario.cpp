@@ -49,6 +49,7 @@ struct Options {
     double perNucleon = 1e19, distance = 0., accuracy = 1e-4;
     double backgroundStepDecades = 0.01;
     bool scan = false, particles = false, preflight = false;
+    std::string pdPhotons="Off",decayPhotons="Off",pdPhotonYields="CRPropa";
 };
 
 Options parse(int argc, char** argv) {
@@ -61,6 +62,9 @@ Options parse(int argc, char** argv) {
         if (i + 1 == argc) throw std::runtime_error("Missing value for " + arg);
         const std::string value = argv[++i];
         if (arg == "--process") o.process = value;
+        else if (arg == "--photodisintegration-photons") o.pdPhotons=value;
+        else if (arg == "--pd-photon-yields") o.pdPhotonYields=value;
+        else if (arg == "--decay-photons") o.decayPhotons=value;
         else if (arg == "--gzk-residuals") o.gzkResiduals = value;
         else if (arg == "--talys-data") o.talysData = value;
         else if (arg == "--photon-table") o.photonTable = value;
@@ -93,6 +97,13 @@ Options parse(int argc, char** argv) {
         throw std::runtime_error("Nuclear GZK/pair support is not implemented");
     if ((o.process == "nuclear-pair" || o.process == "nuclear-pair-cel") && (o.a < 2 || o.talysData.empty()))
         throw std::runtime_error("Nuclear pairs require --a >= 2 and --talys-data");
+    if (o.pdPhotonYields!="Strict" && o.pdPhotonYields!="CRPropa") throw std::runtime_error("Invalid PD photon yield policy");
+    if ((o.pdPhotons!="On" && o.pdPhotons!="Off") || (o.decayPhotons!="On" && o.decayPhotons!="Off"))
+        throw std::runtime_error("Nuclear photon controls must be On or Off");
+    if (o.pdPhotons=="On" && o.process!="talys" && o.process!="talys-decay")
+        throw std::runtime_error("PD photons require TALYS");
+    if (o.decayPhotons=="On" && o.process!="decay" && o.process!="talys-decay" && o.process!="nuclear-gzk")
+        throw std::runtime_error("Decay photons require nuclear decays");
     if (o.gzkResiduals != "Strict" && o.gzkResiduals != "CRPropa")
         throw std::runtime_error("--gzk-residuals must be Strict or CRPropa");
     if (o.gzkResiduals == "CRPropa" && o.process != "nuclear-gzk")
@@ -133,10 +144,10 @@ int main(int argc, char** argv) {
         std::shared_ptr<const TalysData> talys;
         std::shared_ptr<const NuclearDecayData> decay;
         if (o.process == "talys" || o.process == "decay" || o.process == "talys-decay") {
-            talys = std::make_shared<TalysData>(o.talysData);
+            talys = std::make_shared<TalysData>(o.talysData,true,false,o.pdPhotons=="On");
             if (o.a<2 || o.talysData.empty()) throw std::runtime_error("Nuclear decays require --a >= 2 and --talys-data");
             if (o.process != "talys") {
-                decay=std::make_shared<NuclearDecayData>(o.talysData,talys);
+                decay=std::make_shared<NuclearDecayData>(o.talysData,talys,o.decayPhotons=="On");
                 decay->ValidateNetwork(o.a,(o.z ? o.z : CNucleus::getZ(o.a)),o.process=="talys-decay");
             } else talys->ValidateNetwork(56,26);
         }
@@ -145,7 +156,7 @@ int main(int argc, char** argv) {
         std::set<TalysData::Identity> gzkNetwork;
         if (o.process == "nuclear-gzk") {
             talys=std::make_shared<TalysData>(o.talysData,false,o.gzkResiduals=="CRPropa");
-            decay=std::make_shared<NuclearDecayData>(o.talysData,talys);
+            decay=std::make_shared<NuclearDecayData>(o.talysData,talys,o.decayPhotons=="On");
             gzkNetwork=decay->ValidateNetwork(o.a,o.z ? o.z : CNucleus::getZ(o.a),false,true);
         }
         auto configure = [&](Particle& p) {
@@ -156,7 +167,7 @@ int main(int argc, char** argv) {
         PRandomInteraction randomInteraction;
         PCELInteraction cel;
         if (o.process == "psb") randomInteraction = new PhotoDisintegration(background);
-        else if (o.process == "talys" || o.process == "talys-decay") randomInteraction = new TalysPhotoDisintegration(background, talys);
+        else if (o.process == "talys" || o.process == "talys-decay") randomInteraction = new TalysPhotoDisintegration(background, talys,o.pdPhotons=="On",o.pdPhotonYields=="Strict");
         else if (o.process == "nuclear-gzk") randomInteraction = new GZK(background,static_cast<int>(o.seed),decay);
         else if (o.process == "gzk") randomInteraction = new GZK(background, static_cast<int>(o.seed));
         else if (o.process == "pair-cel" || o.process == "pair") {
@@ -182,8 +193,9 @@ int main(int argc, char** argv) {
         if (talys) out << talys->Metadata();
         if (decay) out << decay->Metadata();
         if (o.process == "nuclear-gzk") out << "# residual_policy=" << o.gzkResiduals << " closure_states=" << gzkNetwork.size() << " missing_PD=error; PD=Off\n";
+        out << "# PD_photons=" << o.pdPhotons << " PD_photon_yields=" << o.pdPhotonYields << " decay_photons=" << o.decayPhotons << " EM_transport=Off nuclear_energy_debit=Off\n";
         if (o.preflight) return 0;
-        if (o.process == "decay") randomInteraction=new NuclearDecay(decay);
+        if (o.process == "decay") randomInteraction=new NuclearDecay(decay,o.decayPhotons=="On");
         if (o.scan) {
             out << "# E_per_nucleon_eV event_rate_per_Mpc fractional_loss_per_Mpc";
             if (o.process == "talys" || o.process == "talys-decay") out << " exclusive_sum_per_Mpc exclusive_sum_over_total";
@@ -216,7 +228,7 @@ int main(int argc, char** argv) {
             PropagationEngine engine(stack, result, o.seed + batch);
             if (randomInteraction) engine.AddInteraction(randomInteraction);
             if (cel) engine.AddInteraction(cel);
-            if (o.process == "talys-decay" || o.process == "nuclear-gzk") engine.AddInteraction(new NuclearDecay(decay));
+            if (o.process == "talys-decay" || o.process == "nuclear-gzk") engine.AddInteraction(new NuclearDecay(decay,o.decayPhotons=="On"));
             for (int i = 0; i < o.primaries; ++i) {
                 Particle injected(type, 0.01);
                 configure(injected);

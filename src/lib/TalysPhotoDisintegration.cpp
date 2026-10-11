@@ -62,7 +62,7 @@ double CheckedRate(double value) {
 }
 }
 
-TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool crpropaFallback)
+TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool crpropaFallback, bool loadPhotons)
     : fCRPropaFallback(crpropaFallback) {
     const auto metadata = ReadLines(directory + "/provenance.txt");
     if (metadata.size() < 3 || metadata[0] != "mcray-talys-v1" ||
@@ -88,6 +88,7 @@ TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool 
         fIsotopes.at(key).approximateMass = source == "CRPropaApprox";
     }
     fMetadata += std::string("# TALYS load_cross_sections=") + (loadCrossSections ? "On\n" : "Off\n");
+    if (loadPhotons && !loadCrossSections) Exception::Throw("PD photons require loaded cross sections");
     if (!loadCrossSections) return;
     std::vector<double> external, talys;
     for (const auto& label : {"external", "talys"}) {
@@ -136,6 +137,56 @@ TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool 
         channel.sigma = ReadSigma(row, key.first < 12 ? external : talys);
         isotope.channels.push_back(std::move(channel));
     }
+    if (loadPhotons) {
+        const auto provenance=ReadLines(directory+"/photon_provenance.txt");
+        if (provenance.size()<2 || provenance[0]!="mcray-nuclear-photons-v1" ||
+            provenance[1]!="34b10e27375c0e9894d7c984ac15fb96e12975ef")
+            Exception::Throw("Unsupported nuclear photon source");
+        for (const auto& line:provenance) fMetadata+="# NuclearPhotons "+line+'\n';
+        for (const auto& line:ReadLines(directory+"/photon_manifest.json")) fMetadata+="# NuclearPhotons manifest "+line+'\n';
+        for (const auto& line:ReadLines(directory+"/pd_photon_transitions.tsv")) {
+            std::istringstream row(line); const auto parent=ReadIdentity(row); unsigned int a,z;
+            if (!(row>>a>>z) || !a || z>a || a>=parent.first) Exception::Throw("Invalid PD photon transition");
+            auto& transition=fPhotons[{parent,{a,z}}];
+            if (transition.total) Exception::Throw("Duplicate PD photon transition");
+            transition.total=ReadSigma(row,talys);
+        }
+        for (const auto& line:ReadLines(directory+"/pd_photons.tsv")) {
+            std::istringstream row(line); const auto parent=ReadIdentity(row); unsigned int a,z; double energy;
+            if (!(row>>a>>z>>energy) || !std::isfinite(energy) || energy<=0.) Exception::Throw("Invalid PD photon line");
+            auto found=fPhotons.find({parent,{a,z}});
+            if (found==fPhotons.end()) Exception::Throw("PD photon line has no transition");
+            found->second.lines.push_back({energy*units.MeV,ReadSigma(row,talys)});
+        }
+
+        const std::set<std::array<unsigned int,4>> approved={{2,1,1,1},{3,1,1,1},{3,1,2,1},{3,2,1,1},
+            {3,2,2,1},{4,2,2,1},{4,2,3,2},{7,3,6,2}};
+        for (const auto& line:ReadLines(directory+"/pd_photon_exceptions.tsv")) {
+            std::istringstream row(line); std::array<unsigned int,4> key{};
+            if (!(row>>key[0]>>key[1]>>key[2]>>key[3]) || !approved.count(key))
+                Exception::Throw("Unapproved PD photon missing-data exception");
+            RequireEnd(row);
+            if (!fPhotons.emplace(std::make_pair(Identity{key[0],key[1]},Identity{key[2],key[3]}),PhotonTransition{}).second)
+                Exception::Throw("Duplicate or source-covered PD photon exception");
+            fMetadata+="# PD photon exception "+line+"; creation=Off; physical-zero=not-asserted\n";
+        }
+        fPhotonsLoaded=true;
+    }
+    fMetadata+=std::string("# PD_photons_loaded=")+(loadPhotons?"On\n":"Off\n");
+
+}
+
+const TalysData::PhotonTransition* TalysData::Photons(Identity parent,Identity residual) const {
+    if (!fPhotonsLoaded) Exception::Throw("PD photon data were not loaded");
+    const auto found=fPhotons.find({parent,residual});
+    if (found==fPhotons.end()) Exception::Throw("Missing PD photon transition coverage for A"+
+        Utils::ToString(parent.first)+"Z"+Utils::ToString(parent.second)+" to A"+
+        Utils::ToString(residual.first)+"Z"+Utils::ToString(residual.second));
+    return &found->second;
+}
+void TalysData::RequirePhotonCoverage(unsigned int a,unsigned int z) const {
+    if (!fPhotonsLoaded) return;
+    for (const auto& channel:Get(a,z).channels) Photons({a,z},channel.residual);
 }
 
 const TalysData::Isotope* TalysData::Find(unsigned int a, unsigned int z) const {
@@ -160,6 +211,7 @@ std::set<TalysData::Identity> TalysData::ValidateNetwork(unsigned int a, unsigne
         if (!reached.insert(key).second || key.first == 1) continue;
         const auto& isotope = Get(key.first,key.second);
         if (isotope.terminal) continue;
+        RequirePhotonCoverage(key.first,key.second);
         if (!isotope.total || isotope.channels.empty()) Exception::Throw("Incomplete reachable TALYS cross sections");
         for (const auto& channel : isotope.channels) {
             pending.push_back(channel.residual);
@@ -170,12 +222,13 @@ std::set<TalysData::Identity> TalysData::ValidateNetwork(unsigned int a, unsigne
     return reached;
 }
 
-TalysPhotoDisintegration::TalysPhotoDisintegration(BackgroundIntegral* background, std::shared_ptr<const TalysData> data)
-    : fBackground(background), fData(std::move(data)) {
+TalysPhotoDisintegration::TalysPhotoDisintegration(BackgroundIntegral* background, std::shared_ptr<const TalysData> data,bool photons,bool strictPhotonYields)
+    : fBackground(background), fData(std::move(data)), fPhotons(photons), fStrictPhotonYields(strictPhotonYields) {
     if (!background || !fData) Exception::Throw("TALYS requires background integrals and immutable data");
+    if (fPhotons && !fData->PhotonsLoaded()) Exception::Throw("PD photon data were not loaded");
 }
 RandomInteraction* TalysPhotoDisintegration::Clone() const {
-    return new TalysPhotoDisintegration(fBackground->Clone(), fData);
+    return new TalysPhotoDisintegration(fBackground->Clone(), fData,fPhotons,fStrictPhotonYields);
 }
 const TalysData::Isotope& TalysPhotoDisintegration::Validate(const Particle& p) const {
     p.ValidateIdentity();
@@ -184,6 +237,7 @@ const TalysData::Isotope& TalysPhotoDisintegration::Validate(const Particle& p) 
         Exception::Throw("TALYS requires the pinned tabulated nuclear mass");
     if (!isotope.terminal && (!isotope.total || isotope.channels.empty()))
         Exception::Throw("Incomplete TALYS isotope encountered during propagation");
+    if (fPhotons) fData->RequirePhotonCoverage(p.MassNumber(),p.AtomicNumber());
     return isotope;
 }
 double TalysPhotoDisintegration::Rate(const Particle& p) const {
@@ -206,6 +260,23 @@ TalysPhotoDisintegration::Rates TalysPhotoDisintegration::ChannelRates(const Par
     if (rates.total > 0. && rates.exclusiveSum <= 0.) Exception::Throw("Positive TALYS total rate with zero exclusive-channel sum");
     return rates;
 }
+std::vector<NuclearPhotonLine> TalysPhotoDisintegration::PhotonYields(const Particle& p,TalysData::Identity residual) const {
+    const auto* transition=fData->Photons({p.MassNumber(),p.AtomicNumber()},residual);
+    std::vector<NuclearPhotonLine> result;
+    if (transition->lines.empty()) return result;
+    const double denominator=CheckedRate(fBackground->GetRateK(*transition->total,p));
+    for (const auto& line:transition->lines) {
+        const double numerator=CheckedRate(fBackground->GetRateK(*line.sigma,p));
+        if (fStrictPhotonYields && denominator==0. && numerator>0.) Exception::ThrowFatal("Positive PD photon rate with zero transition rate");
+        const double rawYield=denominator>0. ? numerator/denominator : numerator>0. ? std::numeric_limits<double>::infinity() : 0.;
+        const double probability=std::min(1.,rawYield);
+        if (fStrictPhotonYields && (!std::isfinite(rawYield) || rawYield>1.))
+            Exception::ThrowFatal("PD photon conditional yield exceeds one under Strict policy");
+        result.push_back({line.energy,probability,rawYield});
+    }
+    return result;
+}
+
 bool TalysPhotoDisintegration::GetSecondaries(Particle& p, std::vector<Particle>& products, Randomizer& random) const {
     const Rates rates = ChannelRates(p);
     if (rates.total <= 0.) return false;
@@ -231,6 +302,12 @@ bool TalysPhotoDisintegration::GetSecondaries(Particle& p, std::vector<Particle>
     emit(channel.residual);
     for (size_t i = 0; i < TalysData::Emitted.size(); ++i)
         for (unsigned int count = 0; count < channel.multiplicity[i]; ++count) emit(TalysData::Emitted[i]);
+    if (fPhotons) {
+        const auto lines=PhotonYields(p,channel.residual);
+        const Particle emitter=event.front(); // Reference boost uses the residual gamma.
+        for (const auto& line:lines)
+            if (random.Rand()<line.probability) EmitNuclearPhoton(emitter,line.energy,event,random);
+    }
     products.insert(products.end(), event.begin(), event.end());
     return true;
 }

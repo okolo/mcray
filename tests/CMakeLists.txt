@@ -7,7 +7,7 @@ FetchContent_Declare(googletest
     URL_HASH SHA256=6e3191c1455468b3fc35a417fb565c1c5071aee1b7e7f85e30cf48a98d37d8b5)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(mcray_unit_tests table_function_log_zeros.cpp psb_branching_bounds.cpp psb_physics.cpp nucleon_physics.cpp nuclear_gzk.cpp gzk_spectral_statistics.cpp nuclear_identity.cpp talys_physics.cpp nuclear_decay.cpp shared_photon_table.cpp)
+add_executable(mcray_unit_tests table_function_log_zeros.cpp psb_branching_bounds.cpp psb_physics.cpp nucleon_physics.cpp nuclear_gzk.cpp nuclear_photons.cpp gzk_spectral_statistics.cpp nuclear_identity.cpp talys_physics.cpp nuclear_decay.cpp shared_photon_table.cpp)
 target_include_directories(mcray_unit_tests PRIVATE ../src/lib)
 # Resolve main from GoogleTest before searching mcray's legacy main object.
 target_link_libraries(mcray_unit_tests PRIVATE GTest::gtest_main mcray)
@@ -75,3 +75,7 @@ target_link_libraries(photon_background_export PRIVATE mcray)
 
 add_executable(beta_spectrum_comparison beta_spectrum_comparison.cpp)
 target_link_libraries(beta_spectrum_comparison PRIVATE GTest::gtest)
+
+add_executable(nuclear_photon_probe nuclear_photon_probe.cpp)
+target_include_directories(nuclear_photon_probe PRIVATE ../src/lib)
+target_link_libraries(nuclear_photon_probe PRIVATE mcray)

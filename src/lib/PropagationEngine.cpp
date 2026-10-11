@@ -282,6 +282,7 @@ void PropagationEngine::RunParticle(Particle& aParticle)
                     completed = true;
                 }catch(Exception* ex)
                 {
+                    if (!ex->Retryable()) throw ex;
                     if(i==maxError_count) {
                         std::cerr << "recovery failed after " << maxError_count-1 << "attempts" << std::endl;
                         throw ex;
@@ -483,6 +484,7 @@ void PropagationEngine::RunParticleWithVariableRate(Particle& aParticle, double 
                     completed = true;
                 }catch(Exception* ex)
                 {
+                    if (!ex->Retryable()) throw ex;
                     if(i==maxError_count) {
                         LOG_ERROR("recovery failed after " + ToString(maxError_count-1) + " attempts");
                         throw ex;

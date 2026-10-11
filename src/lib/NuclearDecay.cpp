@@ -48,7 +48,7 @@ std::vector<TalysData::Identity> Products(TalysData::Identity parent, const std:
 }
 }
 
-NuclearDecayData::NuclearDecayData(const std::string& directory, std::shared_ptr<const TalysData> nuclei)
+NuclearDecayData::NuclearDecayData(const std::string& directory, std::shared_ptr<const TalysData> nuclei, bool loadPhotons)
     : fNuclei(std::move(nuclei)) {
     if (!fNuclei) Exception::Throw("Nuclear decays require tabulated nuclear masses");
     const auto provenance=Lines(directory+"/decay_provenance.txt");
@@ -120,6 +120,37 @@ NuclearDecayData::NuclearDecayData(const std::string& directory, std::shared_ptr
             }
         channels.push_back(channel);
     }
+    if (loadPhotons) {
+        const auto provenance=Lines(directory+"/photon_provenance.txt");
+        if (provenance.size()<2 || provenance[0]!="mcray-nuclear-photons-v1" ||
+            provenance[1]!="34b10e27375c0e9894d7c984ac15fb96e12975ef")
+            Exception::Throw("Unsupported nuclear photon source");
+        for (const auto& line:provenance) fMetadata+="# NuclearPhotons "+line+'\n';
+        for (const auto& line:Lines(directory+"/photon_manifest.json")) fMetadata+="# NuclearPhotons manifest "+line+'\n';
+        std::set<std::pair<TalysData::Identity,std::string>> covered;
+        for (const auto& line:Lines(directory+"/decay_photon_channels.tsv")) {
+            std::istringstream row(line); const auto id=Identity(row); std::string code;
+            if (!(row>>code) || !covered.emplace(id,code).second) Exception::Throw("Invalid decay photon coverage");
+            End(row);
+        }
+        for (const auto& entry:fChannels) for (const auto& channel:entry.second)
+            if (!covered.count({entry.first,channel.code})) Exception::Throw("Missing decay photon channel coverage");
+        for (const auto& line:Lines(directory+"/decay_photons.tsv")) {
+            std::istringstream row(line); const auto id=Identity(row); std::string code; NuclearPhotonLine photon;
+            if (!(row>>code>>photon.energy>>photon.probability) || !std::isfinite(photon.energy) || photon.energy<=0. ||
+                !std::isfinite(photon.probability) || photon.probability<0. || photon.probability>1. || !covered.count({id,code}))
+                Exception::Throw("Invalid decay photon line or probability");
+            End(row); photon.energy*=1e3*units.eV;
+            auto found=fChannels.find(id);
+            if (found==fChannels.end()) continue; // Outside the selected mass policy.
+            auto channel=std::find_if(found->second.begin(),found->second.end(),[&](const Channel& c){return c.code==code;});
+            if (channel==found->second.end()) Exception::Throw("Photon line has no decay channel");
+            channel->photons.push_back(photon);
+        }
+    }
+    fPhotonsLoaded=loadPhotons;
+    fMetadata+=std::string("# decay_photons_loaded=")+(loadPhotons?"On\n":"Off\n");
+
 }
 const std::vector<NuclearDecayData::Channel>& NuclearDecayData::Get(unsigned int a,unsigned int z) const {
     if (fUnsupported.count({a,z})) Exception::Throw("Unsupported source decay mode for A"+
@@ -160,6 +191,7 @@ std::set<TalysData::Identity> NuclearDecayData::ValidateNetwork(unsigned int a,u
             const auto ids=Products(key,channel.code); pending.insert(pending.end(),ids.begin(),ids.end());
         }
         if (pd && !isotope.terminal) {
+            fNuclei->RequirePhotonCoverage(key.first,key.second);
             if (!isotope.total || isotope.channels.empty()) Exception::Throw("Missing reachable photodisintegration data with nuclear decays");
             for (const auto& channel:isotope.channels) {
                 pending.push_back(channel.residual);
@@ -183,10 +215,11 @@ void NuclearDecayData::AppendResidual(const Particle& parent,unsigned int a,unsi
         residual.Energy=energy; products.push_back(residual);
     }
 }
-NuclearDecay::NuclearDecay(std::shared_ptr<const NuclearDecayData> data):fData(std::move(data)) {
+NuclearDecay::NuclearDecay(std::shared_ptr<const NuclearDecayData> data,bool photons):fData(std::move(data)),fPhotons(photons) {
     if (!fData) Exception::Throw("NuclearDecay requires immutable decay data");
+    if (fPhotons && !fData->PhotonsLoaded()) Exception::Throw("Decay photon data were not loaded");
 }
-RandomInteraction* NuclearDecay::Clone() const { return new NuclearDecay(fData); }
+RandomInteraction* NuclearDecay::Clone() const { return new NuclearDecay(fData,fPhotons); }
 double NuclearDecay::Rate(const Particle& p) const {
     if (p.Type!=Nucleus) return 0.;
     p.ValidateIdentity();
@@ -233,6 +266,8 @@ bool NuclearDecay::GetSecondaries(Particle& p,std::vector<Particle>& products,Ra
     double u=random.Rand()*sum;
     const auto* selected=&channels.back();
     for (const auto& channel:channels) { u-=channel.restRate; if (u<0.) { selected=&channel; break; } }
+    if (fPhotons) for (const auto& photon:selected->photons)
+        if (random.Rand()<photon.probability) EmitNuclearPhoton(p,photon.energy,products,random);
     Particle residual=p;
     for (int i=0;i<selected->code[0]-'0';++i) BetaDecay(residual,false,products,random);
     for (int i=0;i<selected->code[1]-'0';++i) BetaDecay(residual,true,products,random);
