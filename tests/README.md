@@ -423,3 +423,30 @@ Strict|CRPropa` reports native CMB conditional yields for one isotope, without
 full-network transport or transition-frequency weighting. Both use the
 [public photon data contract](../docs/usage/nuclear_photons.md). Failed
 propagation and incomplete probe outputs must not be used as complete results.
+
+## Integration performance comparison
+
+`benchmark_nuclear_integration.py` compares two frozen executable directories
+containing `CRbeam` and `nuclear_scenario`. Use the stable knot-split baseline
+and optimized implementation built with the same Release toolchain. CRbeam
+must support `--seed` in both variants. Copy binaries outside Git before
+rebuilding; freeze the corresponding source patches and hashes separately.
+
+```bash
+python3 tests/benchmark_nuclear_integration.py \
+  --before-dir /results/frozen-before --after-dir /results/frozen-after \
+  --data /data/photon-enabled-nuclei --output /results/new-benchmark
+```
+
+Four cases cover Fe56 TALYS+decay with both photon sources on CMB and
+CMB+Inoue12: complete nuclear histories at 1 Mpc (no EM interactions), and
+production CRbeam at z=2.5e-5 with its EM cascade enabled. CRbeam uses a
+1e11 eV tracking cutoff and thinning off. Nuclear PPP/GZK remain off.
+Each variant receives a warmup, then three paired 64-primary runs with
+identical pair seeds; the execution order alternates. OMP_NUM_THREADS=1,
+data/binary hashes, commands, timings and species counts/weighted energies
+are recorded. Times include setup, propagation and output. The script uses
+a 240-second job timeout and 1800-second total local limit; a timeout retains
+an incomplete result rather than silently reporting a speedup. These are
+performance diagnostics, not a statistical spectrum-acceptance campaign.
+Avoid concurrent builds or calculations when collecting timings.

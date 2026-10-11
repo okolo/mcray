@@ -130,3 +130,39 @@ correlated. The runner reports integrated species yields, energies and
 primary survival, with combined standard errors. It does not yet provide
 binned-spectrum confidence intervals, rare-output adequacy or simultaneous
 acceptance. Long-run output can be large; retain enough server disk space.
+
+## Network rate convergence diagnostic
+
+The native `nuclear_decay_probe --mode photo-rates` accepts `--network 1`
+(the combined TALYS+decay network from `--a`/`--charge`), a comma-separated
+`--gamma-list`, `--background-step` (log10 spacing, default 0.01) and
+`--eps-rel` (default 1e-4). These are adapter-only numerical controls.
+Default single-isotope behavior and production settings are unchanged.
+Network scans retain failed isotope/gamma cells as `# FAILED` rows, continue
+with other cells, and return exit code 3 if any cell failed. Such outputs are
+incomplete diagnostics, never successful acceptance runs.
+After a failed cell, the probe additionally evaluates its full and exclusive
+components separately and records `# COMPONENT_FAILURE` channel identifiers.
+
+```bash
+build/Release/tests/nuclear_decay_probe --mode photo-rates \
+  --data /data/nuclei --a 56 --charge 26 --network 1 \
+  --photon-table /data/common-cmb.tsv --gamma-list 1e9,3.9810717055349693e9,1e10 \
+  --output /results/network.tsv
+python3 tests/crpropa/test_network_photo_rates.py
+python3 tests/crpropa/diagnose_network_photo_rates.py \
+  --data /data/nuclei --reference-data /data/shared-crpropa \
+  --mcray-rates /results/network.tsv --output /results/network-diagnostic.json
+```
+
+The diagnostic verifies the shared reference manifest, integrates the agreed
+photon-density interpolant analytically, and uses independent Gauss-Legendre
+quadrature split at every cross-section node (orders 8, 16, 32 by default).
+It retains full and every successful exclusive rate, failures, direct pinned
+CRPropa convolution and its 201-node gamma-table interpolation as separate
+controls. The latter is a rate interpolation diagnostic; CRPropa transport
+selects branches at the nearest gamma node. Refined-order agreement is an
+observed convergence indicator, not a rigorous error bound or independent
+validation of the underlying nuclear cross sections. The photon-integral
+unit checks use SciPy adaptive quadrature including zero-ended intervals.
+These tools require NumPy/SciPy and the pinned preparation dependencies.

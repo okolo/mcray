@@ -67,6 +67,8 @@ public:
     bool IsNuclearPrimary() const { return fNuclearPrimary; }
     unsigned int PrimaryA() const { return fPrimaryA; }
     unsigned int PrimaryZ() const { return fPrimaryZ; }
+    bool HasExplicitSeed() const { return fExplicitSeed; }
+    unsigned int ConfiguredSeed() const { return fSeed; }
     const std::string& PDPhotonMode() const { return fPDPhotons; }
     const std::string& DecayPhotonMode() const { return fDecayPhotons; }
     const std::string& PDPhotonYieldPolicy() const { return fPDPhotonYields; }
@@ -88,6 +90,8 @@ private:
 	ParticleType 	fPrimary;
     bool fNuclearPrimary;
     unsigned int fPrimaryA, fPrimaryZ;
+    bool fExplicitSeed;
+    unsigned int fSeed;
     std::string fPhotodisintegration, fTalysDataPath, fNuclearDecay, fNuclearPPP, fNuclearGZK, fGzkResiduals, fPDPhotons, fDecayPhotons, fPDPhotonYields;
 	bool 			fNoEM;
 	double			fMz;

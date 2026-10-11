@@ -78,6 +78,12 @@ public:
 	virtual X f_scaled(X _x) const = 0;
 	virtual X Xmin() const;
 	virtual X Xmax() const;
+	// Interpolation knots in physical coordinates, independent of axis scaling.
+	std::vector<X> Knots() const {
+		std::vector<X> result; result.reserve(m_x.size());
+		for(X x:m_x) result.push_back(fXscale ? fXscale->FromScale(x) : x);
+		return result;
+	}
 
 	void SetAutoLimits();
 	void Print(std::ostream& aOut, X aXcoef=1., X aYcoef=1.);
@@ -131,6 +137,16 @@ public:
 
 	X f(X _x) const;
 	X f_scaled(X _x) const;
+	// Conservative exact-zero certificate for the explicit zero-interval
+	// interpolant. Returning false does not assert a nonzero contribution.
+	bool IsZeroOnInterval(X lower,X upper) const {
+		if(!fHandleLogZeros || lower>upper || !this->InTableRange(lower) || !this->InTableRange(upper)) return false;
+		const int left=this->FindLeftX(this->fXscale->ToScale(lower));
+		const int right=this->FindLeftX(this->fXscale->ToScale(upper));
+		if(left<0 || right<left) return false;
+		for(int i=left;i<=right+1;++i) if(fOriginalY[i]!=0) return false;
+		return true;
+	}
 	FunctionX<X>* Clone() const { return new LinearFuncX<X>(*this); }
 protected:
 	LinearFuncX(const TableFunctionX<X>& aTableFunction):

@@ -22,6 +22,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Nuclear decay / TALYS diagnostics](validation/nuclear_decay_comparison_results.md)
 - [Nuclear transport regression baseline](validation/nuclear_transport_baseline.md)
 - [Nuclear photon diagnostics](validation/nuclear_photon_results.md)
+- [Photodisintegration physical-validation diagnostics](validation/photodisintegration_physical_validation.md)
 
 Results distinguish confirmed checks from remaining limitations and pilot
 observations. Read their version and configuration scope before reuse.

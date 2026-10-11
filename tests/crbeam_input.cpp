@@ -249,3 +249,13 @@ TEST_F(CRbeamInputTest, NuclearPhotonControlsAndYieldPolicy) {
     }
 }
 }
+
+namespace {
+TEST_F(CRbeamInputTest, ExplicitSeedIsUnsignedAndOptional) {
+    Parse({});EXPECT_FALSE(program->HasExplicitSeed());
+    Parse({"--seed","0"});EXPECT_TRUE(program->HasExplicitSeed());EXPECT_EQ(program->ConfiguredSeed(),0u);
+    Parse({"-seed","20261011"});EXPECT_TRUE(program->HasExplicitSeed());EXPECT_EQ(program->ConfiguredSeed(),20261011u);
+    ExpectError([&]{Parse({"--seed","-1"});},"seed");
+    ExpectError([&]{Parse({"--seed","1x"});},"seed");
+}
+}

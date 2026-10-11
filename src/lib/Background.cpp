@@ -767,18 +767,49 @@ double ContinuousBackgroundIntegral::GetRateK(const Function &aSigmaK, const Par
 
 	RateKKern leftKern(*fIntegrals[iZ], aSigmaK, aParticle);
 
-	// Resolve cross-section and background interpolation structure at the
-	// requested tolerance, as in GetRateS.
-	double leftRate = math.Integration_qag(leftKern, Kmin, Kmax, 0, fEpsRel, maxIntervals, GSL_INTEG_GAUSS61);
+	// A tabulated cross section and the tabulated photon integral have known
+	// interpolation breaks. Integrate their smooth pieces separately instead
+	// of asking QAG to discover many derivative discontinuities.
+	// Keep the existing path for analytic/non-tabulated cross sections.
+	const auto* table=dynamic_cast<const TableFunction*>(&aSigmaK);
+	const auto* linear=dynamic_cast<const LinearFunc*>(&aSigmaK);
+	std::vector<double> breaks{Kmin,Kmax};
+	if(table) {
+		auto add=[&](double k) {if(k>Kmin && k<Kmax) breaks.push_back(k);};
+		for(double k:table->Knots()) add(k);
+		const double gamma=aParticle.Energy/m;
+		for(double e:fBinningK) {
+			add(e*gamma*(1.+beta));
+			if(beta<1.) add(e*gamma*(1.-beta));
+		}
+		std::sort(breaks.begin(),breaks.end());
+		breaks.erase(std::unique(breaks.begin(),breaks.end()),breaks.end());
+	}
+	auto integrate=[&](const Function& kern,double absError) {
+		if(!table) return math.Integration_qag(kern,Kmin,Kmax,absError,fEpsRel,maxIntervals,GSL_INTEG_GAUSS61);
+		double sum=0.,correction=0.;
+		for(size_t i=1;i<breaks.size();++i) {
+			const double lo=breaks[i-1],hi=breaks[i];
+			if(linear && linear->IsZeroOnInterval(lo,hi)) continue;
+			// On an interval bounded by every interpolation break, the lower
+			// order rule is smooth and still adaptively enforces the same error
+			// tolerance. The whole-range non-tabulated path keeps GAUSS61.
+			const double part=math.Integration_qag(kern,lo,hi,absError*((hi-lo)/(Kmax-Kmin)),fEpsRel,100,GSL_INTEG_GAUSS15);
+			const double adjusted=part-correction,next=sum+adjusted;
+			correction=(next-sum)-adjusted;sum=next;
+		}
+		return sum;
+	};
+	double leftRate = integrate(leftKern,0.);
 	ASSERT_VALID_NO(leftRate);
 
 	double result = 0;
-	if(iZ==(int)fIntegrals.size()-1)
+	if(iZ==(int)fIntegrals.size()-1 || (table && z==iZ*fStepZ))
 		result = leftRate;
 	else
 	{
 		RateKKern rightKern(*fIntegrals[iZ + 1], aSigmaK, aParticle);
-		double rightRate = math.Integration_qag(rightKern, Kmin, Kmax, aAbsError, fEpsRel, maxIntervals, GSL_INTEG_GAUSS61);
+		double rightRate = integrate(rightKern,aAbsError);
 		ASSERT_VALID_NO(rightRate);
 		result = leftRate + (rightRate-leftRate)/fStepZ*(z-iZ*fStepZ);
 		ASSERT_VALID_NO(result);

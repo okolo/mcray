@@ -168,6 +168,13 @@ is convolved separately; probabilities are R_c/sum(R_c), not R_c/R_total.
 ChannelRates exposes both full total and exclusive sum for diagnostics.
 A positive total with zero exclusive sum is an error.
 
+For tabulated cross sections, ContinuousBackgroundIntegral splits the K-rate
+quadrature at cross-section knots and transformed photon-integral knots.
+Each piece retains the requested integration tolerance; errors are reported,
+not accepted through a recovery fallback. This numerical treatment preserves
+the cross sections, interpolants and kinematics. Network convergence evidence
+and remaining limits are in [the physical-validation diagnostics](../validation/photodisintegration_physical_validation.md).
+
 One event removes the parent and produces the residual and all emitted
 n,p,d,t,He3,He4 particles from the selected channel. Each product keeps the
 parent weight and receives E_parent*A_product/A_parent. A,Z and energy are
@@ -277,3 +284,9 @@ produces byte-identical physical tables and provenance; the manifest adds
 primary-root metadata. These checks establish source handling and regression
 behavior, not complete physical validation of every primary. Calculation
 artifacts remain outside Git in the sibling validation directory.
+
+For reproducible CRbeam controls, `--seed UINT` selects an explicit unsigned
+32-bit random seed, including zero. Omitting it preserves automatic seeding.
+The effective seed and its source are written to `params`. Thread count,
+batching and other run settings must also be fixed; an explicit seed alone
+does not guarantee identical multithread scheduling.

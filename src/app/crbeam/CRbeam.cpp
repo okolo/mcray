@@ -82,7 +82,7 @@ int user_main(int argc, char** argv) {
 enum ClineParams
 {
 	PHelp = 1,PLog,PLogFilterThread,PLogLevel,PTrajectoryLog,
-    PNparticles,PBatchSize,
+    PNparticles,PBatchSize,PSeed,
     PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix
@@ -92,6 +92,7 @@ enum ClineParams
 #define M_POINT_SOURCE 1000
 
 static CmdInfo commands[] = {
+        { PSeed, CmdInfo::FLAG_ARGUMENT, "-seed", "--seed", "0", "Explicit unsigned random seed; omission preserves automatic seeding" },
 		{ PHelp,    CmdInfo::FLAG_NULL,     "-h",   "--help",       NULL,   "Show help information" },
 		{ PLog,    CmdInfo::FLAG_NULL,     "-log",   "--log",       NULL,   "Enable logging" },
 		{ PLogFilterThread,    CmdInfo::FLAG_ARGUMENT, "-logT",   "--log-thread",   "-1",    "Log thread filter (set to -1 to disable)" },
@@ -231,6 +232,8 @@ CRbeam::CRbeam(int argc, char** argv):
         fNuclearPrimary(false),
         fPrimaryA(0),
         fPrimaryZ(0),
+        fExplicitSeed(false),
+        fSeed(0),
 		fNoEM(false),
 		fMz(M_POINT_SOURCE),
 		fBackgroundModel(0),
@@ -287,6 +290,8 @@ CRbeam::CRbeam(int argc, char** argv):
 	//fMaxDeflection *= (M_PI/180.);
 
 	fNoParticles = cmd(PNparticles);
+    fExplicitSeed=cmd.has_param("--seed");
+    fSeed=cmd(PSeed);
     fBatchSize = cmd(PBatchSize);
 	int primary = cmd(PPrimary);
 	fNoEM = cmd(PNoEMcascade);
@@ -589,6 +594,7 @@ int CRbeam::run()
 	    seed = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	}
 #endif
+    if(fExplicitSeed) seed=fSeed;
 	Randomizer rand(seed);
 	SmartPtr<IFilter> resultFilter = new EnergyBasedFilter(Emin, M_PI);
 	bool useResultFilterInRuntime = true;
@@ -671,6 +677,7 @@ int CRbeam::run()
         << " pure_spectators=prompt-free-nucleons missing_PD=error\n";
     paramsOut << "# resolved_photodisintegration_photons=" << fPDPhotons << " decay_photons=" << fDecayPhotons
         << " PD_photon_yields=" << fPDPhotonYields << " boost=CRPropa-isotropic-ultrarelativistic nuclear_energy_debit=Off photon_transport=" << (fNoEM?"filtered":"EM-cascade") << "\n";
+    paramsOut << "random_seed=" << seed << " seed_source=" << (fExplicitSeed?"explicit":"automatic") << "\n";
     if (decay) paramsOut << decay->Metadata();
     if (talys) paramsOut << talys->Metadata();
 	result.SetEndTime(tEnd);

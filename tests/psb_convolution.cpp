@@ -186,3 +186,75 @@ TEST(NucleonConvolution, GzkRateConvergesOnFrozenCmb) {
 }
 
 } // namespace
+
+namespace {
+TEST(BackgroundConvolution, TabulatedNarrowChannelIsNotMissedByQuadrature) {
+    class FlatIntegralBackground : public IBackground {
+    public:
+        double n(double e,double z) const override {return (1.+100*z)*std::pow(e/units.eV,3);}
+        double MinE() const override {return units.eV;}
+        double MaxE() const override {return 2*units.eV;}
+        double MinZ() const override {return 0.;}
+        double MaxZ() const override {return .02;}
+        std::string Name() const override {return "SyntheticFlatIntegral";}
+    } photons;
+    // The entire cross section samples below MinE, so the photon integral is
+    // exactly constant. A very narrow triangular channel can be invisible to
+    // an unsplit quadrature over the full zero-padded cross-section support.
+    std::vector<double> x{1.,49.999,50.,50.001,100.},y{0.,0.,1.,0.,0.};
+    for(double& k:x) k*=units.MeV;
+    class CountedSigma : public Utils::LinearFunc {
+    public:
+        CountedSigma(const std::vector<double>& x,const std::vector<double>& y):Utils::LinearFunc(x,y) {}
+        double f(double k) const override {++calls;return Utils::LinearFunc::f(k);}
+        mutable unsigned calls=0;
+    } sigma(x,y);
+    ContinuousBackgroundIntegral integral(photons,.02,std::pow(10.,.01),.02,1e-6);
+    Particle p(Proton,0.);p.Energy=1e12*p.Mass();
+    const double area=.001*units.MeV;
+    const double expected=50*units.MeV*area/(units.eV*units.eV)/(2e24*p.beta());
+    try {
+        EXPECT_NEAR(integral.GetRateK(sigma,p)/expected,1.,1e-9);
+        const auto nodeCalls=sigma.calls;sigma.calls=0;
+        p.Time.setZ(.01);
+        EXPECT_NEAR(integral.GetRateK(sigma,p)/expected,2.,1e-9);
+        EXPECT_EQ(sigma.calls,nodeCalls);sigma.calls=0;
+        p.Time.setZ(.005);
+        EXPECT_NEAR(integral.GetRateK(sigma,p)/expected,1.5,1e-9);
+        EXPECT_EQ(sigma.calls,2*nodeCalls);
+        auto clone=std::unique_ptr<BackgroundIntegral>(integral.Clone());
+        EXPECT_NEAR(clone->GetRateK(sigma,p)/expected,1.5,1e-9);
+    } catch(Utils::Exception* error) {
+        const std::string message=error->Message();delete error;FAIL()<<message;
+    }
+}
+
+TEST(BackgroundConvolution, TableKnotsRetainPhysicalCoordinatesOnClone) {
+    const std::vector<double> x{1.,3.,7.},y{0.,2.,0.};
+    Utils::LinearFunc sigma(x,y,new Utils::LogScale,new Utils::LogScale,0.,0.,true);
+    std::unique_ptr<Utils::Function> clone(sigma.Clone());
+    const auto* copied=dynamic_cast<const Utils::TableFunction*>(clone.get());
+    ASSERT_NE(copied,nullptr);
+    for(const auto* table:{static_cast<const Utils::TableFunction*>(&sigma),copied}) {
+        const auto knots=table->Knots();ASSERT_EQ(knots.size(),x.size());
+        for(size_t i=0;i<x.size();++i) EXPECT_NEAR(knots[i],x[i],1e-14);
+    }
+}
+}
+
+namespace {
+TEST(BackgroundConvolution, ZeroCertificateNeverSkipsAPositiveOrNarrowSegment) {
+    std::vector<double> x{1.,2.,3.,3.00001,3.00002,4.,5.,6.},y{0.,0.,0.,1.,0.,0.,0.,0.};
+    Utils::LinearFunc sigma(x,y,new Utils::LogScale,new Utils::LogScale,0.,0.,true);
+    EXPECT_TRUE(sigma.IsZeroOnInterval(1.1,2.9));
+    EXPECT_TRUE(sigma.IsZeroOnInterval(4.1,5.9));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(2.9,3.000015));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(3.000005,3.000015));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(.5,2.));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(5.,7.));
+    std::unique_ptr<Utils::Function> clone(sigma.Clone());
+    EXPECT_TRUE(dynamic_cast<Utils::LinearFunc*>(clone.get())->IsZeroOnInterval(1.1,2.9));
+    Utils::LinearFunc legacy(x,y);
+    EXPECT_FALSE(legacy.IsZeroOnInterval(1.1,2.9));
+}
+}
