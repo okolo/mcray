@@ -272,3 +272,152 @@ patches, rate/reference comparisons, commands, seeds, output checks and hashes
 are outside Git in ../validation/pd-integration-optimization-20261011.
 The independent reference files were checked against the previous frozen
 manifest before reuse; residuals were recomputed from the optimized rates.
+
+
+## Full common gamma-domain grid, 2026-10-11
+
+Source: mcray e43a8e3b623fc2e16a865a0e82013d5f4341617b; the native probe
+matches the previously frozen optimized binary by SHA-256. Only validation
+adapters/documentation changed in this stage. Nuclear data and both shared
+z=0 photon-density tables retain the pinned versions and checksums above.
+
+The new grid spans gamma=1e6 through 1e14 in 0.02 log10 increments: 201
+original CRPropa gamma nodes plus 200 logarithmic midpoints. This covers the
+entire common tabulated gamma domain on a finite grid; it is not a bound
+between every pair of sampled points. All 158 bound isotopes in the combined
+Fe56 network are included, with the 13 approved PD terminals remaining zero
+under their existing data contract. Decays define network closure; decay,
+photon, PPP and GZK events are not sampled by these rate-only calculations.
+
+All six native settings complete without GSL errors, negative/nonfinite rates,
+failed cells, duplicate keys or missing/unexpected rows. Each setting contains
+63358 isotope/gamma cells, 63358 full rates, 63358 exclusive sums and 709770
+exclusive rates: 836486 rows, or 5018916 across the six settings. Coverage is
+checked against the prepared network and channel identities, not only row
+counts. The independent/reference comparisons also retain every requested row.
+
+Both default matrices are compared to unchanged pinned official convolution,
+its serialized 201-node gamma interpolation, and independent interval orders
+8/16/32. Cached photon samples only remove repeated identical evaluations;
+the nine-gamma pilot has exactly identical 17352 comparison rows with caching
+on and off. Maximum order-16 versus order-32 changes for resolved rates are
+below 6.9e-11 relative across both backgrounds, including exclusive sums.
+This remains observed refinement evidence, not a rigorous error bound.
+
+The resolution threshold remains the diagnostic independent rate >0.1/Mpc.
+No new absolute acceptance budget is inferred from it. Maxima relative to the
+independent order-32 reference are:
+
+| Background | log10 step | Relative tolerance | Max full error | Max exclusive error | Max sum error | Max weak absolute error, 1/Mpc |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| CMB | .01 | 1e-4 | 0.04211% | 0.04097% | 0.04206% | 4.024582e-05 |
+| CMB | .005 | 1e-4 | 0.01054% | 0.01025% | 0.01054% | 1.006312e-05 |
+| CMB | .005 | 1e-5 | 0.01054% | 0.01025% | 0.01054% | 1.006136e-05 |
+| CMB+Inoue12 | .01 | 1e-4 | 0.03445% | 0.03379% | 0.03514% | 3.507335e-05 |
+| CMB+Inoue12 | .005 | 1e-4 | 0.00861% | 0.00844% | 0.00878% | 8.772369e-06 |
+| CMB+Inoue12 | .005 | 1e-5 | 0.00861% | 0.00844% | 0.00878% | 8.769725e-06 |
+
+Halving background spacing again reduces both resolved and weak absolute
+residuals approximately fourfold. At spacing 0.005, tightening tolerance
+from 1e-4 to 1e-5 changes any resolved full/exclusive/sum rate by at most
+1.951e-08 (CMB) relative; 6.572e-08 (CMB+Inoue12) relative.
+
+The largest default full-rate residuals occur for Cr52 at gamma=3.4673685e9
+(CMB) and gamma=3.0199517e9 (combined field). This is consistent with the
+remaining background-integral interpolation error rather than unresolved
+adaptive-quadrature failures. Production defaults have not been changed.
+
+Weak rates are retained in the full outputs and absolute-error summaries.
+In the extreme CMB tail, mcray can return zero while the independent reference
+is still positive; the largest such exclusive rate is 3.735e-289/Mpc
+(full/sum: 2.879e-289/Mpc). Relative discrepancies can therefore reach 100%
+without controlling the useful absolute scale. The combined field has no
+such zero/nonzero mismatch in this matrix. Neither field has a positive
+mcray rate with an exactly zero independent reference. These statements do
+not substitute for an approved near-zero acceptance budget.
+
+### Official-control differences at high gamma
+
+The wider scan exposes a finite-upper-limit term in the pinned official
+`calc_rate_eps` convolution, in addition to its rest-grid quadrature error.
+For the agreed cross section, zero outside its grid, define
+
+\[
+F(K)=\int_{K_0}^{K}t\sigma(t)\,dt,\qquad
+I(x)=\int_x^{\epsilon_{\max}}\frac{n(\epsilon)}{\epsilon^2}\,d\epsilon.
+\]
+
+The ultrarelativistic integration-by-parts identity is
+
+\[
+R=\frac{F(K_{\max})I(K_{\max}/2\gamma)}{2\gamma^2}
+ +\frac{1}{\gamma}\int_{K_0}^{K_{\max}}
+ \frac{F(K)n(K/2\gamma)}{K^2}\,dK.
+\]
+
+The pinned official formula computes the second term on its finite grid.
+The first term need not vanish: sigma(Kmax)=0 does not imply F(Kmax)=0.
+At large gamma, photons above Kmax/(2 gamma) can make this contribution
+important even with the same zero-truncated cross section. This effect is
+separate from uncertainty in the physical cross section beyond its grid.
+
+For Be11 on CMB at gamma=1.2589254117941663e12, the independent rate is
+0.1039611838865/Mpc and the missing endpoint term is 0.0082774704731/Mpc
+(7.9621%). The unchanged official result is 0.0956954594435/Mpc, a -7.9508%
+residual. On all resolved rows, maximum direct official discrepancies are
+7.9508% on CMB and 7.9527% on the combined field. The serialized gamma-table
+control has discrepancies up to approximately 7.93%; interpolation is a
+separate effect, with an additional increment of up to approximately 5.30%
+of the independent rate on resolved CMB rows near a steep onset.
+
+The separate `diagnose_rate_boundary.py` control uses Be11, Be9 and Fe56 on
+both backgrounds. It refines the agreed rest-grid interpolant by factors
+8/16/32/64 and adds the analytic endpoint contribution only diagnostically.
+For resolved control rows, corrected factor-64 rates agree with independent
+interval quadrature within 1.06e-6 relative, with observed refinement
+convergence. Official source/tables and production rates remain unchanged.
+No nearest-node runtime channel sampling is validated by the gamma-table
+rate interpolation control.
+
+### Reproduction and remaining scope
+
+`tests/crpropa/run_network_rate_scan.py` reproduces the full matrix, validates
+coverage, runs both reference controls and produces separate weak/resolved
+summaries. Seven adapter tests and five server-runner tests pass on macOS.
+A complete nine-gamma driver pilot, including tests, checksum verification,
+both backgrounds, reference comparisons, summaries and endpoint controls,
+completes successfully in 19.77 seconds. The unchanged C++ regression suite
+was not rerun for this adapter-only stage; its prior native/Linux result is
+129 passing tests. No new full-domain Linux result is claimed here.
+
+All native matrix jobs were bounded; none was expected to exceed the local
+30-minute limit. A separate native Linux amd64 extended workflow is prepared:
+801 gamma points, additional spacing 0.0025/tolerance 1e-6, and independent
+orders through 128. It fetches the requested Git revision at startup, records
+the exact commit, builds/tests, verifies transferred inputs/tools, executes
+adapter tests and archives successes or failures into the configured test-data
+directory. The extended calculation has not been executed. Commands and dependencies are documented
+in [the adapter instructions](../../tests/crpropa/README.md#full-gamma-domain-network-scan).
+
+The first external launch on 2026-10-12, run ID
+`20261012T044047Z-8b742449`, verified the transferred payload and fetched the
+requested source commit, but failed during build because the server CMake
+did not support `--fresh`. CTest and the rate workload did not start. The
+runner reported a failed archive in the configured test-data directory.
+The adapter instructions now explain installing CMake >=3.24 in the server
+virtual environment. No successful retry or Linux numerical result is yet
+available.
+
+Artifacts, commands, six coverage checks, complete rates/reference rows,
+absolute-error summaries, endpoint diagnostics and source/input hashes are
+outside Git in ../validation/pd-full-gamma-20261011. The final transferable
+bundle is external-inputs-v2.tar.gz with a separate SHA-256 file; the earlier
+bundle and pilot source snapshots are preserved. There are no random seeds
+in deterministic rate scans.
+
+This completes the finite-grid native numerical rate check across the common
+gamma domain. Extended Linux and gamma/grid refinement, native-background and
+redshift checks, near-zero acceptance budgets, transport-step convergence,
+photon spectra and frozen statistical acceptance remain open. The unknown
+physical high-energy tail and nuclear-photon energy/coverage limitations are
+unchanged.

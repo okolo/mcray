@@ -64,6 +64,8 @@ def main():
     parser.add_argument('--mcray-rates', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--orders', default='8,16,32')
+    parser.add_argument('--cache-photons', action='store_true',
+                        help='Reuse identical photon-integral samples across channels')
     args = parser.parse_args()
     orders = [int(v) for v in args.orders.split(',')]
     if len(orders) < 2 or min(orders) < 2 or orders != sorted(set(orders)):
@@ -113,6 +115,7 @@ def main():
         if code == 'sum': continue
         requested.setdefault((int(a),int(z),code), []).append((float(g),float(rate)))
     rows = []
+    photon_samples = {}
     for (a,z,code), points in sorted(requested.items()):
         xs = tables.get((a,z,code))
         if xs is None:
@@ -127,7 +130,13 @@ def main():
         for order in orders:
             x,w = quadratures[label,order]
             sigma = interpolate(x,grid,xs)
-            values[order] = np.array([np.sum(w*x*x*sigma*1e-27*photons(x/(2*g)))*MPC_CM/(2*g*g) for g in gammas])
+            if args.cache_photons:
+                key = (label, order, tuple(gammas))
+                if key not in photon_samples:
+                    photon_samples[key] = np.array([photons(x/(2*g)) for g in gammas])
+                values[order] = np.sum((w*x*x*sigma*1e-27)[None,:]*photon_samples[key],axis=1)*MPC_CM/(2*gammas*gammas)
+            else:
+                values[order] = np.array([np.sum(w*x*x*sigma*1e-27*photons(x/(2*g)))*MPC_CM/(2*g*g) for g in gammas])
         for i,(g,rate) in enumerate(points):
             fine = float(values[orders[-1]][i]); previous = float(values[orders[-2]][i])
             rows.append(dict(a=a,z=z,channel=code,gamma=g,mcray=rate,official_direct=float(official[i]),
@@ -144,7 +153,9 @@ def main():
             summary[label][metric+'_worst'] = max(resolved,key=lambda r:abs(r[metric])) if resolved else None
         summary[label]['max_refinement_relative'] = max((r['refinement_absolute']/r['independent'] for r in resolved),default=None)
     inputs = [Path(__file__), args.mcray_rates, args.data/'total.tsv', args.data/'channels.tsv', args.data/'grid_talys.tsv', args.data/'grid_external.tsv', args.reference_data/'shared_manifest.json']
-    result = dict(status='diagnostic only; sparse gamma coverage; no acceptance verdict', summary=summary, failed_cells=failed,
+    gamma_values=sorted({g for points in requested.values() for g,_ in points})
+    result = dict(status='finite-grid numerical diagnostic; no acceptance verdict', summary=summary, failed_cells=failed,
+        gamma_grid=gamma_values, cached_photon_samples=args.cache_photons,
         orders=orders, photon_integral='analytic piecewise; rest quadrature split at cross-section nodes',
         dependencies=dict(python=sys.version,numpy=np.__version__),
         inputs_sha256={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs}, rows=rows)

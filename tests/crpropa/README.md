@@ -166,3 +166,84 @@ observed convergence indicator, not a rigorous error bound or independent
 validation of the underlying nuclear cross sections. The photon-integral
 unit checks use SciPy adaptive quadrature including zero-ended intervals.
 These tools require NumPy/SciPy and the pinned preparation dependencies.
+
+
+## Full gamma-domain network scan
+
+`run_network_rate_scan.py` scans the combined Fe56 network on 401 points from
+1e6 to 1e14, including the 201 official gamma nodes and every midpoint in
+log(gamma). It checks every expected full, sum and exclusive row against the
+prepared network, including terminal zeros. Missing rows, duplicate keys,
+negative/nonfinite rates and failed cells invalidate the matrix.
+
+The `convergence` profile runs background spacings 0.01 and 0.005 at tolerance
+1e-4, plus spacing 0.005 at tolerance 1e-5, on both shared backgrounds. The
+`default` profile runs only production controls. Both compare to the pinned
+official convolution and independent orders 8/16/32. `--cache-photons` in the
+reference diagnostic reuses identical photon-integral samples across channels;
+it preserves the formula and was checked against the uncached path.
+This is finite-grid numerical evidence, not continuous-domain proof or physical
+acceptance. Absolute discrepancies of weak rates must be retained separately.
+
+```bash
+python3 tests/crpropa/run_network_rate_scan.py \
+  --data /data/nuclei --cmb-reference /data/shared-cmb \
+  --inoue-reference /data/shared-cmb-inoue --output /results/new-rate-scan
+python3 tests/crpropa/test_network_rate_scan.py
+```
+
+Local execution has a total 1800-second timeout. Estimate the workload with a
+short pilot before starting it; an expected longer run belongs on an external
+server. The `extended` profile uses 801 gamma points, adds spacing 0.0025 at
+1e-6 and independent orders 64/128; it requires external native Linux amd64.
+No profile changes production physics or replaces the input cross sections.
+
+For long runs, transfer an input bundle containing `nuclei/`, `cmb/`,
+`cmb-inoue/`, the adapter files under `tests/crpropa/`, and
+`tests/server/run_tests.py`. `inputs-manifest.json` must contain SHA-256 values
+for every transferred file in `payload_sha256`, relative to the bundle root.
+The wrapper verifies the bundle before cloning. Install the documented native
+build dependencies and NumPy/SciPy/GitPython in the server Python environment.
+
+CMake must be at least 3.24: `bin/build.sh` uses `cmake --fresh`. On servers
+with an older system CMake, install a compatible version in the same virtual
+environment used for the runner; no system package replacement is needed:
+
+```bash
+source /home2/ok/mcray-validation-venv/bin/activate
+python -m pip install 'cmake>=3.24,<4'
+hash -r
+command -v cmake
+cmake --version
+```
+
+The selected CMake should come from the virtual environment. Keep that
+environment active when starting the wrapper, including inside tmux.
+
+```bash
+bash /srv/rate-inputs/tests/crpropa/run_external_network_rates.sh \
+  /srv/rate-inputs /srv/mcray-test-data e43a8e3b623fc2e16a865a0e82013d5f4341617b
+```
+
+The wrapper fetches the requested Git revision at startup, records its exact
+commit, builds Release, runs CTest, then executes the separately hash-frozen
+extended diagnostic tools. The server runner retains successful or failed
+results and compresses them with provenance into the selected test-data
+directory. The workload output defaults to MCRAY_RESULTS_DIR/network-rates.
+There are no random seeds: these are deterministic rate calculations. The
+server archive must be inspected before reporting physical agreement.
+
+
+`summarize_network_rates.py` keeps full totals, exclusive channels and their
+sum distinct, reports absolute discrepancies below the diagnostic 0.1/Mpc
+resolution threshold, and compares each numerical refinement. It retains
+zero/nonzero disagreements and never replaces a weak rate by a successful zero.
+`test_summarize_network_rates.py` guards these reporting semantics.
+
+`diagnose_rate_boundary.py` checks the finite-upper-limit term in the
+integration-by-parts representation used by the pinned official convolution.
+It compares the unchanged official result, independent interval quadrature,
+and refined diagnostic quadrature plus the endpoint term. Its default cases
+are Be11, Be9 and Fe56. This is an explanation/control of reference differences,
+not a replacement production rate or a change to the zero-padded tail model.
+Include both scripts and their test files in transferred tool bundles.
