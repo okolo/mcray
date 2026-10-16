@@ -54,7 +54,7 @@ def main():
         ax.scatter(x[~positive],upper[~positive],marker='v',color=style['color'],s=40,facecolors='none')
     ax.set(xscale='log',yscale='log',xlabel='Distance from equal splitting Δx',ylabel='P(0.5 − x < Δx)',title='Pair production, E₀ = 10¹⁴ eV: equal-split endpoint')
     ax.grid(alpha=.18);ax.legend(fontsize=8)
-    fig.suptitle('Server spectrum comparison: improved s sampling, shared endpoint defects',fontsize=14)
+    fig.suptitle('PP/ICS sampler comparison against the secondary-spectrum oracle',fontsize=14)
     args.output.parent.mkdir(parents=True,exist_ok=True)
     fig.savefig(args.output.with_suffix('.png'),dpi=180)
     fig.savefig(args.output.with_suffix('.svg'))

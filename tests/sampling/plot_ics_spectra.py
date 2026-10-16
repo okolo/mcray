@@ -123,7 +123,7 @@ def main():
         ax.axvspan(1e-8,1e-4,color='#f7ddd1',zorder=0)
         ax.legend(fontsize=8)
     fig.suptitle('ICS photon endpoint: resolved on a logarithmic energy-gap axis',fontsize=15)
-    fig.supxlabel('The shaded region q<10⁻⁴ is empty in both sampled versions. Open ▽ denotes an upper limit, not a measured density.',fontsize=9)
+    fig.supxlabel('Shading marks the q<10⁻⁴ tail. Open ▽ denotes an upper limit for zero observations.',fontsize=9)
     save(fig,a.output_dir/'ics_photon_endpoint')
     with (a.output_dir/'ics_spectra.tsv').open('w') as f:
         w=csv.DictWriter(f,fieldnames=list(exported[0]),delimiter='\t');w.writeheader();w.writerows(exported)
