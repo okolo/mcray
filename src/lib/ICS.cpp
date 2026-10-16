@@ -52,7 +52,7 @@ double ICS::SampleSecondaryLogRecoilFracE(double aS, double rMin, double uniform
     const long double mass=Particle::Mass(Electron);
     const long double ymin=mass*mass/aS, ymax=1-static_cast<long double>(rMin);
     const long double norm=detail::ComptonIntegral(ymin,ymax);
-    if(!(norm>0))throw std::runtime_error("Empty ICS secondary distribution");
+    if(!(norm>0))throw new Utils::Exception("Empty ICS secondary distribution",false);
     return detail::InvertSecondaryCDF([&](long double logy) {
         return detail::ComptonIntegral(ymin,std::exp(logy))/norm;
     },std::log(ymin),std::log(ymax),uniform);

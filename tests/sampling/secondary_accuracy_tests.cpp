@@ -5,6 +5,16 @@
 using namespace Interactions;
 using namespace mcray;
 using secondary::Real;
+
+TEST(SecondaryAccuracy, InvalidCDFIsFatalWithoutResampling) {
+    try {
+        detail::InvertSecondaryCDF([](Real){return 2.L;},0.L,1.L,.5L);
+        FAIL()<<"Invalid CDF was accepted";
+    } catch(Utils::Exception* error) {
+        EXPECT_FALSE(error->Retryable());
+        delete error;
+    }
+}
 namespace {
 template<class F> Real integrate(const secondary::Quadrature& q,F density,Real lo,Real hi) {
     if(hi<=lo)return 0;

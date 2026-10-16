@@ -57,7 +57,7 @@ double GammaPP::SampleSecondaryFracE(double aS, double uniform) const
 {
     const long double mass=Particle::Mass(Electron), s=aS/(mass*mass);
     const long double rmin=detail::PairMinimum(s), norm=detail::PairIntegral(.5L,s);
-    if(!(norm>0))throw std::runtime_error("Empty pair secondary distribution");
+    if(!(norm>0))throw new Utils::Exception("Empty pair secondary distribution",false);
     const long double logr=detail::InvertSecondaryCDF([&](long double value) {
         return detail::PairIntegral(std::exp(value),s)/norm;
     },std::log(rmin),std::log(.5L),uniform);

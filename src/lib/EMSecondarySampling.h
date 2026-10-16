@@ -2,7 +2,7 @@
 #define MCRAY_EM_SECONDARY_SAMPLING_H
 #include <algorithm>
 #include <cmath>
-#include <stdexcept>
+#include "Utils.h"
 
 namespace Interactions { namespace detail {
 inline long double SecondaryLog1p(long double value) {
@@ -57,11 +57,11 @@ template<class CDF> long double InvertSecondaryCDF(CDF cdf,long double lo,
         if(middle==lo || middle==hi)return middle;
         const long double probability=cdf(middle);
         if(!std::isfinite(probability) || probability< -1e-14L || probability>1+1e-14L)
-            throw std::runtime_error("Invalid secondary sampling CDF");
+            throw new Utils::Exception("Invalid secondary sampling CDF",false);
         if(std::abs(probability-uniform)<=tolerance)return middle;
         if(probability<uniform)lo=middle;else hi=middle;
     }
-    throw std::runtime_error("Secondary inverse CDF did not converge");
+    throw new Utils::Exception("Secondary inverse CDF did not converge",false);
 }
 }}
 #endif
