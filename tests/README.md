@@ -450,3 +450,20 @@ a 240-second job timeout and 1800-second total local limit; a timeout retains
 an incomplete result rather than silently reporting a speedup. These are
 performance diagnostics, not a statistical spectrum-acceptance campaign.
 Avoid concurrent builds or calculations when collecting timings.
+
+## Historical electromagnetic sampler diagnostics
+
+See [sampling/README.md](sampling/README.md) for the opt-in NR/current comparison,
+independent CDF checks, per-primary cascade statistics and external Linux runs.
+Numerical Recipes is supplied separately and is not a normal test dependency.
+
+The bounded PP/ICS spectrum acceptance workflow is documented in
+[sampling/SECONDARY_SERVER.md](sampling/SECONDARY_SERVER.md). It preserves raw
+paired secondaries, uses exact simultaneous inference and caps total server
+runtime at 24 hours, including build, analysis and compression.
+
+The short `ics_endpoint_diagnostic` target needs no NR headers. It reproduces
+the two conditional ICS endpoint errors at fixed invariant energy, compares
+production quantiles against direct differential integration, and separates
+the integral-series and root-tolerance effects. See the
+[diagnosis and run command](../docs/validation/ics_endpoint_diagnosis.md).

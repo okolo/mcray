@@ -12,6 +12,14 @@ target_include_directories(mcray_unit_tests PRIVATE ../src/lib)
 # Resolve main from GoogleTest before searching mcray's legacy main object.
 target_link_libraries(mcray_unit_tests PRIVATE GTest::gtest_main mcray)
 include(GoogleTest)
+add_executable(ics_endpoint_diagnostic sampling/ics_endpoint_diagnostic.cpp)
+target_include_directories(ics_endpoint_diagnostic PRIVATE ../src/lib)
+target_link_libraries(ics_endpoint_diagnostic PRIVATE mcray)
+add_executable(em_secondary_accuracy_tests sampling/secondary_accuracy_tests.cpp)
+target_include_directories(em_secondary_accuracy_tests PRIVATE ../src/lib)
+target_link_libraries(em_secondary_accuracy_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(em_secondary_accuracy_tests TEST_PREFIX "unit.sampling."
+    PROPERTIES TIMEOUT 30 LABELS "unit;sampling")
 gtest_discover_tests(mcray_unit_tests
     TEST_PREFIX "unit."
     DISCOVERY_TIMEOUT 30
@@ -79,3 +87,23 @@ target_link_libraries(beta_spectrum_comparison PRIVATE GTest::gtest)
 add_executable(nuclear_photon_probe nuclear_photon_probe.cpp)
 target_include_directories(nuclear_photon_probe PRIVATE ../src/lib)
 target_link_libraries(nuclear_photon_probe PRIVATE mcray)
+
+# Opt-in historical EM sampler comparison. NR is supplied by its licensed owner.
+set(MCRAY_NR_REFERENCE_DIR "" CACHE PATH "External Numerical Recipes headers for historical sampling diagnostics")
+if(MCRAY_NR_REFERENCE_DIR)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    set(sampling_generated "${CMAKE_CURRENT_BINARY_DIR}/sampling_reference")
+    execute_process(COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/sampling/prepare_reference.py"
+        --repo "${CMAKE_CURRENT_SOURCE_DIR}/.." --nr "${MCRAY_NR_REFERENCE_DIR}"
+        --output "${sampling_generated}" COMMAND_ERROR_IS_FATAL ANY)
+    add_executable(em_sampling_probe sampling/probe.cpp
+        "${sampling_generated}/historical_sampler.cpp"
+        "${sampling_generated}/probe_background.cpp")
+    target_include_directories(em_sampling_probe PRIVATE ../src/lib "${MCRAY_NR_REFERENCE_DIR}")
+    target_link_libraries(em_sampling_probe PRIVATE mcray)
+endif()
+
+if(MCRAY_NR_REFERENCE_DIR)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/sampling/secondary_targets.cmake")
+endif()

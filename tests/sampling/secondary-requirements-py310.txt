@@ -1,0 +1,4 @@
+# Compatible environment for Ubuntu 22.04's Python 3.10.
+# Preserve pip freeze in every run.
+numpy==2.2.6
+scipy==1.15.3

@@ -18,6 +18,11 @@ run from the mcray repository root unless explicitly stated otherwise.
 ## Validation results
 
 - [PSB and nucleon results](validation/psb_validation_results.md)
+- [Historical EM sampler comparison](validation/em_sampling_comparison.md)
+- [Server PP/ICS spectrum results and shared endpoint defects](validation/em_sampling_server_results.md)
+- [ICS secondary spectra, formulas and primary sources](validation/ics_secondary_spectra.md)
+- [Fixed-invariant diagnosis of the two ICS endpoint errors](validation/ics_endpoint_diagnosis.md)
+- [ICS/PP numerical correction, short checks and frozen server rerun](validation/em_sampling_fix.md)
 - [SOPHIA table generation](validation/sophia_table_generation.md)
 - [Nuclear decay / TALYS diagnostics](validation/nuclear_decay_comparison_results.md)
 - [Nuclear transport regression baseline](validation/nuclear_transport_baseline.md)
