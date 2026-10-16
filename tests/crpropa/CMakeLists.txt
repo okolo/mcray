@@ -17,7 +17,10 @@ target_include_directories(crpropa_decay_probe PRIVATE "${CRPROPA_SOURCE_DIR}/in
 target_link_libraries(crpropa_decay_probe PRIVATE crpropa)
 
 # Link the new probe to the already-built production mcray library in the base.
+option(BUILD_DOCKER_MCRAY_PROBE "Link the additional mcray probe in the Docker base" ON)
+if(BUILD_DOCKER_MCRAY_PROBE)
 add_executable(mcray_decay_probe mcray_decay_probe.cpp)
 target_include_directories(mcray_decay_probe PRIVATE /src/src/lib)
 target_link_libraries(mcray_decay_probe PRIVATE /src/build/Release/mcray/libmcray.a
     gfortran gsl gslcblas boost_system boost_filesystem gomp dl)
+endif()

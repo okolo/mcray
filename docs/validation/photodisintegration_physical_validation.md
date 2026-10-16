@@ -421,3 +421,144 @@ redshift checks, near-zero acceptance budgets, transport-step convergence,
 photon spectra and frozen statistical acceptance remain open. The unknown
 physical high-energy tail and nuclear-photon energy/coverage limitations are
 unchanged.
+
+## External Linux extended scan, analyzed 2026-10-16
+
+The successful server run `20261012T044528Z-758fd3e1` completed on
+2026-10-12 with source e43a8e3b623fc2e16a865a0e82013d5f4341617b and the
+hash-frozen v2 input/tool bundle described above. This supersedes the pending
+Linux result. The earlier `20261012T044047Z-8b742449` archive remains a failed
+build attempt and is not included as numerical evidence.
+
+Provenance and integrity checks:
+
+- The successful archive SHA-256 is
+  `351640ddaeda7ca619bf8c921e20324b0923d8f73496232d1673afd0a7da15de`.
+  Both received archives match their sidecar hashes. Every archived payload
+  hash, the nested workload output hashes and both sidecar manifests agree.
+- The runner, workload source/input manifest identities and all 86 files in
+  the preserved transfer bundle match the frozen versions. The Linux probe
+  SHA-256 is `3215b7068531623463300e8921714581da6aa134ddb83c8a287f7cbb121fe0f0`.
+- The platform is native Linux x86_64, kernel 5.15.0-191, glibc 2.35,
+  GCC/G++/gfortran 11.4.0, Python 3.10.12 and NumPy 2.2.6. Build logs identify
+  CMake 3.31. The archive does not provide a complete dependency lock or CPU
+  identity; these timings are not a controlled hardware benchmark.
+- Release build, all 129 CTest cases and all seven workload adapter tests
+  pass. CTest takes 167.08 seconds. No transport acceptance ensemble was run.
+
+The extended scan uses 801 logarithmic gamma points from 1e6 to 1e14
+(spacing 0.01 in log10 gamma), all 158 bound Fe56-network isotopes, both shared
+z=0 backgrounds and four numerical settings per background. Each matrix
+contains 126558 full rates, 126558 exclusive sums and 1417770 exclusive rates:
+1670886 rows per matrix and 13367088 rows overall. A separate local audit
+streams all eight matrices and both reference files, verifies each expected
+isotope/channel/gamma key including terminal zeros, rejects duplicate,
+missing, failed, negative or nonfinite entries, and independently recomputes
+the reported resolved relative and weak absolute extrema. All checks pass.
+
+The following errors are maxima across full totals, exclusive channels and
+exclusive sums, relative to independent order-128 quadrature. As before,
+resolved means independent rate >0.1/Mpc; this is a diagnostic threshold,
+not an acceptance budget.
+
+| Background | log10 background step | Relative tolerance | Max resolved relative error | Max weak absolute error, 1/Mpc |
+| --- | ---: | ---: | ---: | ---: |
+| CMB | .01 | 1e-4 | 0.042107% | 4.048770e-05 |
+| CMB | .005 | 1e-4 | 0.010539% | 1.014414e-05 |
+| CMB | .005 | 1e-5 | 0.010537% | 1.014241e-05 |
+| CMB | .0025 | 1e-6 | 0.002638% | 2.540103e-06 |
+| CMB+Inoue12 | .01 | 1e-4 | 0.035136% | 3.507335e-05 |
+| CMB+Inoue12 | .005 | 1e-4 | 0.008783% | 8.772371e-06 |
+| CMB+Inoue12 | .005 | 1e-5 | 0.008781% | 8.769727e-06 |
+| CMB+Inoue12 | .0025 | 1e-6 | 0.002195% | 2.192648e-06 |
+
+Each halving of the background spacing again reduces the remaining error
+approximately fourfold. Tightening the adaptive tolerance alone at step
+0.005 changes resolved rates by at most 1.951e-8 relative on CMB and
+6.611e-8 on the combined field. The finest setting halves spacing and also
+tightens tolerance, so it is not a spacing-only experiment; the separate
+fixed-spacing controls support background interpolation as the dominant
+observed residual. Production defaults remain unchanged.
+
+The independent reference is also stable: order 64 versus 128 differs by at
+most 1.94e-11 relative on resolved rows across both backgrounds and all three
+rate groups. Order 32 versus 128 differs by at most 3.64e-11. These are
+observed convergence results, not rigorous bounds. On the 401 gamma nodes
+shared with the previous macOS matrices, all six corresponding settings
+agree within 9.57e-16 relative for resolved rates and 1.07e-14/Mpc absolute
+over all rates; there are no cross-platform zero/nonzero mismatches.
+
+Weak-rate limitations remain explicit. In the CMB extreme tail, the finest
+matrix contains 4782 exclusive and 287 full/sum positive-reference versus
+zero-mcray cells; the largest lost exclusive rate is 3.803e-289/Mpc.
+The combined field has no zero/nonzero discrepancies. Neither background
+has a positive mcray rate with a zero independent reference. Relative errors
+in weak tails do not inherit the resolved-error bound in the table.
+
+The denser gamma grid raises the largest resolved direct official-CRPropa
+discrepancy to 8.27382% on CMB and 8.27570% on CMB+Inoue12, at Be11,
+gamma=1.2882495516931323e12. These maxima are threshold-dependent and do not
+bound relative errors of weaker rates over the entire gamma domain.
+The missing-boundary explanation is unchanged. An additional local endpoint
+check at this new node obtains an independent CMB rate of
+0.1004371256721/Mpc, official rate 0.0921271397150/Mpc and endpoint term
+0.0083212743178/Mpc (8.28506% of the independent rate). Adding that term to
+the original coarse official quadrature leaves 0.01124% relative residual;
+the remaining coarse-grid quadrature error is distinct from the endpoint.
+The archived refined factor-64 endpoint controls for Be11, Be9 and Fe56
+still agree within 1.06e-6 relative on resolved control rows. No upstream
+tables, source or production physics were changed by this analysis.
+
+The workload takes 29620.04 seconds (8 h 13 min 40 s). Native rate jobs
+account for 12053.84 seconds (3 h 20 min 54 s), independent/official
+reference diagnostics for 17022.00 seconds (4 h 43 min 42 s), and summaries
+for 263.31 seconds. Including build and CTest, the recorded run lasts about
+8 h 18 min 36 s before archive compression. The finest native jobs take
+1775.52 seconds on CMB and 2924.52 seconds on the combined field; these
+extended calculations belong on the external server.
+
+Received archives are retained outside Git in ../mcray-test-data. Extracted
+results and the local integrity, coverage, platform-comparison and endpoint
+audits are in ../validation/pd-linux-analysis-20261016. This establishes a
+successful native Linux finite-grid rate and refinement check on the shared
+backgrounds. Native-background/redshift comparisons, transport and photon
+spectra, near-zero budgets, statistical acceptance and the physical tail
+limitations remain open.
+
+## Transport/photon pilot tooling verification, 2026-10-16
+
+[The native server workflow](../../tests/crpropa/TRANSPORT_PHOTONS.md) is now
+prepared for the next pre-acceptance stage. It fetches/builds/tests a frozen
+public mcray revision, builds pinned CRPropa natively, prepares photon-enabled
+reference copies on both shared backgrounds and runs independent primary
+batches with separate numerical refinements. Final statistical families,
+bins, normalizations and fresh seeds remain pending; no final acceptance
+executor or acceptance result is claimed.
+
+Both local reference preparations complete with 7417 retained photon-line
+rows each. The unchanged official ratio semantics retain 125203 saturated
+line/gamma cells on CMB and 38870 on CMB+Inoue12; positive numerator over zero
+denominator occurs in 7390 CMB cells and no combined-field cells. These are
+inventory counts over all prepared reachable-parent line curves and 201
+nodes, not event frequencies or evidence for a physical multiplicity model.
+The approved CRPropa saturation policy remains explicit.
+
+Seven focused Python tests cover complete-history accounting, missing or
+invalid histories, Photon Off controls, pilot matrix/seeds, paired refinement
+statistics, incomplete reports and official zero-support ratio semantics.
+The existing two analytic photon-integral tests and five server-runner tests
+also pass. The updated CRPropa adapter compiles in the existing Linux amd64
+reference image, and its native-only CMake configuration succeeds without
+the Docker-specific mcray probe. Production library code is unchanged.
+
+A bounded local wiring control runs one four-primary batch for each of the
+12 initial process/source cases in native mcray and the updated Linux amd64
+CRPropa adapter: 24 jobs, 96 complete primary histories in 20.84 seconds.
+All baryon/charge, completion and photon-disabled checks pass. Photon-enabled
+PD cases produce retained photons; some enabled cases, including decay-only
+photon controls, observe none at this very small sample size. This verifies
+wiring, not photon-yield agreement, decay-photon statistical coverage or step
+convergence. No large pilot/acceptance ensemble was launched locally.
+
+Preparation, frozen plans, adapter-build/configuration logs and short outputs
+are retained outside Git in ../validation/pd-transport-prepare-20261016.

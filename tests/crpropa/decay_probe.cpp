@@ -47,6 +47,7 @@ int main(int argc,char** argv) {
     try {
         std::string mode="rates",identities,output,process="decay";
         unsigned a=12,z=5,n=1000,seed=20261011,channel=0;
+        bool pdPhotons=false,decayPhotons=false;
         double gamma=1e9,length=1e-7,stepFraction=0.1;
         for(int i=1;i<argc;++i) {
             if(i+1==argc) throw std::runtime_error("Missing argument");
@@ -63,18 +64,26 @@ int main(int argc,char** argv) {
             else if(key=="--gamma") gamma=std::stod(value);
             else if(key=="--distance-mpc") length=std::stod(value);
             else if(key=="--step-fraction") stepFraction=std::stod(value);
+            else if(key=="--photodisintegration-photons" || key=="--decay-photons") {
+                if(value!="On" && value!="Off") throw std::runtime_error("Photon controls must be On or Off");
+                (key=="--decay-photons" ? decayPhotons : pdPhotons)=value=="On";
+            }
             else throw std::runtime_error("Unknown option: "+key);
         }
         if(output.empty() || !n || a<2 || !z || z>a || !std::isfinite(gamma) || gamma<1. ||
            !std::isfinite(length) || length<=0. || !std::isfinite(stepFraction) || stepFraction<=0. || stepFraction>1.)
             throw std::runtime_error("Invalid probe parameters");
-        NuclearDecay decay(true,false,true);
+        if((pdPhotons && process=="decay") || (decayPhotons && process=="talys"))
+            throw std::runtime_error("Photon source requires its nuclear process");
+        NuclearDecay decay(true,decayPhotons,true);
         if(process!="decay" && process!="talys" && process!="talys-decay") throw std::runtime_error("Unknown process");
         ref_ptr<PhotoDisintegration> photo;
-        if(process!="decay") photo=new PhotoDisintegration(new TabularPhotonField("Shared",false),false,0.1);
+        if(process!="decay") photo=new PhotoDisintegration(new TabularPhotonField("Shared",false),pdPhotons,0.1);
 
         std::ofstream out(output); if(!out) throw std::runtime_error("Cannot create output");
         out<<std::setprecision(17)<<"# c_m_s="<<c_light<<" electron_mass_MeV="<<mass_electron*c_squared/MeV<<'\n';
+        out<<"# PD_photons="<<pdPhotons<<" decay_photons="<<decayPhotons
+           <<" EM_transport=Off nuclear_energy_debit=Off free_neutron_decay=Off\n";
         if(mode=="rates") {
             std::ifstream input(identities); if(!input) throw std::runtime_error("Cannot read identity inventory");
             out<<"# A Z gamma mass_MeV rate_per_s rate_per_Mpc\n";

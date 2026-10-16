@@ -6,6 +6,11 @@ Read https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_decay_
 Outputs, frozen sources, generated tables and Docker images stay outside Git.
 No script declares statistical acceptance from diagnostic z scores.
 
+For the next transport and nuclear-photon gate, see
+[the native server workflow](TRANSPORT_PHOTONS.md). It prepares independent
+pilots and numerical refinements on both shared backgrounds. Final acceptance
+families, bins and fresh seeds remain pending; it cannot issue acceptance.
+
 ## Build and prepare
 
 From the mcray repository root, build the existing base image and then the
