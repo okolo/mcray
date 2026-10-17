@@ -450,3 +450,15 @@ a 240-second job timeout and 1800-second total local limit; a timeout retains
 an incomplete result rather than silently reporting a speedup. These are
 performance diagnostics, not a statistical spectrum-acceptance campaign.
 Avoid concurrent builds or calculations when collecting timings.
+
+## Independent deterministic PD reference
+
+The [deterministic controls](deterministic/README.md) propagate PD-only Fe56
+first moments with independent, production-exported and official coefficients,
+including analytic secondary-photon rewards. Run their Python analytic/rule
+checks with `python3 -m unittest discover -s tests/deterministic -v` in the
+NumPy/SciPy environment. The validation-only `deterministic_pd_export` CMake
+target exports production coefficients without sampling histories. These tools
+also provide [combined PD+decay energy-state transport](deterministic/COUPLED.md)
+with explicit grid and stiff-solver controls. Neither tool issues acceptance
+verdicts.

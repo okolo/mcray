@@ -79,3 +79,8 @@ target_link_libraries(beta_spectrum_comparison PRIVATE GTest::gtest)
 add_executable(nuclear_photon_probe nuclear_photon_probe.cpp)
 target_include_directories(nuclear_photon_probe PRIVATE ../src/lib)
 target_link_libraries(nuclear_photon_probe PRIVATE mcray)
+
+# Validation-only deterministic transport coefficients; production physics unchanged.
+add_executable(deterministic_pd_export deterministic_pd_export.cpp)
+target_include_directories(deterministic_pd_export PRIVATE ../src/lib)
+target_link_libraries(deterministic_pd_export PRIVATE mcray)
