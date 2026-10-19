@@ -37,8 +37,13 @@ class NumericalLogCDF {
     }
     double density(double t) {
         ++evaluations;
-        const long double logx=reverse?logmax-t:logmin+t;
-        const double x=std::clamp(double(std::exp(logx)),xmin,xmax);
+        // The PDF interface itself is binary64. Endpoint-relative double exp
+        // avoids an expensive long-double transcendental on every quadrature
+        // node while retaining small distances from either endpoint. Use an
+        // absolute log for extremely broad intervals to avoid exp(t) overflow.
+        const double coordinate=t<500?(reverse?xmax*std::exp(-t):xmin*std::exp(t)):
+            std::exp(double(reverse?logmax-t:logmin+t));
+        const double x=std::clamp(coordinate,xmin,xmax);
         const double f=function(x);
         if (!std::isfinite(f) || f<0) fail("negative or nonfinite density");
         const double value=x*f;
@@ -125,7 +130,8 @@ class NumericalLogCDF {
 public:
     NumericalLogCDF(const Function& f,double lo,double hi,double relativeTolerance):
         function(f),xmin(std::max(lo,f.Xmin())),xmax(std::min(hi,f.Xmax())) {
-        if (!std::isfinite(xmin) || !std::isfinite(xmax) || xmin<=0 || xmax<=xmin ||
+        if (std::isnan(f.Xmin()) || std::isnan(f.Xmax()) ||
+            !std::isfinite(xmin) || !std::isfinite(xmax) || xmin<=0 || xmax<=xmin ||
             !std::isfinite(relativeTolerance) || relativeTolerance<=0 || relativeTolerance>.1)
             fail("invalid support or tolerance");
         // Separate probability accuracy from a possibly loose rate tolerance.
@@ -135,10 +141,15 @@ public:
             fail("requested accuracy is below quadrature resolution");
         logmin=std::log(static_cast<long double>(xmin));
         logmax=std::log(static_cast<long double>(xmax));
-        span=double(std::log(static_cast<long double>(xmax)/xmin));
+        const long double ratio=static_cast<long double>(xmax)/xmin;
+        span=double(std::isfinite(ratio)?std::log(ratio):logmax-logmin);
+        if (!(span>0) || !std::isfinite(span)) fail("unresolved log support");
         for (double x:f.IntegrationBreakpoints()) {
             if (!std::isfinite(x)) fail("nonfinite integration breakpoint");
-            if (x>xmin && x<xmax) breakpoints.push_back(double(std::log(static_cast<long double>(x)/xmin)));
+            if (x>xmin && x<xmax) {
+                const long double r=static_cast<long double>(x)/xmin;
+                breakpoints.push_back(double(std::isfinite(r)?std::log(r):std::log(static_cast<long double>(x))-logmin));
+            }
         }
         normalization=integrate(span,true);
     }

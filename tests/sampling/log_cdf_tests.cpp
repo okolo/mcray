@@ -102,3 +102,15 @@ TEST(LogCDF, InvalidDensitySupportToleranceAndProbabilityAreFatal) {
     fatal([&]{cdf.Quantile(-.1);});fatal([&]{cdf.Quantile(NAN);});
     EXPECT_EQ(cdf.Quantile(0),1);EXPECT_EQ(cdf.Quantile(1),10);
 }
+
+TEST(LogCDF, FiniteSupportRatioMayExceedBinary64Range) {
+    Density f([](double x){return 1/x;});
+    f.knots={1e-200,1,1e200};
+    Utils::NumericalLogCDF cdf(f,1e-250,1e250,1e-3);
+    const long double lo=std::log(1e-250L),span=std::log(1e250L)-lo;
+    EXPECT_NEAR(cdf.IntegralValue()/double(span),1,1e-12);
+    for (double u:{1e-6,.01,.5,.99,1-1e-6}) {
+        const double x=cdf.Quantile(u);
+        EXPECT_NEAR(double((std::log(static_cast<long double>(x))-lo)/span),u,1e-10);
+    }
+}
