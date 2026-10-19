@@ -143,3 +143,37 @@ final statistical protocol freezing remain outside these initial results.
 The physical model, simultaneous 99% confidence, 1% integrated / 5% spectral
 budgets and 200000-history cap remain unchanged. No acceptance verdict follows
 from these checks.
+
+## Native-server launch failure audited, 2026-10-19
+
+Run 20261017T155033Z-90561e31 fetched and built the requested public commit
+7af65eda1afcd2470989ff7c139f199efe6108a1 successfully. Its archive SHA-256 is
+`63300fc007c8b016307253dc004a864114007c251080af6c95da47eaf378c405`;
+the archive and all ten recorded payload checksums were verified.
+
+CTest passed 125 of 129 checks. Four existing
+`ProtonPppSampling.MatchesIndependentRestFrameQuadrature` parameter cases
+(k=3,5,20,50 electron masses) reached the per-test 30-second wall-clock limit.
+The other two cases passed in 27.06 and 27.49 seconds. There were no reported
+assertion failures in the timed-out cases; their numerical outcomes remain
+unknown. Missing-table warnings are not the cause established by this log:
+these cases construct their own fixed-rest-frame photon field. The archived
+logs do not establish why the server timing varied relative to earlier runs.
+
+The runner stopped at CTest, before starting any deterministic matrix case.
+The archive therefore contains no full-matrix results and cannot establish
+grid convergence or physical agreement. No acceptance histories were used.
+
+The six PPP sampling cases now have a 180-second test timeout; all other
+timeouts remain 30 seconds. Their quadrature orders, sample counts, fixed
+seeds and numerical/statistical assertions are unchanged. The physical model,
+transport acceptance budgets and history cap are unchanged. A new server run
+must use the published fix and pass the complete CTest gate before the full
+matrix starts; failed tests are not excluded or treated as passes.
+
+Verification of this correction on Docker Linux amd64: all six PPP cases
+passed in 80.16 seconds total (12.96-14.32 seconds each). CTest JSON discovery
+contains exactly 129 unique names, six with TIMEOUT=180 and the remaining
+123 with TIMEOUT=30. Production-library source checksums matched the previous
+verified baseline. These local checks do not replace the required new native
+server run or provide any full-matrix result.

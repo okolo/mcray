@@ -12,11 +12,21 @@ target_include_directories(mcray_unit_tests PRIVATE ../src/lib)
 # Resolve main from GoogleTest before searching mcray's legacy main object.
 target_link_libraries(mcray_unit_tests PRIVATE GTest::gtest_main mcray)
 include(GoogleTest)
+# The independent PPP quadrature takes about 30 s per energy on the native
+# validation server. Give only these six cases additional wall-clock headroom.
+set(ppp_sampling_filter "RestFrameEnergies/ProtonPppSampling.MatchesIndependentRestFrameQuadrature/*")
 gtest_discover_tests(mcray_unit_tests
     TEST_PREFIX "unit."
+    TEST_FILTER "-${ppp_sampling_filter}"
     DISCOVERY_TIMEOUT 30
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
     PROPERTIES TIMEOUT 30 LABELS "unit")
+gtest_discover_tests(mcray_unit_tests
+    TEST_PREFIX "unit."
+    TEST_FILTER "${ppp_sampling_filter}"
+    DISCOVERY_TIMEOUT 30
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
+    PROPERTIES TIMEOUT 180 LABELS "unit")
 
 add_test(NAME crbeam_help COMMAND CRbeam --help)
 add_test(NAME z2t_smoke COMMAND z2t 0.1)
