@@ -94,6 +94,8 @@ def main():
     p.add_argument('--output-dir',type=Path,required=True)
     a=p.parse_args();a.output_dir.mkdir(parents=True,exist_ok=True)
     report=json.loads(a.report.read_text());ref=json.loads(a.reference.read_text())
+    for mode,style in STYLES.items():
+        style['label']=report.get('sampler_labels',{}).get(mode,style['label'])
     rows={(r['case'],r['id'],r['sampler']):r for r in report['spectra']}
     exported=[]
     for view,stem,label in [('gamma','ics_photons',r'Secondary photon energy $E_\gamma$ [eV]'),('recoil','ics_recoil_electrons',r'Recoil electron energy $E_e$ [eV]')]:

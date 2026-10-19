@@ -543,6 +543,34 @@ ContinuousBackgroundIntegral::RateSKern::RateSKern(const Function&	aBackrgoundIn
 
 	fMult = 0.5/aParticle.Energy/(1.+aParticle.beta());
 }
+
+namespace {
+std::vector<double> samplingKnots(const Function& background,const Function& sigma,
+        double offset,double multiplier,double otherMultiplier) {
+    auto result=sigma.IntegrationBreakpoints();
+    for (double energy:background.IntegrationBreakpoints()) {
+        result.push_back(offset+energy/multiplier);
+        if (otherMultiplier>0) result.push_back(offset+energy/otherMultiplier);
+    }
+    return result;
+}
+}
+std::vector<double> ContinuousBackgroundIntegral::RateSKern::IntegrationBreakpoints() const {
+    return samplingKnots(fBackrgoundIntegral,fSigma,fM2,fMult,fMaxEmult);
+}
+std::vector<double> ContinuousBackgroundIntegral::RateKKern::IntegrationBreakpoints() const {
+    return samplingKnots(fBackrgoundIntegral,fSigma,0,fMult,fMaxEmult);
+}
+std::vector<double> ContinuousBackgroundIntegral::RateSKernZ::IntegrationBreakpoints() const {
+    auto result=RateSKern::IntegrationBreakpoints();
+    const auto other=samplingKnots(fBackrgoundIntegralZ2,fSigma,fM2,fMult,fMaxEmult);
+    result.insert(result.end(),other.begin(),other.end());return result;
+}
+std::vector<double> ContinuousBackgroundIntegral::RateKKernZ::IntegrationBreakpoints() const {
+    auto result=RateKKern::IntegrationBreakpoints();
+    const auto other=samplingKnots(fBackrgoundIntegralZ2,fSigma,0,fMult,fMaxEmult);
+    result.insert(result.end(),other.begin(),other.end());return result;
+}
 //(s-m^2) sigma(s) I((s-m^2)/2/E/(1+beta),z)
 double ContinuousBackgroundIntegral::RateSKern::f(double s) const
 {
@@ -663,7 +691,7 @@ double ContinuousBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, c
 		kern = new RateSKernZ(*fIntegrals[iZ], *fIntegrals[iZ + 1], iZ * fStepZ, (iZ + 1) * fStepZ, aSigma, aParticle);
 	else
 		kern = new RateSKern(*fIntegrals[iZ], aSigma, aParticle);
-	if(math.SampleLogDistribution(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
+	if(math.SampleLogDistributionCDF(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
 	}
@@ -698,7 +726,7 @@ double ContinuousBackgroundIntegral::GetRateAndSampleK(const Function& aSigmaK, 
 	else
 		kern = new RateKKern(*fIntegrals[iZ], aSigmaK, aParticle);
 
-	if(math.SampleLogDistribution(*kern, aRand, aK, totalRate, Kmin, Kmax, fEpsRel))
+	if(math.SampleLogDistributionCDF(*kern, aRand, aK, totalRate, Kmin, Kmax, fEpsRel))
 	{
 		double gamma=aParticle.Energy/m;
 		return totalRate/(2.0*gamma*gamma*aParticle.beta());
@@ -992,7 +1020,7 @@ double MonochromaticBackgroundIntegral::GetRateAndSampleS(const Function& aSigma
 	double totalRate = 0.;//rate times 8*E*beta
 	RateSKern kern(aSigma, aParticle);
 
-	if(math.SampleLogDistribution(kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
+	if(math.SampleLogDistributionCDF(kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate*n/k/k/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
 	}
@@ -1154,7 +1182,7 @@ double MonochromaticBackgroundIntegral::GetRateAndSampleK(const Function &aSigma
 	double totalRate = 0.;
 	RateKKern kern(aSigmaK);
 
-	if(math.SampleLogDistribution(kern, aRandomizer, aK, totalRate, Kmin, Kmax, fEpsRel))
+	if(math.SampleLogDistributionCDF(kern, aRandomizer, aK, totalRate, Kmin, Kmax, fEpsRel))
 	{
 		double gamma = aParticle.Energy/m;
 		return 0.5*totalRate * n /(eps * eps * gamma * gamma * aParticle.beta());

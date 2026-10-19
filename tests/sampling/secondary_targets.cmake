@@ -1,5 +1,9 @@
 # Also usable by the portable server overlay on the fetched revision.
 if(NOT TARGET em_secondary_probe)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/Background.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/MathUtils.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/sampling/prepare_reference.py")
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     set(sampling_generated "${CMAKE_CURRENT_BINARY_DIR}/sampling_reference")
     execute_process(COMMAND "${Python3_EXECUTABLE}"
@@ -9,7 +13,8 @@ if(NOT TARGET em_secondary_probe)
     add_executable(em_secondary_probe sampling/secondary_probe.cpp
         "${sampling_generated}/historical_sampler.cpp"
         "${sampling_generated}/probe_background.cpp"
-        "${sampling_generated}/audited_math.cpp")
+        "${sampling_generated}/audited_math.cpp"
+        "${sampling_generated}/legacy_rejection.cpp")
     target_include_directories(em_secondary_probe PRIVATE ../src/lib
         "${CMAKE_CURRENT_SOURCE_DIR}/sampling" "${MCRAY_NR_REFERENCE_DIR}")
     target_link_libraries(em_secondary_probe PRIVATE mcray)

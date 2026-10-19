@@ -84,6 +84,7 @@ public:
 		for(X x:m_x) result.push_back(fXscale ? fXscale->FromScale(x) : x);
 		return result;
 	}
+	std::vector<X> IntegrationBreakpoints() const override {return Knots();}
 
 	void SetAutoLimits();
 	void Print(std::ostream& aOut, X aXcoef=1., X aYcoef=1.);

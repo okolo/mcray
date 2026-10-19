@@ -1,6 +1,7 @@
 // Opt-in single-interaction spectra. Production files are only copied/instrumented.
 #include "ICS.h"
 #include "secondary_oracle.h"
+#include "invariant_cdf_diagnostic.h"
 #include <gsl/gsl_errno.h>
 #include <fstream>
 #include <iomanip>
@@ -13,7 +14,7 @@ using namespace Interactions;
 namespace secondary {Audit audit;}
 namespace {
 using secondary::Real;
-bool pairProcess=false,oracleMode=false,oldMode=false;
+bool pairProcess=false,oracleMode=false,oldMode=false,rejectionMode=false,diagnosticMode=false;
 int cells=512,order=16;
 double primaryEnergy=0,threshold=0,lastS=0,sMin=0,sMax=0;
 std::string destination;
@@ -59,19 +60,19 @@ void binaryDouble(std::ostream& out,double x){out.write(reinterpret_cast<const c
 bool HistoricalSampleLogDistribution(const Function&,double,double&,double&,double,double,double);
 bool SamplingProbe(const Function& f,Randomizer& rng,double& x,double& integral,double lo,double hi,double tol) {
     sMin=lo;sMax=hi;
-    if(oracleMode){oracle(f,lo,hi);x=std::sqrt(lo*hi);integral=1.;return true;}
-    const bool ok=oldMode?HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,lo,hi,tol):currentMath.SampleLogDistribution(f,rng,x,integral,lo,hi,tol);
+    if(oracleMode || diagnosticMode){if(diagnosticMode)secondary::invariantDiagnostic(f,lo,hi,tol,destination);else oracle(f,lo,hi);x=std::sqrt(lo*hi);integral=1.;return true;}
+    const bool ok=oldMode?HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,lo,hi,tol):rejectionMode?LegacyRejectionSampleLogDistribution(f,rng,x,integral,lo,hi,tol):currentMath.SampleLogDistributionCDF(f,rng,x,integral,lo,hi,tol);
     lastS=x;
     if(!ok||!std::isfinite(integral)||integral<=0||!std::isfinite(x)||x<lo||x>hi)throw std::runtime_error("Invalid sampled invariant");
     return true;
 }
 int main(int argc,char** argv) {
     try {
-        if(argc!=10 && argc!=12)throw std::runtime_error("Usage: em_secondary_probe oracle PROCESS E_EV EMIN_EV TOL EDGES CELLS ORDER OUTPUT | sample PROCESS E_EV EMIN_EV TOL EDGES old|current N SEED EVENTS STATS");
+        if(argc!=8 && argc!=10 && argc!=12)throw std::runtime_error("Usage: em_secondary_probe diagnostic PROCESS E_EV EMIN_EV TOL EDGES OUTPUT | oracle PROCESS E_EV EMIN_EV TOL EDGES CELLS ORDER OUTPUT | sample PROCESS E_EV EMIN_EV TOL EDGES old|current|rejection N SEED EVENTS STATS");
         gsl_set_error_handler_off();
-        oracleMode=std::string(argv[1])=="oracle";
-        if(!oracleMode && std::string(argv[1])!="sample")throw std::runtime_error("Invalid mode");
-        if((oracleMode&&argc!=10)||(!oracleMode&&argc!=12))throw std::runtime_error("Invalid argument count");
+        oracleMode=std::string(argv[1])=="oracle";diagnosticMode=std::string(argv[1])=="diagnostic";
+        if(!oracleMode && !diagnosticMode && std::string(argv[1])!="sample")throw std::runtime_error("Invalid mode");
+        if((oracleMode&&argc!=10)||(diagnosticMode&&argc!=8)||(!oracleMode&&!diagnosticMode&&argc!=12))throw std::runtime_error("Invalid argument count");
         const std::string process=argv[2];if(process!="PP"&&process!="ICS")throw std::runtime_error("Invalid process");
         pairProcess=process=="PP";primaryEnergy=std::stod(argv[3]);const double emin=std::stod(argv[4]),tol=std::stod(argv[5]);
         if(!std::isfinite(primaryEnergy)||!std::isfinite(emin)||!std::isfinite(tol)||primaryEnergy<=emin||emin<=0||tol<=0||tol>.01)throw std::runtime_error("Invalid physics parameters");
@@ -83,14 +84,15 @@ int main(int argc,char** argv) {
         const double t=2.7255*units.K;CompoundBackground bg;bg.AddComponent(new PlankBackground(t,1e-3*t,1e3*t,0.,.1));
         PBackgroundIntegral background=new ContinuousBackgroundIntegral(bg,.01,std::pow(10.,.01),.1,tol);
         ICS ics(background,emin*units.eV);GammaPP pp(background);Particle primary(pairProcess?Photon:Electron,0.);primary.Energy=primaryEnergy*units.eV;
-        if(oracleMode) {
-            cells=std::stoi(argv[7]);order=std::stoi(argv[8]);destination=argv[9];
+        if(oracleMode || diagnosticMode) {
+            if(diagnosticMode)destination=argv[7];
+            else {cells=std::stoi(argv[7]);order=std::stoi(argv[8]);destination=argv[9];}
             if(cells<8||order<8||order>64)throw std::runtime_error("Invalid oracle quadrature");
             Randomizer rng(1);double s;
             if(!(pairProcess?pp.SampleS(primary,s,rng):ics.SampleS(primary,s,rng)))throw std::runtime_error("Cannot construct reference kernel");
             return 0;
         }
-        const std::string mode=argv[7];if(mode!="old"&&mode!="current")throw std::runtime_error("Invalid sampler");oldMode=mode=="old";
+        const std::string mode=argv[7];if(mode!="old"&&mode!="current"&&mode!="rejection")throw std::runtime_error("Invalid sampler");oldMode=mode=="old";rejectionMode=mode=="rejection";
         const auto count=std::stoull(argv[8]);const auto seed=std::stoul(argv[9]);if(!count||!seed||seed>0xffffffffUL)throw std::runtime_error("Invalid count/seed");
         const unsigned short endian=1;if(*reinterpret_cast<const unsigned char*>(&endian)!=1||sizeof(double)!=8||!std::numeric_limits<double>::is_iec559)throw std::runtime_error("Raw format requires little-endian IEEE754 binary64");
         Randomizer rng(seed);std::ofstream raw(argv[10],std::ios::binary);raw.write("MCRAYEM1",8);

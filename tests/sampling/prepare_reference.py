@@ -34,27 +34,33 @@ for name in headers:
 prefix = '#include "MathUtils.h"\n' + ''.join('#include "' + h + '"\n' for h in headers)
 (a.output / 'historical_sampler.cpp').write_text(prefix + 'using namespace Utils;\n' + reference)
 background = (a.repo / 'src/lib/Background.cpp').read_text()
-needle = 'math.SampleLogDistribution(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel)'
+needle = 'math.SampleLogDistributionCDF(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel)'
 assert background.count(needle) == 1, 'Sampling call changed; review adapter'
 background = background.replace(needle, 'SamplingProbe(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel)')
 background = '#include "MathUtils.h"\nextern bool SamplingProbe(const Utils::Function&, mcray::Randomizer&, double&, double&, double, double, double);\n' + background
 (a.output / 'probe_background.cpp').write_text(background)
-# Instrument a private copy: preserve all rejection decisions and RNG calls.
+# Current production code is linked unchanged. Legacy rejection is a frozen
+# validation-only control with the same corrected conditional secondary laws.
+LEGACY = '1cc28f381e961f3d4947d08f0149ac72d63c3635'
 math = (a.repo / 'src/lib/MathUtils.cpp').read_text()
-start = math.index('bool MathUtils::SampleLogDistribution(const Function&')
-end = math.index('template<typename X>', start)
-body = math[start:end]
+(a.output / 'audited_math.cpp').write_text(math)
+legacy = subprocess.check_output(['git','-C',str(a.repo),'show',LEGACY+':src/lib/MathUtils.cpp'],text=True)
+start = legacy.index('class LogscaleDistr :')
+end = legacy.index('template<typename X>',start)
+body = legacy[start:end]
+body = body.replace('bool MathUtils::SampleLogDistribution(', 'bool LegacyRejectionSampleLogDistribution(')
+body = body.replace('return SampleLogDistribution(aDistrib,', 'return LegacyRejectionSampleLogDistribution(aDistrib,')
+body = body.replace('aOutputIntegral = Integration_qag (', 'MathUtils math;\n    aOutputIntegral = math.Integration_qag (')
 def replace_once(old, new):
     global body
-    assert body.count(old) == 1, 'Rejection sampler changed; review audit instrumentation'
-    body = body.replace(old, new)
+    assert body.count(old)==1, 'Frozen rejection control changed'
+    body=body.replace(old,new)
 replace_once('double f = pdf(x);', 'const double previous_max = max_val;\n        ++secondary::audit.proposals;\n        double f = pdf(x);\n        if (f > previous_max) {\n            ++secondary::audit.envelope;\n            secondary::audit.largestEnvelopeRatio = std::max(secondary::audit.largestEnvelopeRatio, f/previous_max);\n        }')
 replace_once('if (max_recurse <= 0){', 'if (max_recurse <= 0){\n        ++secondary::audit.argmax;')
-replace_once('return SampleLogDistribution(aDistrib,', '++secondary::audit.narrowing;\n    return SampleLogDistribution(aDistrib,')
-math = '#include "secondary_oracle.h"\n' + math[:start] + body + math[end:]
-(a.output / 'audited_math.cpp').write_text(math)
+replace_once('return LegacyRejectionSampleLogDistribution(aDistrib,', '++secondary::audit.narrowing;\n    return LegacyRejectionSampleLogDistribution(aDistrib,')
+(a.output/'legacy_rejection.cpp').write_text('#include "MathUtils.h"\n#include "secondary_oracle.h"\nusing namespace Utils;\n'+body)
 sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
-manifest = {'old_commit': OLD, 'current_commit': subprocess.check_output(['git', '-C', str(a.repo), 'rev-parse', 'HEAD'], text=True).strip(),
+manifest = {'old_commit': OLD, 'legacy_rejection_commit': LEGACY, 'current_commit': subprocess.check_output(['git', '-C', str(a.repo), 'rev-parse', 'HEAD'], text=True).strip(),
             'nr_files': {h: sha(a.nr / h) for h in headers},
             'historical_nr_gitlink': subprocess.check_output(['git', '-C', str(a.repo), 'rev-parse', OLD + ':src/external/nr'], text=True).strip(),
             'sources': {str(path.relative_to(a.repo)): sha(path) for path in [a.repo / name for name in subprocess.check_output(['git', '-C', str(a.repo), 'ls-files', 'src/lib'], text=True).splitlines() if (a.repo / name).is_file()] + [a.repo / 'tests/sampling/probe.cpp', a.repo / 'tests/sampling/prepare_reference.py']},

@@ -234,6 +234,7 @@ class MonochromaticBackgroundIntegral : public BackgroundIntegral
 
 		//(s-m^2) sigma(s)
 		double f(double _x) const;
+        std::vector<double> IntegrationBreakpoints() const override {return fSigma.IntegrationBreakpoints();}
 	private:
 		const Function&	fSigma;
 		double				fM2;
@@ -244,6 +245,7 @@ class MonochromaticBackgroundIntegral : public BackgroundIntegral
 		RateKKern(const Function& aSigmaK):fSigma(aSigmaK){};
 		//k sigma(k)
 		double f(double _x) const;
+        std::vector<double> IntegrationBreakpoints() const override {return fSigma.IntegrationBreakpoints();}
 	private:
 		const Function&	fSigma;
 	};
@@ -301,6 +303,7 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 
 		//(s-m^2) sigma(s) I((s-m^2)/2/E/(1+beta),z)
 		double f(double _x) const;
+        std::vector<double> IntegrationBreakpoints() const override;
 	private:
 		const Function&		fBackrgoundIntegral;
 	protected:
@@ -318,6 +321,7 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 
 		//(s-m^2) sigma(s) I((s-m^2)/2/E/(1+beta),z)
 		double f(double _x) const;
+        std::vector<double> IntegrationBreakpoints() const override;
 	private:
 		const Function&		fBackrgoundIntegralZ1;
 		const Function&		fBackrgoundIntegralZ2;
@@ -330,6 +334,7 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 	public:
 		RateKKern(const Function&	aBackrgoundIntegral, const Function& aSigma, const Particle& aParticle);
 		double f(double _x) const;
+        std::vector<double> IntegrationBreakpoints() const override;
 	private:
 		const Function&		fBackrgoundIntegral;
 	protected:
@@ -345,6 +350,7 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 	public:
 		RateKKernZ(const Function&	aBackrgoundIntegralZ1, const Function&	aBackrgoundIntegralZ2, double aZ1, double aZ2, const Function& aSigma, const Particle& aParticle);
 		double f(double _x) const;
+        std::vector<double> IntegrationBreakpoints() const override;
 	private:
 		const Function&		fBackrgoundIntegralZ1;
 		const Function&		fBackrgoundIntegralZ2;

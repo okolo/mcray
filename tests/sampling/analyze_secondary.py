@@ -8,7 +8,9 @@ import sys
 from secondary_statistics import analyze
 if __name__=='__main__':
     data=json.loads(Path(sys.argv[1]).read_text())
+    labels=data.pop('sampler_labels',{'old':'Historical NR','current':'Current sampler','old_minus_current':'Old minus current'})
     output=Path(sys.argv[2]);report=analyze(**data)
+    report['sampler_labels']=labels
     report['significant_comparisons']=dict(Counter(t['comparison'] for t in report['tests'] if t['significant']))
     report['precision_states']=dict(Counter(r['status'] for r in report['spectra'] if 'status' in r))
     output.write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
@@ -26,7 +28,7 @@ if __name__=='__main__':
         for mode in ('old','current','old_minus_current'):
             counts=Counter(r['status'] for r in report['spectra'] if r['case']==case and r['sampler']==mode)
             significant=sum(t['significant'] for t in report['tests'] if t['case']==case and t['comparison']==('old_current' if mode=='old_minus_current' else mode+'_oracle'))
-            lines.append(f"| {case} | {mode} | {counts['within_target']} | {counts['deviation']} | {counts['inconclusive']} | {significant} |")
+            lines.append(f"| {case} | {labels[mode]} | {counts['within_target']} | {counts['deviation']} | {counts['inconclusive']} | {significant} |")
     lines+=['','See report.tsv for every frozen bin/tail and simultaneous confidence interval; report.json includes all Holm-adjusted tests and direct old/current comparisons.',
             'Zero observed tail events retain a positive exact upper confidence limit. Incomplete runs and smoke runs cannot establish equivalence.','']
     output.with_suffix('.md').write_text('\n'.join(lines))

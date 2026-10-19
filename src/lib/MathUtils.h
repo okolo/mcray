@@ -45,6 +45,10 @@ public:
 	virtual X f(X _x) const = 0;
 	virtual X Xmin() const {return -std::numeric_limits<X>::max();}
 	virtual X Xmax() const {return std::numeric_limits<X>::max();}
+	// Optional physical coordinates of known interpolation knots, thresholds or
+	// localized features. Numerical samplers split at these points; no PDF or
+	// interpolation semantics are changed.
+	virtual std::vector<X> IntegrationBreakpoints() const {return {};}
 	inline X operator()(X _x) const {return f(_x);};
 	virtual ~FunctionX(){};
 
@@ -224,6 +228,10 @@ public:
 
     bool SampleDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer,  double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError, int max_recurse=3);
     bool SampleLogDistribution(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError, int max_recurse=3);
+    // Full-support numerical inversion for background invariant distributions.
+    // The legacy method above remains for the noisy nested PPP secondary PDF.
+    bool SampleLogDistributionCDF(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+
 
 
 //bool SampleLogDistributionNegative(const Function& aDistrib, Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral,

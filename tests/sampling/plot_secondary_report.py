@@ -19,6 +19,8 @@ def main():
     rows={(r['case'],r['id'],r['sampler']):r for r in report['spectra']}
     styles={'old':dict(color='#bc5426',marker='s',label='Historical NR'),
             'current':dict(color='#146c9d',marker='o',label='Current sampler')}
+    for mode,style in styles.items():
+        style['label']=report.get('sampler_labels',{}).get(mode,style['label'])
     fig,axes=plt.subplots(2,2,figsize=(12.5,8.5),layout='constrained')
     def bias(ax,case,view,title):
         bins=sorted((r for r in reference[case].values() if r['view']==view and r['kind']=='bin' and r['mean']>1e-4 and r['lo']>0),key=lambda r:r['lo'])

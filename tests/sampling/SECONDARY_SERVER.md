@@ -1,5 +1,10 @@
 # Bounded PP / inverse-Compton spectrum comparison
 
+For the new numerical log-CDF candidate, use
+[INVARIANT_CDF_SERVER.md](INVARIANT_CDF_SERVER.md). Its default baseline is
+frozen rejection at `1cc28f3`; select `--baseline nr` to reproduce the NR
+comparison described below. Statistical targets and frozen regions are retained.
+
 This implemented experiment compares the historical NR log sampler at
 `d05723f449c1eecee4f00af392014df4c898ebe9` with the sampler in the requested
 current revision (default `talys`). It also compares both with an independent

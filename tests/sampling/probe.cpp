@@ -65,7 +65,7 @@ public:
 }
 bool SamplingProbe(const Function& f,Randomizer& rng,double& x,double& integral,double xmin,double xmax,double tol) {
     MathUtils math;
-    if(!diagnostic) return historical ? HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,xmin,xmax,tol) : math.SampleLogDistribution(f,rng,x,integral,xmin,xmax,tol);
+    if(!diagnostic) return historical ? HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,xmin,xmax,tol) : math.SampleLogDistributionCDF(f,rng,x,integral,xmin,xmax,tol);
     Reference ref(f,xmin,xmax);
     LogPDF logpdf(f);
     const double qag=math.Integration_qag(logpdf,std::log(xmin),std::log(xmax),0.,tol,1000,GSL_INTEG_GAUSS61);
@@ -79,7 +79,7 @@ bool SamplingProbe(const Function& f,Randomizer& rng,double& x,double& integral,
     }
     samples.clear();std::vector<double> pits;
     for(int i=0;i<sampleCount;++i) {
-        if(!math.SampleLogDistribution(f,rng,x,integral,xmin,xmax,tol))throw std::runtime_error("Current sampler failed");
+        if(!math.SampleLogDistributionCDF(f,rng,x,integral,xmin,xmax,tol))throw std::runtime_error("Current sampler failed");
         samples.push_back(x);pits.push_back(ref.pit(x));
     }
     std::sort(pits.begin(),pits.end());double ks=0.;

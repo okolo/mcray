@@ -1,5 +1,8 @@
 # Historical electromagnetic sampler comparison
 
+For the numerical CDF versus frozen rejection rerun, use
+[INVARIANT_CDF_SERVER.md](INVARIANT_CDF_SERVER.md).
+
 For the approved 1% / 10%, global 1% single-interaction experiment with a
 24-hour total server limit, use [SECONDARY_SERVER.md](SECONDARY_SERVER.md).
 The exploratory kernel/cascade tools below have a different purpose.

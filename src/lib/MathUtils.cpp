@@ -46,6 +46,7 @@
 
 #include "Utils.h"
 #include "MathUtils.h"
+#include "NumericalLogCDF.h"
 #include <gsl/gsl_errno.h>
 #include "gsl/gsl_sf_erf.h"
 #include <gsl/gsl_math.h>
@@ -1090,6 +1091,14 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomize
     new_xmax = exp(new_xmax);
     double out_int;
     return SampleLogDistribution(aDistrib, aRandomizer,  aOutputX, out_int, new_xmin, new_xmax, aRelError, max_recurse-1);
+}
+
+bool MathUtils::SampleLogDistributionCDF(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError) {
+    NumericalLogCDF cdf(aDistrib,xMin,xMax,aRelError);
+    aOutputIntegral=cdf.IntegralValue();
+    if (aOutputIntegral==0) {aOutputX=0;return false;}
+    aOutputX=cdf.Quantile(aRandomizer.Rand());
+    return true;
 }
 
 template<typename X> void MathUtils::RelAccuracy(X& aOutput)

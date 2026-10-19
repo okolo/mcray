@@ -15,7 +15,7 @@ include(GoogleTest)
 add_executable(ics_endpoint_diagnostic sampling/ics_endpoint_diagnostic.cpp)
 target_include_directories(ics_endpoint_diagnostic PRIVATE ../src/lib)
 target_link_libraries(ics_endpoint_diagnostic PRIVATE mcray)
-add_executable(em_secondary_accuracy_tests sampling/secondary_accuracy_tests.cpp)
+add_executable(em_secondary_accuracy_tests sampling/secondary_accuracy_tests.cpp sampling/log_cdf_tests.cpp)
 target_include_directories(em_secondary_accuracy_tests PRIVATE ../src/lib)
 target_link_libraries(em_secondary_accuracy_tests PRIVATE GTest::gtest_main mcray)
 gtest_discover_tests(em_secondary_accuracy_tests TEST_PREFIX "unit.sampling."

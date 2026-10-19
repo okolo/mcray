@@ -26,7 +26,9 @@ def main():
     manifest={'commit':git('rev-parse','HEAD'),'branch':branch,
         'historical_s_sampler':'d05723f449c1eecee4f00af392014df4c898ebe9',
         'alpha':.01,'core_relative_target':.01,'tail_relative_target':.1,
-        'maximum_hours':24,'scope':'Both s samplers use the corrected conditional ICS/PP implementation; independent spectral oracle unchanged.'}
+        'maximum_hours':24,'scope':'Numerical log-CDF versus frozen rejection, with corrected conditional ICS/PP spectra and unchanged spectral criteria.',
+        'current_algorithm':'full_support_numerical_log_cdf',
+        'default_baseline':'rejection', 'rejection_commit':'1cc28f381e961f3d4947d08f0149ac72d63c3635'}
     (root/'package-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     (root/'README.txt').write_text('Frozen EM secondary-spectrum rerun\n\n'
         'On Ubuntu 22.04 / Python 3.10 (no Python upgrade required):\n'
@@ -40,7 +42,9 @@ def main():
         'Smoke exit code 3 denotes inconclusive and is expected.\n'
         'All original bins, seeds, inference criteria and endpoint checks are retained.\n'
         'Raw events, reference convergence, exact commit, binaries and hashes are archived.\n'
-        'The old/current labels select s samplers, not pre-fix/post-fix conditional spectra.\n')
+        'Default: old=frozen rejection (1cc28f3), current=numerical log-CDF.\n'
+        'Use --baseline nr for the historical NR control instead.\n'
+        'See sampling/INVARIANT_CDF_SERVER.md for tail quantiles and timing controls.\n')
     entries=[]
     for path in sorted(root.rglob('*')):
         if path.is_file():entries.append(hashlib.sha256(path.read_bytes()).hexdigest()+'  '+str(path.relative_to(root)))
