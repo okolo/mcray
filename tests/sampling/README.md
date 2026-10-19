@@ -3,6 +3,22 @@
 For the numerical CDF versus frozen rejection rerun, use
 [INVARIANT_CDF_SERVER.md](INVARIANT_CDF_SERVER.md).
 
+For a bounded standalone check after building `em_secondary_probe` with
+`MCRAY_NR_REFERENCE_DIR` configured, run from the repository root:
+
+```sh
+python tests/sampling/run_invariant_diagnostics.py \
+  --binary build/Release/tests/em_secondary_probe \
+  --output /tmp/mcray-cdf-quantiles --seconds 600
+python tests/sampling/run_secondary_local.py \
+  --binary build/Release/tests/em_secondary_probe \
+  --output /tmp/mcray-cdf-spectra --events 20000 --seconds 1200
+```
+
+These checks require the sampling Python dependencies and stay below the
+30-minute local limit. Commit numerical sources before freezing the local
+spectrum check. Short runs do not replace the 24-hour server comparison.
+
 For the approved 1% / 10%, global 1% single-interaction experiment with a
 24-hour total server limit, use [SECONDARY_SERVER.md](SECONDARY_SERVER.md).
 The exploratory kernel/cascade tools below have a different purpose.

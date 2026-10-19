@@ -1,0 +1,769 @@
+{
+  "production_commit": "a960550f53ba7ce9c04f9b930183d294716418d0",
+  "candidate_tip_at_capture": "e9ea51e78a2d06d4466b4c03410b660e53ea2d83",
+  "baseline_commit": "1cc28f381e961f3d4947d08f0149ac72d63c3635",
+  "production_hashes": {
+    "src/lib/NumericalLogCDF.h": "48d0b39f557072b6fb3c64a90a39ef4734a77cf7e851c63c91ca2e56474e6f10",
+    "src/lib/MathUtils.cpp": "38d407f95c0bea65ef5a604cd5023e875ca339bf883874009776e0c50216e72b",
+    "src/lib/MathUtils.h": "bd879aa62f2a5d015e8f3fe1fc051221daf84e5181d63703624e2441a31e21d9",
+    "src/lib/Background.cpp": "d6730d0df8753fa1901ddba316454818228b05da9056465e73e26f4102f11807",
+    "src/lib/Background.h": "9c111693ad200cacf7d6797120275fa16470f7bd0a76dad982b85039b6419b99",
+    "src/lib/TableFunction.h": "bcdc3e80ece74443012ed985b80fc928a0d2ee92bd0d954cf50a5c879340181a"
+  },
+  "ctest": {
+    "native_macos": 144,
+    "linux_amd64_emulated_ubuntu22": 144
+  },
+  "python_tests": {
+    "native_python312": 19,
+    "linux_python310": 19
+  },
+  "native_quantiles_and_performance": {
+    "scope": "Numerical quantile controls and full per-draw construction cost; not a Monte Carlo acceptance result",
+    "small_tail_relative_control": 0.001,
+    "reference_change_guard": 0.0001,
+    "status": "within_control",
+    "cases": {
+      "ICS-1e+13": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 2.768175464185063e-06,
+        "max_relative_reference_change": 7.91167747093112e-08,
+        "relative_normalization_error": 2.8392832529533507e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0002979641953125,
+            0.00030156803125,
+            0.0003057734375
+          ],
+          "rejection": [
+            1.891959375e-05,
+            1.585871875e-05,
+            1.73935546875e-05
+          ],
+          "nr": [
+            1.291634375e-05,
+            1.23883515625e-05,
+            1.23427734375e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.00030156803125,
+          "rejection": 1.73935546875e-05,
+          "nr": 1.23883515625e-05
+        },
+        "cdf_over_rejection_time": 17.3379183650553,
+        "cdf_over_nr_time": 24.34286997172873
+      },
+      "ICS-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.255163775754525e-06,
+        "max_relative_reference_change": 2.529444115642078e-08,
+        "relative_normalization_error": 1.0009326700810561e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0005293255234375,
+            0.0005276451796875,
+            0.0005298883515625
+          ],
+          "rejection": [
+            2.1751296875e-05,
+            2.1720703125e-05,
+            2.1892578125e-05
+          ],
+          "nr": [
+            9.2138671875e-06,
+            9.0439453125e-06,
+            9.07421875e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0005293255234375,
+          "rejection": 2.1751296875e-05,
+          "nr": 9.07421875e-06
+        },
+        "cdf_over_rejection_time": 24.335354644802074,
+        "cdf_over_nr_time": 58.33290314248816
+      },
+      "ICS-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 4.169695386968542e-06,
+        "max_relative_reference_change": 5.439296672034473e-07,
+        "relative_normalization_error": 6.395550755655677e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.000698205078125,
+            0.0006947421875,
+            0.0006924436875
+          ],
+          "rejection": [
+            7.1725234375e-06,
+            7.119140625e-06,
+            7.193359375e-06
+          ],
+          "nr": [
+            6.3030625e-06,
+            6.045578125e-06,
+            6.44140625e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0006947421875,
+          "rejection": 7.1725234375e-06,
+          "nr": 6.3030625e-06
+        },
+        "cdf_over_rejection_time": 96.86161273000373,
+        "cdf_over_nr_time": 110.22295709426966
+      },
+      "ICS-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.095624569854799e-06,
+        "max_relative_reference_change": 2.1913711215635137e-08,
+        "relative_normalization_error": 2.1919133175174466e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.000666287765625,
+            0.000673552734375,
+            0.000678358078125
+          ],
+          "rejection": [
+            7.639e-06,
+            7.591140625e-06,
+            7.591796875e-06
+          ],
+          "nr": [
+            5.70475e-06,
+            5.35546875e-06,
+            5.5423203125e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.000673552734375,
+          "rejection": 7.591796875e-06,
+          "nr": 5.5423203125e-06
+        },
+        "cdf_over_rejection_time": 88.72112168767688,
+        "cdf_over_nr_time": 121.52901607940042
+      },
+      "ICS-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.538056519651448e-06,
+        "max_relative_reference_change": 2.5620029905332553e-06,
+        "relative_normalization_error": 5.607736497381666e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0006751751328125,
+            0.0006823040390625,
+            0.0006823466796875
+          ],
+          "rejection": [
+            6.67253125e-06,
+            6.2200546875e-06,
+            6.367515625e-06
+          ],
+          "nr": [
+            9.4036484375e-06,
+            8.87825e-06,
+            9.0068359375e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0006823040390625,
+          "rejection": 6.367515625e-06,
+          "nr": 9.0068359375e-06
+        },
+        "cdf_over_rejection_time": 107.15388532124724,
+        "cdf_over_nr_time": 75.7540210343706
+      },
+      "ICS-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.828181565807448e-06,
+        "max_relative_reference_change": 2.4639343189722278e-08,
+        "relative_normalization_error": 5.446754158811018e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0006645400390625,
+            0.000682765625,
+            0.000679501953125
+          ],
+          "rejection": [
+            1.6420578125e-05,
+            1.622590625e-05,
+            1.634765625e-05
+          ],
+          "nr": [
+            7.74771875e-06,
+            7.5950546875e-06,
+            7.726890625e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.000679501953125,
+          "rejection": 1.634765625e-05,
+          "nr": 7.726890625e-06
+        },
+        "cdf_over_rejection_time": 41.565710872162484,
+        "cdf_over_nr_time": 87.93989537350284
+      },
+      "PP-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.563207391508392e-05,
+        "max_relative_reference_change": 2.395805048164938e-05,
+        "relative_normalization_error": 1.1008880473895033e-09,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0002320354765625,
+            0.0002282991484375,
+            0.0002312571640625
+          ],
+          "rejection": [
+            4.5336265625e-05,
+            4.47548828125e-05,
+            4.5263671875e-05
+          ],
+          "nr": [
+            1.19912109375e-05,
+            1.2160484375e-05,
+            1.151628125e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0002312571640625,
+          "rejection": 4.5263671875e-05,
+          "nr": 1.19912109375e-05
+        },
+        "cdf_over_rejection_time": 5.1091118878101405,
+        "cdf_over_nr_time": 19.28555550126232
+      },
+      "PP-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.315424051906433e-05,
+        "max_relative_reference_change": 2.39358944318378e-05,
+        "relative_normalization_error": 1.1372014441235478e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0003358564453125,
+            0.0003378017578125,
+            0.000333001953125
+          ],
+          "rejection": [
+            1.95139921875e-05,
+            1.8709640625e-05,
+            1.843425e-05
+          ],
+          "nr": [
+            6.3212890625e-06,
+            5.976890625e-06,
+            6.220375e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0003358564453125,
+          "rejection": 1.8709640625e-05,
+          "nr": 6.220375e-06
+        },
+        "cdf_over_rejection_time": 17.95098324142717,
+        "cdf_over_nr_time": 53.99295787030525
+      },
+      "PP-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.7445236885960114e-05,
+        "max_relative_reference_change": 2.6776777849769963e-05,
+        "relative_normalization_error": 1.235818114508902e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.000434232421875,
+            0.0004314287109375,
+            0.0004275283203125
+          ],
+          "rejection": [
+            7.26496875e-06,
+            6.9993515625e-06,
+            7.0306015625e-06
+          ],
+          "nr": [
+            5.40071875e-06,
+            5.2281875e-06,
+            5.251953125e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0004314287109375,
+          "rejection": 7.0306015625e-06,
+          "nr": 5.251953125e-06
+        },
+        "cdf_over_rejection_time": 61.36440916217829,
+        "cdf_over_nr_time": 82.1463369282261
+      },
+      "PP-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.05142901623001e-05,
+        "max_relative_reference_change": 2.3936392278018102e-05,
+        "relative_normalization_error": 9.201084338883447e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0006480869140625,
+            0.00064097590625,
+            0.0006389225234375
+          ],
+          "rejection": [
+            6.93196875e-06,
+            6.6494140625e-06,
+            6.6656953125e-06
+          ],
+          "nr": [
+            6.373046875e-06,
+            6.00390625e-06,
+            5.97884375e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.00064097590625,
+          "rejection": 6.6656953125e-06,
+          "nr": 6.00390625e-06
+        },
+        "cdf_over_rejection_time": 96.16039680781614,
+        "cdf_over_nr_time": 106.75981262199089
+      },
+      "PP-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.0819390540373064e-05,
+        "max_relative_reference_change": 2.3934457008195676e-05,
+        "relative_normalization_error": 1.460025433885903e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.000645963546875,
+            0.0006451829375,
+            0.0006468828125
+          ],
+          "rejection": [
+            1.53772734375e-05,
+            1.52122421875e-05,
+            1.5613609375e-05
+          ],
+          "nr": [
+            8.38671875e-06,
+            8.2744140625e-06,
+            8.244140625e-06
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.000645963546875,
+          "rejection": 1.53772734375e-05,
+          "nr": 8.2744140625e-06
+        },
+        "cdf_over_rejection_time": 42.00767772651503,
+        "cdf_over_nr_time": 78.06758786734332
+      }
+    },
+    "environment": {
+      "platform": "macOS-26.5-arm64-arm-64bit",
+      "machine": "arm64",
+      "python": "3.12.14 (main, Sep  3 2026, 03:46:19) [Clang 21.1.8 ]",
+      "binary_sha256": "d8fc63d50fc5d38498e6f9914093cc9206ffa0e663e2cdf23cbc3a6fc7016d59",
+      "elapsed_seconds": 3.5510392500000307
+    }
+  },
+  "linux_emulated_quantiles_and_performance": {
+    "scope": "Numerical quantile controls and full per-draw construction cost; not a Monte Carlo acceptance result",
+    "small_tail_relative_control": 0.001,
+    "reference_change_guard": 0.0001,
+    "status": "within_control",
+    "cases": {
+      "ICS-1e+13": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 2.7681754646893255e-06,
+        "max_relative_reference_change": 7.91174955105265e-08,
+        "relative_normalization_error": 2.8393609685650745e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0110315618515625,
+            0.0110217356796875,
+            0.0110552200546875
+          ],
+          "rejection": [
+            0.000328600265625,
+            0.000289652015625,
+            0.0003365061875
+          ],
+          "nr": [
+            0.000280391921875,
+            0.000272148765625,
+            0.0002739036484375
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0110315618515625,
+          "rejection": 0.000328600265625,
+          "nr": 0.0002739036484375
+        },
+        "cdf_over_rejection_time": 33.57137228900407,
+        "cdf_over_nr_time": 40.2753373841229
+      },
+      "ICS-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.2551637858353285e-06,
+        "max_relative_reference_change": 2.5294447611208885e-08,
+        "relative_normalization_error": 1.0015432927446e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.022026542328125,
+            0.0224391565859375,
+            0.0223571276171875
+          ],
+          "rejection": [
+            0.0005370745390625,
+            0.0005262041015625,
+            0.000528717125
+          ],
+          "nr": [
+            0.0002097685546875,
+            0.000200515625,
+            0.000206856765625
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0223571276171875,
+          "rejection": 0.000528717125,
+          "nr": 0.000206856765625
+        },
+        "cdf_over_rejection_time": 42.28561277864321,
+        "cdf_over_nr_time": 108.08023392243108
+      },
+      "ICS-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 4.169695382877738e-06,
+        "max_relative_reference_change": 5.439295741499297e-07,
+        "relative_normalization_error": 6.395550755655677e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0301282545703125,
+            0.0299537438203125,
+            0.0298461888203125
+          ],
+          "rejection": [
+            0.0001774765625,
+            0.0001726031875,
+            0.0001731331328125
+          ],
+          "nr": [
+            0.0001447802734375,
+            0.000137537109375,
+            0.000171388671875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0299537438203125,
+          "rejection": 0.0001731331328125,
+          "nr": 0.0001447802734375
+        },
+        "cdf_over_rejection_time": 173.00988744165946,
+        "cdf_over_nr_time": 206.89105711105864
+      },
+      "ICS-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.095624573317686e-06,
+        "max_relative_reference_change": 2.1913671744760063e-08,
+        "relative_normalization_error": 2.191358206005134e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0250017832109375,
+            0.0245433756640625,
+            0.024461963875
+          ],
+          "rejection": [
+            0.000191805015625,
+            0.0001746572265625,
+            0.0001726477890625
+          ],
+          "nr": [
+            0.000122543625,
+            0.000109016921875,
+            0.0001089013671875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0245433756640625,
+          "rejection": 0.0001746572265625,
+          "nr": 0.000109016921875
+        },
+        "cdf_over_rejection_time": 140.52310429468432,
+        "cdf_over_nr_time": 225.1336328520099
+      },
+      "ICS-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.5380565209044064e-06,
+        "max_relative_reference_change": 2.562002959104544e-06,
+        "relative_normalization_error": 5.605516051332415e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.024009232109375,
+            0.02408864909375,
+            0.02419392709375
+          ],
+          "rejection": [
+            0.000186500328125,
+            0.0001833203125,
+            0.000175542640625
+          ],
+          "nr": [
+            0.0002416962890625,
+            0.00021500846875,
+            0.0002090699921875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.02408864909375,
+          "rejection": 0.0001833203125,
+          "nr": 0.00021500846875
+        },
+        "cdf_over_rejection_time": 131.401963946303,
+        "cdf_over_nr_time": 112.0358153043681
+      },
+      "ICS-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.828181576140816e-06,
+        "max_relative_reference_change": 2.463935044762066e-08,
+        "relative_normalization_error": 5.353495424742505e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.024096645515625,
+            0.0241314964296875,
+            0.024127093765625
+          ],
+          "rejection": [
+            0.0004973375703125,
+            0.000492264,
+            0.00049525553125
+          ],
+          "nr": [
+            0.000204633140625,
+            0.0001982233046875,
+            0.0001976142578125
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.024127093765625,
+          "rejection": 0.00049525553125,
+          "nr": 0.0001982233046875
+        },
+        "cdf_over_rejection_time": 48.71645492727649,
+        "cdf_over_nr_time": 121.71673660501968
+      },
+      "PP-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.5632073906536397e-05,
+        "max_relative_reference_change": 2.3958050633818586e-05,
+        "relative_normalization_error": 1.1008964850844905e-09,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0009258665390625,
+            0.00091954915625,
+            0.0009392672578125
+          ],
+          "rejection": [
+            0.0001069501953125,
+            0.0001016168671875,
+            0.000109750328125
+          ],
+          "nr": [
+            2.8952796875e-05,
+            2.16979140625e-05,
+            2.2179359375e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0009258665390625,
+          "rejection": 0.0001069501953125,
+          "nr": 2.2179359375e-05
+        },
+        "cdf_over_rejection_time": 8.656987828373676,
+        "cdf_over_nr_time": 41.74451224709911
+      },
+      "PP-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.3154240520786911e-05,
+        "max_relative_reference_change": 2.3935894431100182e-05,
+        "relative_normalization_error": 1.1374901021099504e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.001306852859375,
+            0.0012987887421875,
+            0.0012927939453125
+          ],
+          "rejection": [
+            4.534928125e-05,
+            4.187271875e-05,
+            4.214453125e-05
+          ],
+          "nr": [
+            1.813215625e-05,
+            1.116340625e-05,
+            1.1198890625e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0012987887421875,
+          "rejection": 4.214453125e-05,
+          "nr": 1.1198890625e-05
+        },
+        "cdf_over_rejection_time": 30.817491704513856,
+        "cdf_over_nr_time": 115.97476800854994
+      },
+      "PP-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.7445236886124153e-05,
+        "max_relative_reference_change": 2.677677784879141e-05,
+        "relative_normalization_error": 1.2358203349549512e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.00168710546875,
+            0.0016871344375,
+            0.001680744796875
+          ],
+          "rejection": [
+            1.7293625e-05,
+            1.4458328125e-05,
+            1.3845375e-05
+          ],
+          "nr": [
+            1.7196609375e-05,
+            1.0462890625e-05,
+            1.03600234375e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.00168710546875,
+          "rejection": 1.4458328125e-05,
+          "nr": 1.0462890625e-05
+        },
+        "cdf_over_rejection_time": 116.68745197674782,
+        "cdf_over_nr_time": 161.24659324248645
+      },
+      "PP-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.0514290166495528e-05,
+        "max_relative_reference_change": 2.3936392275489702e-05,
+        "relative_normalization_error": 9.205525230981948e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.002497806640625,
+            0.00249052734375,
+            0.0025236123046875
+          ],
+          "rejection": [
+            1.778125e-05,
+            1.3944984375e-05,
+            1.4058921875e-05
+          ],
+          "nr": [
+            1.78307265625e-05,
+            1.144075e-05,
+            1.1336265625e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.002497806640625,
+          "rejection": 1.4058921875e-05,
+          "nr": 1.144075e-05
+        },
+        "cdf_over_rejection_time": 177.66701193970468,
+        "cdf_over_nr_time": 218.3254280204532
+      },
+      "PP-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.0819390518202322e-05,
+        "max_relative_reference_change": 2.3934457009330256e-05,
+        "relative_normalization_error": 1.4600032294254106e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.002518336265625,
+            0.0025086513671875,
+            0.002556654296875
+          ],
+          "rejection": [
+            3.6530921875e-05,
+            3.3400390625e-05,
+            3.5236328125e-05
+          ],
+          "nr": [
+            2.29283828125e-05,
+            1.5744140625e-05,
+            1.58082734375e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.002518336265625,
+          "rejection": 3.5236328125e-05,
+          "nr": 1.58082734375e-05
+        },
+        "cdf_over_rejection_time": 71.46988348761154,
+        "cdf_over_nr_time": 159.30495354736615
+      }
+    },
+    "environment": {
+      "platform": "Linux-7.0.14-linuxkit-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+      "binary_sha256": "71b91e980044c132d97d56620d5c4b3107bcbbebabc5a15ae344916c7081ce77",
+      "elapsed_seconds": 81.24860820400045
+    }
+  },
+  "local_fixed_spectrum": {
+    "scope": "fixed-size local sanity check; full server precision remains separate",
+    "commit": "a960550f53ba7ce9c04f9b930183d294716418d0",
+    "baseline_commit": "1cc28f381e961f3d4947d08f0149ac72d63c3635",
+    "N_per_mode_case": 20000,
+    "maximum_seconds": 1200.0,
+    "status": "inconclusive",
+    "environment": {
+      "python": "3.12.14 (main, Sep  3 2026, 03:46:19) [Clang 21.1.8 ]",
+      "numpy": "2.5.3",
+      "scipy": "1.18.1",
+      "platform": "macOS-26.5-arm64-arm-64bit"
+    },
+    "main_events": 440000,
+    "binary_sha256": "9efbc0981cd993c5d63fa858ee2279c8129279242ec30c8efd41b3394c586a01",
+    "elapsed_seconds": 129.4591529999998
+  },
+  "spectrum_states": {
+    "old": {
+      "within_target": 690,
+      "inconclusive": 672
+    },
+    "current": {
+      "within_target": 688,
+      "inconclusive": 674
+    },
+    "old_minus_current": {
+      "within_target": 664,
+      "inconclusive": 698
+    }
+  },
+  "significant_spectrum_comparisons": {},
+  "all_raw_spectrum_histograms_and_hashes_reproduced": true,
+  "rejection_workspace_change_matches_all_11_raw_prefixes": true,
+  "local_spectrum_archive_sha256": "2f583449a640910fa7d3c7f9ae05e9f162c1ef4bc1b394c65b0d34cb75f4dad1",
+  "full_server_acceptance": "not run"
+}

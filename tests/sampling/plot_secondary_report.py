@@ -45,7 +45,7 @@ def main():
         ax.plot(x[positive],(y/width)[positive],ls='--',lw=1.1,ms=4,**style)
         ax.scatter(x[~positive],(upper/width)[~positive],marker='v',color=style['color'],s=32,facecolors='none')
     ax.axvspan(1e-8,1e-4,color='#f7e0d7',zorder=0)
-    ax.set(xscale='log',yscale='log',xlabel='Recoil electron fraction Eₑ/E₀',ylabel='Probability density per ln(x)',title='ICS, E₀ = 10²⁰ eV: missing recoil spectrum')
+    ax.set(xscale='log',yscale='log',xlabel='Recoil electron fraction Eₑ/E₀',ylabel='Probability density per ln(x)',title='ICS, E₀ = 10²⁰ eV: recoil spectrum')
     ax.grid(alpha=.18);ax.legend(fontsize=8);ax.text(.03,.05,'▽: simultaneous upper limit\nfor zero observed events',transform=ax.transAxes,fontsize=8)
     ax=axes[1,1];case='PP-1e+14'
     ids=['low.endpoint.0.000001','low.endpoint.0.000100','low.endpoint.0.010000'];x=np.array([.5-reference[case][key]['lo'] for key in ids])

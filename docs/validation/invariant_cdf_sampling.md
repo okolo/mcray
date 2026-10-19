@@ -92,11 +92,46 @@ using three interleaved 128-draw blocks for CDF, frozen rejection and NR.
 The rejection control retains its GSL workspace between calls, as production
 did. Its first 1000 raw events match the earlier control byte-for-byte in all
 11 cases after this workspace-lifetime adjustment.
-Native CDF costs range from approximately 0.23 to 0.68 ms per draw in this
-family, approximately 5--104 times the former rejection cost. This first
+Native CDF costs range from approximately 0.23 to 0.70 ms per draw in this
+family, approximately 5--107 times the former rejection cost. This first
 implementation prioritizes explicit probability-error control; no CDF cache
 across different particle energies, redshifts or process parameters is used.
 CPU emulation and native server timings must not be treated as interchangeable.
+The final emulated Linux measurements span approximately 0.93--30.0 ms per
+CDF draw; these are not a forecast for a physical amd64 server. All 209 Linux
+and 209 native quantile controls pass, with maximum observed relative
+small-tail residual 1.75e-5 and coarse/fine reference change 2.68e-5.
+
+Machine-readable measurements and environment records are in
+[invariant_cdf_20261020.json](data/invariant_cdf_20261020.json); all 418
+quantiles are in [the TSV table](data/invariant_cdf_quantiles_20261020.tsv).
+The `linux` rows refer to amd64 emulation on the arm64 workstation.
+
+## Bounded local spectrum check
+
+The completed fixed-size native check uses production commit
+`a960550f53ba7ce9c04f9b930183d294716418d0`, with 20000 interactions per sampler
+per case, 440000 total, and a 1200-second limit. It completes in 129.46 seconds.
+The subsequent commits adjust only control workspace lifetime and validation
+documentation; the production source hashes in the measurement record match.
+
+The independent 128/256/512-cell secondary-spectrum references, frozen bins,
+paired-product inference and global 1% significance level are retained.
+There are no significant category tests and no material deviations in either
+sampler or the direct comparison. Candidate states are 688 within target and
+674 inconclusive; the control has 690 within target and 672 inconclusive.
+These region counts include structurally zero and overlapping views.
+
+The ICS 1e20 recoil region `E_e/E_0<1e-4` contains 4211/20000 candidate events,
+with simultaneous relative bias interval [-5.684%, +8.687%], within its 10%
+target. Rarer regions remain inconclusive in this short ensemble. It does
+not establish 1% precision in every core bin or 10% in every tail.
+
+Every raw record passes the independent support/type/energy check, and every
+frozen count table is reconstructed from the raw events. All local manifest
+hashes match. The compressed local result archive has SHA-256
+`2f583449a640910fa7d3c7f9ae05e9f162c1ef4bc1b394c65b0d34cb75f4dad1`.
+No full electromagnetic cascade or nuclear acceptance ensemble was run.
 
 ## Server experiment
 
