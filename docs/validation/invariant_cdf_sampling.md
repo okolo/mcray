@@ -63,10 +63,10 @@ caused nonconvergence in the existing threshold regression. Its conditional
 model and sampler are outside this EM invariant correction. The separate
 linear-coordinate rejection sampler is also unchanged.
 
-Five new GoogleTest cases cover analytic power laws over 8.7--34.7
+Six new GoogleTest cases cover analytic power laws over 8.7--500
 decades and amplitudes from 1e-200 to 1e200, both probability tails to 1e-12,
 a separated 1e-7-probability mode, zero-density intervals, an extremely narrow
-supplied feature, empty densities and fatal invalid inputs. All 143 short
+supplied feature, empty densities and fatal invalid inputs. All 144 short
 CTest entries pass on macOS arm64 and Ubuntu 22.04 Linux amd64 under emulation.
 
 The portable Python suite includes tests for missing/nonfinite deterministic
@@ -89,8 +89,11 @@ replace the spectral Monte Carlo 1%/10%, global alpha=1% criteria.
 
 Timings include normalization construction and inversion on every draw,
 using three interleaved 128-draw blocks for CDF, frozen rejection and NR.
+The rejection control retains its GSL workspace between calls, as production
+did. Its first 1000 raw events match the earlier control byte-for-byte in all
+11 cases after this workspace-lifetime adjustment.
 Native CDF costs range from approximately 0.23 to 0.68 ms per draw in this
-family, approximately 5--101 times the former rejection cost. This first
+family, approximately 5--104 times the former rejection cost. This first
 implementation prioritizes explicit probability-error control; no CDF cache
 across different particle energies, redshifts or process parameters is used.
 CPU emulation and native server timings must not be treated as interchangeable.

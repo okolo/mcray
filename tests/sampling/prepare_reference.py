@@ -50,7 +50,7 @@ end = legacy.index('template<typename X>',start)
 body = legacy[start:end]
 body = body.replace('bool MathUtils::SampleLogDistribution(', 'bool LegacyRejectionSampleLogDistribution(')
 body = body.replace('return SampleLogDistribution(aDistrib,', 'return LegacyRejectionSampleLogDistribution(aDistrib,')
-body = body.replace('aOutputIntegral = Integration_qag (', 'MathUtils math;\n    aOutputIntegral = math.Integration_qag (')
+body = body.replace('aOutputIntegral = Integration_qag (', 'thread_local MathUtils math;\n    aOutputIntegral = math.Integration_qag (')
 def replace_once(old, new):
     global body
     assert body.count(old)==1, 'Frozen rejection control changed'
