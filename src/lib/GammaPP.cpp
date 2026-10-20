@@ -124,7 +124,15 @@ double GammaPP::Sigma::LogConcavityBound(double lo,double hi,double atLo,double)
     const long double negativeSecond=(1-a2)/(2*a)*(1/a2+16*b2)
         +2*(1-a2)*std::max(0.L,1-2*a2)*logarithm;
     const long double bracketMinimum=static_cast<long double>(atLo)*lo/SigmaCoef;
-    // For sigma=C*A/s, (log sigma)''=A_tt/A-(A_t/A)^2.
+    // With t=log(s), sigma=C*A/s has
+    // d^2 log(sigma)/dt^2 = A_tt/A - (A_t/A)^2: the -log(s) term is linear.
+    // A grows with s, so bracketMinimum=A(lo) is a lower bound on A.
+    // first bounds |A_t|; negativeSecond bounds max(0,-A_tt). Substituting
+    // these into the identity gives K with log(sigma) curvature >= -K.
+    // The interior critical point above is needed to bound 5*beta-4*beta^3
+    // over the whole interval rather than just at its endpoints. At threshold
+    // A=0, or when beta rounds to 1, return NaN above and use the simpler
+    // IntervalUpperBound instead of attempting to differentiate log(0).
     return SamplingUpperRound(negativeSecond/bracketMinimum+first*first/(bracketMinimum*bracketMinimum));
 }
 

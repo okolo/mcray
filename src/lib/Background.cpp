@@ -619,9 +619,20 @@ double ContinuousBackgroundIntegral::RateSKern::LogDensityUpperBound(double lo,d
     if(!(curvature>=0 && drop>=0))return product;
     const long double h=std::log(static_cast<long double>(hi)/lo),q=lo/(lo-fM2);
     const long double k=curvature+q*fM2/(lo-fM2);
-    // Smooth log-background curvature is nonnegative: powers composed with
-    // log(s-m^2) and positive redshift mixtures. Downward slope jumps are
-    // retained explicitly as the Green-function contribution h*drop/4.
+    // g(S)=S*(S-m^2)*sigma(S)*B(S), and h is this interval's log-S width.
+    // The product bound above applies even at zeros and thresholds. With
+    // positive endpoints we can also bound the height above the endpoint chord
+    // of log(g): a lower curvature bound -k gives at most k*h^2/8 excess.
+    // The extra q*m^2/(lo-m^2) in k covers log(S-m^2); log(S) is linear.
+    //
+    // For the supported nonincreasing background tables, smooth pieces and
+    // positive redshift mixtures contribute nonnegative log curvature. Table
+    // knots can nevertheless make the log slope jump down, creating a peak.
+    // Their summed downward jump is drop, converted to log-S slope by the
+    // upper factor q=lo/(lo-m^2). The chord excess from these jumps is at most
+    // h*q*drop/4. Ignoring the knots would invalidate the curvature estimate.
+    // If finite-beta subtraction prevents this background argument, drop is
+    // unavailable and the earlier return retains the positive-factor bound.
     const long double padding=k*h*h/8+h*q*drop/4;
     if(padding>1)return product;
     return std::min(product,SamplingUpperRound(std::max(atLo,atHi)*std::exp(padding)));

@@ -4,77 +4,65 @@
 #include <queue>
 
 namespace Utils {
-// Guard arithmetic and elementary-function roundoff separately from the 1%
-// envelope construction budget. Analytic inequalities, not a sampled maximum,
-// supply the enclosure. This is not an interval-arithmetic proof of libm.
+// Convert an analytically derived upper bound to the double precision used by
+// the rejection test. A rounded-down bound could accept too many proposals near
+// a density peak and thereby bias the distribution, even if its integral is
+// accurate. Inflate a positive bound by 1e-10, then advance one double towards
+// +infinity so that the final conversion cannot round the inflated value down.
+// Keep exact zero: an empty interval must not acquire artificial probability.
+//
+// The 1e-10 factor is an engineering allowance for evaluation roundoff, not a
+// proven error bound for all intermediate operations, cross-section evaluations
+// or implementations of exp/log. Long-double intermediates reduce roundoff but
+// do not provide directed rounding for those operations. Independent envelope
+// audits and the fatal g > M check in Accept remain necessary safeguards.
+//
+// This allowance has a different purpose from the constructor's 1% threshold:
+// that threshold limits extra rejection work, not error in the output spectrum.
 inline double SamplingUpperRound(long double value) {
     if(value<0 || !std::isfinite(value))throw new Exception("Invalid analytic sampling bound",false);
     if(value==0)return 0;
     return std::nextafter(static_cast<double>(value*(1+1e-10L)),std::numeric_limits<double>::infinity());
 }
 
+// Rejection sampling with a constant envelope for the density in log(x).
+// If density(x)=f(x), then t=log(x) has density g(t)=x*f(x), including the
+// Jacobian x. For invariant sampling x is S; the density need not be normalized.
+// Uniform t proposals are accepted with probability g(t)/M. Any fixed M above
+// g everywhere gives the intended distribution; excess M only costs attempts.
+//
+// Construction partitions the support and asks the density for an analytic
+// upper bound on EACH WHOLE interval. Evaluated points give a lower estimate of
+// max(g), used to decide when refinement is sufficient; they never establish M.
+// The partition is an envelope-construction aid, not a binned approximation to
+// the sampled spectrum. Draw still evaluates the original density at proposals.
+// See docs/validation/bounded_rejection_sampling.md for the bound derivations.
 class BoundedLogEnvelope {
 public:
-    struct Point {double t,x,y;};
+    struct Point {double t,x,y;}; // log(x), physical x, and x*f(x), respectively.
     struct Cell {
         Point lo,hi;double upper;
         bool operator<(const Cell& other) const {return upper<other.upper;}
     };
-    BoundedLogEnvelope(const Function& density,double xmin,double xmax,double observedMaximum=0):
-        density(density),xmin(xmin),xmax(xmax),logmin(std::log(xmin)),logmax(std::log(xmax)),maximum(observedMaximum) {
-        if(!density.HasIntervalUpperBound())return;
-        std::vector<Cell> storage;storage.reserve(32);
-        cells=std::priority_queue<Cell>(std::less<Cell>(),std::move(storage));
-        if(!(xmin>0 && xmax>xmin && std::isfinite(logmin) && std::isfinite(logmax)))
-            throw new Exception("Invalid bounded sampler support",false);
-        if(!(logmax>logmin))return;
-        cells.push(cell(point(logmin),point(logmax)));
-        for(int iteration=0;iteration<4096;++iteration) {
-            if(cells.top().upper<=1.01*maximum){supported=true;return;}
-            const auto parent=cells.top();cells.pop();
-            const double t=(parent.lo.t+parent.hi.t)/2;
-            if(t==parent.lo.t || t==parent.hi.t)return;
-            const auto middle=point(t);
-            cells.push(cell(parent.lo,middle));cells.push(cell(middle,parent.hi));
-        }
-        // No random numbers have been consumed. The caller may select CDF
-        // before starting an event if an enclosure could not be tightened.
-    }
+    BoundedLogEnvelope(const Function& density,double xmin,double xmax,double observedMaximum=0);
     bool Supported() const {return supported;}
     double Upper() const {return cells.empty()?0:cells.top().upper;}
     double ObservedMaximum() const {return maximum;}
     size_t Evaluations() const {return evaluations;}
     size_t Cells() const {return cells.size();}
     const std::priority_queue<Cell>& Partition() const {return cells;}
-    Point Proposal(double uniform) const {
-        if(!(uniform>=0 && uniform<=1))throw new Exception("Invalid rejection proposal variate",false);
-        return point(logmin+(logmax-logmin)*uniform);
-    }
-    bool Accept(const Point& p,double uniform) const {
-        if(!(uniform>=0 && uniform<=1))throw new Exception("Invalid rejection acceptance variate",false);
-        if(!supported || p.y>Upper())throw new Exception("Analytic rejection envelope violated",false);
-        return p.y>0 && uniform*Upper()<=p.y;
-    }
-    double Draw(mcray::Randomizer& rng,size_t* attempts=nullptr) const {
-        for(int i=0;i<1000000;++i) {
-            const auto p=Proposal(rng.Rand());const double u=rng.Rand();
-            if(Accept(p,u)){if(attempts)*attempts=i+1;return p.x;}
-        }
-        throw new Exception("Bounded rejection attempt limit exceeded",false);
-    }
+    Point Proposal(double uniform) const;
+    // Keep M fixed once proposals start. Enlarging an underestimated M after
+    // encountering g > M cannot undo the bias of earlier accepted proposals.
+    // A violation must stop the calculation, rather than discard one history.
+    bool Accept(const Point& p,double uniform) const;
+    double Draw(mcray::Randomizer& rng,size_t* attempts=nullptr) const;
 private:
-    Point point(double t) const {
-        const double x=t==logmin?xmin:t==logmax?xmax:std::clamp(std::exp(t),xmin,xmax);
-        const double y=x*density(x);
-        if(!std::isfinite(y)||y<0)throw new Exception("Invalid bounded sampling density",false);
-        ++evaluations;maximum=std::max(maximum,y);return {t,x,y};
-    }
-    Cell cell(Point lo,Point hi) const {
-        const double upper=density.LogDensityUpperBound(lo.x,hi.x,lo.y,hi.y,1.01*maximum);
-        if(!std::isfinite(upper)||upper<0||upper<std::max(lo.y,hi.y))
-            throw new Exception("Invalid analytic log-density enclosure",false);
-        return {lo,hi,upper};
-    }
+    Point point(double t) const;
+    // Endpoint y values are g=x*f(x), not f(x). The last argument is a hint:
+    // a bound already below that value needs no further expensive tightening.
+    // The density must still return a valid whole-interval bound in that case.
+    Cell cell(Point lo,Point hi) const;
     const Function& density;
     double xmin,xmax,logmin,logmax;
     mutable double maximum=0;

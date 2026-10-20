@@ -76,6 +76,8 @@ Sophia.cpp
 Sophia.h
 Background.cpp
 Background.h
+BoundedLogEnvelope.cpp
+BoundedLogEnvelope.h
 Cosmology.cpp
 Cosmology.h
 Debug.cpp

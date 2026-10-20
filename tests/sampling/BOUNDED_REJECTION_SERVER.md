@@ -6,6 +6,34 @@ requirements. NR is fetched from blackstonep/Numerical-Recipes at the original
 pinned revision, and all four headers are SHA-256 checked. An optional
 `--nr /path/to/nr` uses matching local headers instead.
 
+From the published branch on Ubuntu 22.04 / Python 3.10:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y git cmake make gcc g++ gfortran libgsl-dev \
+  libboost-filesystem-dev libboost-system-dev python3.10-venv ca-certificates
+
+git clone --branch codex/bounded-rejection-sampling \
+  https://github.com/okolo/mcray.git mcray-bounded-rejection
+cd mcray-bounded-rejection
+python3.10 -m venv .venv
+.venv/bin/python -m pip install -r tests/sampling/secondary-requirements-py310.txt
+
+# Freeze the revision of these checked-out tools for the server experiment.
+revision=$(git rev-parse HEAD)
+.venv/bin/python tests/sampling/run_secondary_server.py \
+  --server --repo https://github.com/okolo/mcray.git --ref "$revision" \
+  --baseline both --hours 24 --jobs 4 --raw-gib 20 \
+  --data-dir /home3/ok/mcray-test-data
+```
+
+Use a fresh checkout directory, or update an existing clean checkout to the
+published branch before freezing `revision`. No recursive submodule checkout
+is needed for this test. NR is fetched and checked by the runner. Installing
+system dependencies and the Python environment happens before the experiment's
+24-hour clock. For an unattended run, execute the final command inside tmux
+(or an equivalent persistent server session).
+
 From the unpacked package:
 
 ```bash

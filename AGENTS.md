@@ -221,6 +221,17 @@ Toolchain: GCC/G++/gfortran 13.3.0, Boost 1.83, GSL 2.7.1, Ubuntu 24.04.
 All four tests also passed natively on macOS arm64 with Clang 22.1.5.
 A native run on physical Linux amd64 hardware has not yet been performed.
 
+## Header readability
+
+Keep only short, easy-to-read inline function definitions in headers. Put
+longer implementations, including substantial constructors and loops, in
+`.cpp` files so that headers clearly present the interface. A loop does not
+prevent compiler inlining, and the `inline` keyword does not guarantee it;
+choose the source layout for readability rather than presumed optimization.
+Template definitions that must be visible at instantiation belong in headers,
+but keep them focused and readable as well. Write explanatory comments that
+state assumptions, the meaning of constants, and the consequences of failure.
+
 ## C++ and test framework policy
 
 The user selected GoogleTest and migration to C++17 on 2026-10-01.

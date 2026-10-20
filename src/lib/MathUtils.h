@@ -49,17 +49,30 @@ public:
 	// localized features. Numerical samplers split at these points; no PDF or
 	// interpolation semantics are changed.
 	virtual std::vector<X> IntegrationBreakpoints() const {return {};}
-	// Optional analytic enclosure, not a maximum inferred from sampled values.
+	// Optional contract for bounded rejection. Returning true promises a finite,
+	// nonnegative IntervalUpperBound for every requested physical interval.
+	// Sampling a few values and returning their maximum does not satisfy it.
+	// Cross sections without this contract need no overrides: background S
+	// sampling uses numerical CDF inversion for them (potentially much slower).
 	virtual bool HasIntervalUpperBound() const {return false;}
-	// Nonnegative K with (log f)'' >= -K in log(argument), away from zeros.
+	// Optional refinement: K >= 0 such that d^2 log(f)/d(log x)^2 >= -K
+	// throughout [lo,hi] on smooth pieces. atLo/atHi are f(lo)/f(hi).
+	// NaN means unavailable, e.g. at a threshold where log(f) is undefined;
+	// the sampler can still use IntervalUpperBound without this refinement.
 	virtual X LogConcavityBound(X lo,X hi,X atLo,X atHi) const {return std::numeric_limits<X>::quiet_NaN();}
 	// Sum of downward jumps in d(log f)/d(log x) for a nonincreasing,
 	// piecewise power-law function. Smooth log-curvature is nonnegative.
 	virtual X LogSlopeDrop(X lo,X hi) const {return std::numeric_limits<X>::quiet_NaN();}
+	// Bound f(x) on the entire interval; atLo/atHi are f(lo)/f(hi).
 	virtual X IntervalUpperBound(X lo,X hi,X atLo,X atHi) const {return std::numeric_limits<X>::quiet_NaN();}
+	// Bound x*f(x) when proposals are uniform in log(x), with 0 < lo <= hi.
+	// Here atLo/atHi already include the Jacobian x. The default uses x<=hi;
+	// kernels may override it with tighter bounds on their positive factors.
 	virtual X LogDensityUpperBound(X lo,X hi,X atLo,X atHi) const {
 		return hi*IntervalUpperBound(lo,hi,atLo/lo,atHi/hi);
 	}
+	// stopAt is only a performance hint: return early if a valid bound is
+	// already small enough. It never relaxes the whole-interval bound contract.
 	virtual X LogDensityUpperBound(X lo,X hi,X atLo,X atHi,X stopAt) const {
 		return LogDensityUpperBound(lo,hi,atLo,atHi);
 	}

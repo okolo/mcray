@@ -204,3 +204,19 @@ replay evidence and package identity are in
 [bounded_rejection_20261020.json](data/bounded_rejection_20261020.json).
 The package freezes 837d010; subsequent result-documentation commits do not
 change its computational source or the archived experiment contract.
+
+## Header readability follow-up, 2026-10-20
+
+The constructor and nontrivial BoundedLogEnvelope methods now live in
+src/lib/BoundedLogEnvelope.cpp; the header retains declarations and short inline
+helpers. The analytic formulas, refinement limits, acceptance decisions and
+random-number consumption are unchanged. Comments explain the Jacobian,
+efficiency target, roundoff allowance and optional cross-section contracts.
+
+The refactor passes all 155 CTest cases on native macOS arm64 and emulated
+Ubuntu 22.04 Linux amd64, plus all 25 Python tests on native Python 3.12 and
+Ubuntu Python 3.10. Replaying 20000 bounded interactions in each of the eleven
+ICS/GammaPP cases reproduces all 220000 saved native raw events byte-for-byte.
+This replay reuses the release seeds and supplies no additional independent
+statistical evidence. The full server comparison remains pending; the server
+pilot measures performance of the newly compiled source on the actual CPU.

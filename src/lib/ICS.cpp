@@ -97,9 +97,15 @@ double ICS::Sigma::f(double s) const
 double ICS::Sigma::IntervalUpperBound(double lo,double hi,double atLo,double atHi) const {
     // w=(s-m^2)/m^2, c=rMin/(1-rMin), y=1/(1+w*u).
     // sigma/C=int_{c/w}^1 [y^3+y-4*u*(1-u)*y^2] du.
-    // At fixed u this positive integrand decreases with w, is <=2,
-    // and its logarithmic w derivative lies in [-3,0]. Thus both bounds
-    // below hold on the WHOLE interval, including the hard-ICS threshold.
+    // Here s is the dimensional invariant, rMin the minimum photon energy
+    // fraction, and C=SigmaCoef/m_e^2. atLo/atHi are sigma(lo)/sigma(hi).
+    // At fixed integration coordinate u this positive integrand decreases
+    // with w, is <=2, and its logarithmic w derivative lies in [-3,0].
+    // Increasing w also opens the lower integration limit. Its newly added
+    // interval contributes at most 2*C*c*(b-a)/(a*b), giving fromLow.
+    // The derivative bound gives fromHigh=sigma(b)*(b/a)^3. Both enclose the
+    // WHOLE interval, including the hard-ICS threshold; taking their minimum
+    // improves rejection efficiency without approximating the cross section.
     // Match the rounded s/m^2 argument used by PartialSigma at the endpoints.
     const long double a=std::max(0.L,static_cast<long double>(lo/fM2)-1);
     const long double b=static_cast<long double>(hi/fM2)-1;
@@ -124,7 +130,14 @@ double ICS::Sigma::LogConcavityBound(double lo,double hi,double atLo,double atHi
     // F=y*(1-y)^2+(2-A)*y^2 is a positive sum, A=4u(1-u).
     // At fixed u its log-w curvature is >=-3/4. Integration preserves
     // this lower bound (the additional term is a nonnegative variance).
-    // Moving lower-limit terms are bounded explicitly; no finite differences.
+    // Unlike fixed-limit integration, sigma also has a moving boundary c/w.
+    // Here j is a positive lower bound on sigma/C throughout the interval,
+    // u=c/a bounds that boundary coordinate, and q=(1+a)/a bounds the change
+    // of variable d(log w)/d(log s). Terms with 1/j and 1/j^2 below bound the
+    // moving-boundary contributions; q^2 and q/a convert to log-s curvature.
+    // A zero/undefined lower bound cannot control log(sigma): return NaN above
+    // so the caller uses the positive-factor bound instead. No numerical
+    // differentiation or fit to a few cross-section values is used.
     return SamplingUpperRound(q*q*(.75L+4*u*u/(j*j)+(14*u+4*u*u)/j)+q/a*2*u/j);
 }
 
