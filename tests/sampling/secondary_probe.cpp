@@ -14,12 +14,14 @@ using namespace Interactions;
 namespace secondary {Audit audit;}
 namespace {
 using secondary::Real;
-bool pairProcess=false,oracleMode=false,oldMode=false,rejectionMode=false,diagnosticMode=false;
+bool pairProcess=false,oracleMode=false,oldMode=false,rejectionMode=false,cdfMode=false,diagnosticMode=false;
 int cells=512,order=16;
 double primaryEnergy=0,threshold=0,lastS=0,sMin=0,sMax=0;
 std::string destination;
 std::vector<secondary::Region> observables;
 MathUtils currentMath;
+MathUtils::BoundedSamplingStats boundedStats;
+unsigned long long boundedFallbacks=0,boundedProposals=0;size_t boundedCells=0;double boundedGap=0;
 void oracle(const Function& f,double lo,double hi) {
     secondary::Quadrature q(order);
     std::vector<std::array<Real,3>> sums(observables.size());
@@ -61,7 +63,12 @@ bool HistoricalSampleLogDistribution(const Function&,double,double&,double&,doub
 bool SamplingProbe(const Function& f,Randomizer& rng,double& x,double& integral,double lo,double hi,double tol) {
     sMin=lo;sMax=hi;
     if(oracleMode || diagnosticMode){if(diagnosticMode)secondary::invariantDiagnostic(f,lo,hi,tol,destination);else oracle(f,lo,hi);x=std::sqrt(lo*hi);integral=1.;return true;}
-    const bool ok=oldMode?HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,lo,hi,tol):rejectionMode?LegacyRejectionSampleLogDistribution(f,rng,x,integral,lo,hi,tol):currentMath.SampleLogDistributionCDF(f,rng,x,integral,lo,hi,tol);
+    const bool ok=oldMode?HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,lo,hi,tol):rejectionMode?LegacyRejectionSampleLogDistribution(f,rng,x,integral,lo,hi,tol):cdfMode?currentMath.SampleLogDistributionCDF(f,rng,x,integral,lo,hi,tol):currentMath.SampleLogDistributionBounded(f,rng,x,integral,lo,hi,tol,&boundedStats);
+    if(!oldMode && !rejectionMode && !cdfMode) {
+        boundedFallbacks+=boundedStats.fallback;boundedProposals+=boundedStats.proposals;
+        boundedCells=std::max(boundedCells,boundedStats.cells);boundedGap=std::max(boundedGap,boundedStats.envelopeGap);
+        if(boundedStats.fallback)throw std::runtime_error("Unexpected CDF fallback for physical EM kernel");
+    }
     lastS=x;
     if(!ok||!std::isfinite(integral)||integral<=0||!std::isfinite(x)||x<lo||x>hi)throw std::runtime_error("Invalid sampled invariant");
     return true;
@@ -92,7 +99,7 @@ int main(int argc,char** argv) {
             if(!(pairProcess?pp.SampleS(primary,s,rng):ics.SampleS(primary,s,rng)))throw std::runtime_error("Cannot construct reference kernel");
             return 0;
         }
-        const std::string mode=argv[7];if(mode!="old"&&mode!="current"&&mode!="rejection")throw std::runtime_error("Invalid sampler");oldMode=mode=="old";rejectionMode=mode=="rejection";
+        const std::string mode=argv[7];if(mode!="old"&&mode!="current"&&mode!="rejection"&&mode!="cdf")throw std::runtime_error("Invalid sampler");oldMode=mode=="old";rejectionMode=mode=="rejection";cdfMode=mode=="cdf";
         const auto count=std::stoull(argv[8]);const auto seed=std::stoul(argv[9]);if(!count||!seed||seed>0xffffffffUL)throw std::runtime_error("Invalid count/seed");
         const unsigned short endian=1;if(*reinterpret_cast<const unsigned char*>(&endian)!=1||sizeof(double)!=8||!std::numeric_limits<double>::is_iec559)throw std::runtime_error("Raw format requires little-endian IEEE754 binary64");
         Randomizer rng(seed);std::ofstream raw(argv[10],std::ios::binary);raw.write("MCRAYEM1",8);
@@ -134,7 +141,7 @@ int main(int argc,char** argv) {
             }
         }
         raw.close();if(!raw)throw std::runtime_error("Cannot finalize raw events");
-        std::ofstream out(argv[11]);out<<std::setprecision(17)<<"# N="<<count<<" seed="<<seed<<" sampler="<<mode<<" process="<<process<<" E_eV="<<primaryEnergy<<" Emin_eV="<<emin<<" tolerance="<<tol<<" proposals="<<aggregate.proposals<<" envelope_exceedances="<<aggregate.envelope<<" envelope_events="<<envelopeEvents<<" max_envelope_ratio="<<aggregate.largestEnvelopeRatio<<" range_narrowings="<<aggregate.narrowing<<" narrowing_events="<<narrowingEvents<<" argmax_returns="<<aggregate.argmax<<" argmax_events="<<argmaxEvents<<" max_energy_residual="<<maxEnergyResidual<<" max_support_residual="<<maxSupportResidual<<"\n# id n0 n1 n2\n";
+        std::ofstream out(argv[11]);out<<std::setprecision(17)<<"# N="<<count<<" seed="<<seed<<" sampler="<<mode<<" process="<<process<<" E_eV="<<primaryEnergy<<" Emin_eV="<<emin<<" tolerance="<<tol<<" proposals="<<aggregate.proposals<<" envelope_exceedances="<<aggregate.envelope<<" envelope_events="<<envelopeEvents<<" max_envelope_ratio="<<aggregate.largestEnvelopeRatio<<" range_narrowings="<<aggregate.narrowing<<" narrowing_events="<<narrowingEvents<<" argmax_returns="<<aggregate.argmax<<" argmax_events="<<argmaxEvents<<" bounded_fallbacks="<<boundedFallbacks<<" bounded_proposals="<<boundedProposals<<" bounded_cells_max="<<boundedCells<<" bounded_gap_max="<<boundedGap<<" max_energy_residual="<<maxEnergyResidual<<" max_support_residual="<<maxSupportResidual<<"\n# id n0 n1 n2\n";
         for(size_t j=0;j<counts.size();++j)out<<observables[j].id<<'\t'<<counts[j][0]<<'\t'<<counts[j][1]<<'\t'<<counts[j][2]<<'\n';
         if(!out)throw std::runtime_error("Cannot finalize spectrum statistics");
         return 0;

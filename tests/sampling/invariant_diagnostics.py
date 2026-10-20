@@ -29,11 +29,23 @@ def summarize(paths):
         errors = [abs(float(row['relative_probability_error'])) for row in rows]
         changes = [abs(float(row['reference_change_relative'])) for row in rows]
         norm_error = abs(float(header['total']) / float(header['reference']) - 1)
-        timings = {mode: [] for mode in ('cdf', 'rejection', 'nr')}
+        enclosure = next((dict(item.split('=') for item in line[len('# envelope '):].split())
+                          for line in lines if line.startswith('# envelope ')), None)
+        envelope_ok = True
+        if enclosure is not None:
+            enclosure = {key: float(value) for key,value in enclosure.items()}
+            if not all(map(math.isfinite,enclosure.values())):
+                raise ValueError('Nonfinite envelope diagnostic')
+            envelope_ok = (0 < enclosure['lower'] <= enclosure['upper'] <= 1.010000001*enclosure['lower']
+                           and 0 <= enclosure['max_ratio'] <= 1 and 0 <= enclosure.get('max_local_ratio',0) <= 1
+                           and enclosure['checks'] > 0 and '# bounded_tail_proposals 19' in lines)
+        timings = {mode: [] for mode in (('cdf', 'rejection', 'nr', 'bounded') if enclosure is not None else ('cdf', 'rejection', 'nr'))}
         repeats = {mode: set() for mode in timings}
         for line in lines:
             if line.startswith('# benchmark '):
                 _, _, mode, repeat, count, seconds, checksum = line.split()
+                if mode not in timings:
+                    raise ValueError('Changed timing family')
                 if int(count) != 128 or int(repeat) not in (0, 1, 2):
                     raise ValueError('Changed timing protocol')
                 timings[mode].append(float(seconds) / int(count))
@@ -45,7 +57,7 @@ def summarize(paths):
         # Numerical diagnostics, separate from the unchanged 1%/10%, alpha=1%
         # Monte Carlo acceptance family. Coarse/fine differences are empirical.
         reference_ok = max(changes) <= 1e-4
-        accuracy_ok = max(errors) <= 1e-3 and norm_error <= 1e-4
+        accuracy_ok = max(errors) <= 1e-3 and norm_error <= 1e-4 and envelope_ok
         cases[source.stem] = {
             'status': 'within_control' if reference_ok and accuracy_ok else 'inconclusive_reference' if not reference_ok else 'deviation',
             'quantiles': len(rows), 'max_relative_small_tail_probability_error': max(errors),
@@ -54,6 +66,10 @@ def summarize(paths):
             'cdf_over_rejection_time': medians['cdf'] / medians['rejection'],
             'cdf_over_nr_time': medians['cdf'] / medians['nr'],
         }
+        if enclosure is not None:
+            cases[source.stem].update(envelope=enclosure,
+                bounded_over_rejection_time=medians['bounded']/medians['rejection'],
+                cdf_over_bounded_time=medians['cdf']/medians['bounded'])
     if not cases:
         raise ValueError('No invariant diagnostics')
     return {

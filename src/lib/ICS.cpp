@@ -26,6 +26,7 @@
  */
 #include "ICS.h"
 #include "EMSecondarySampling.h"
+#include "BoundedLogEnvelope.h"
 #include <math.h>
 #include "MathUtils.h"
 #include "Output.h"
@@ -91,6 +92,40 @@ ICS::Sigma::Sigma(double rMin) : f_rMin(rMin)
 double ICS::Sigma::f(double s) const
 {
 	return PartialSigma(f_rMin, s/fM2);
+}
+
+double ICS::Sigma::IntervalUpperBound(double lo,double hi,double atLo,double atHi) const {
+    // w=(s-m^2)/m^2, c=rMin/(1-rMin), y=1/(1+w*u).
+    // sigma/C=int_{c/w}^1 [y^3+y-4*u*(1-u)*y^2] du.
+    // At fixed u this positive integrand decreases with w, is <=2,
+    // and its logarithmic w derivative lies in [-3,0]. Thus both bounds
+    // below hold on the WHOLE interval, including the hard-ICS threshold.
+    // Match the rounded s/m^2 argument used by PartialSigma at the endpoints.
+    const long double a=std::max(0.L,static_cast<long double>(lo/fM2)-1);
+    const long double b=static_cast<long double>(hi/fM2)-1;
+    if(!(b>0) || f_rMin>=1)return 0;
+    const long double mass=Particle::Mass(Electron),coef=SigmaCoef/(mass*mass);
+    if(a==0)return Utils::SamplingUpperRound(4*coef/3);
+    const long double c=static_cast<long double>(f_rMin)/(1-static_cast<long double>(f_rMin));
+    const long double fromLow=atLo+2*coef*c*(b-a)/(a*b);
+    const long double ratio=b/a,fromHigh=atHi*ratio*ratio*ratio;
+    return Utils::SamplingUpperRound(std::min(fromLow,fromHigh));
+}
+
+double ICS::Sigma::LogConcavityBound(double lo,double hi,double atLo,double atHi) const {
+    const long double a=static_cast<long double>(lo/fM2)-1,b=static_cast<long double>(hi/fM2)-1;
+    if(!(a>0 && atLo>0 && atHi>0))return NAN;
+    const long double mass=Particle::Mass(Electron),coef=SigmaCoef/(mass*mass);
+    const long double c=static_cast<long double>(f_rMin)/(1-static_cast<long double>(f_rMin));
+    const long double ratio=a/b;
+    const long double minimum=std::max(atLo*ratio*ratio*ratio,atHi-2*coef*c*(b-a)/(a*b));
+    if(!(minimum>0))return NAN;
+    const long double u=c/a,j=minimum/coef,q=(1+a)/a;
+    // F=y*(1-y)^2+(2-A)*y^2 is a positive sum, A=4u(1-u).
+    // At fixed u its log-w curvature is >=-3/4. Integration preserves
+    // this lower bound (the additional term is a nonnegative variance).
+    // Moving lower-limit terms are bounded explicitly; no finite differences.
+    return SamplingUpperRound(q*q*(.75L+4*u*u/(j*j)+(14*u+4*u*u)/j)+q/a*2*u/j);
 }
 
 double ICS::Rate(const Particle& aParticle) const

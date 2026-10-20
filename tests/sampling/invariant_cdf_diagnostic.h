@@ -1,6 +1,7 @@
 #ifndef MCRAY_INVARIANT_CDF_DIAGNOSTIC_H
 #define MCRAY_INVARIANT_CDF_DIAGNOSTIC_H
 #include "NumericalLogCDF.h"
+#include "BoundedLogEnvelope.h"
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -39,33 +40,70 @@ struct InvariantReference {
 inline void invariantDiagnostic(const Utils::Function& f,double lo,double hi,double tol,const std::string& output) {
     InvariantReference coarse(f,lo,hi,8192,16),fine(f,lo,hi,16384,24);
     Utils::NumericalLogCDF cdf(f,lo,hi,tol);
+    Utils::BoundedLogEnvelope envelope(f,lo,hi);
+    if(!envelope.Supported())throw std::runtime_error("Physical EM kernel did not obtain an analytic envelope");
+    double maxRatio=0.;size_t checks=0;
+    auto checkPoint=[&](double x) {
+        const double ratio=x*f(x)/envelope.Upper();
+        if(!std::isfinite(ratio)||ratio<0||ratio>1)throw std::runtime_error("Envelope violation in independent audit");
+        maxRatio=std::max(maxRatio,ratio);++checks;
+    };
+    // Independent dense nodes, including tiny-density tails; never use this
+    // scan to enlarge or repair the production envelope.
+    for(int i=0;i<16384;++i)for(size_t j=0;j<fine.quadrature.table->n;++j) {
+        double t,w;gsl_integration_glfixed_point(fine.lo+i*fine.step,fine.lo+(i+1)*fine.step,j,&t,&w,fine.quadrature.table);
+        checkPoint(std::clamp(std::exp(t),lo,hi));
+    }
+    for(double x:f.IntegrationBreakpoints())if(x>=lo&&x<=hi) {
+        checkPoint(x);checkPoint(std::max(lo,std::nextafter(x,0.)));checkPoint(std::min(hi,std::nextafter(x,hi)));
+    }
+    checkPoint(lo);checkPoint(hi);
+    double maxLocalRatio=0.;auto partition=envelope.Partition();
+    while(!partition.empty()) {
+        const auto cell=partition.top();partition.pop();
+        for(int i=0;i<=64;++i) {
+            const double x=std::clamp(std::exp(cell.lo.t+(cell.hi.t-cell.lo.t)*i/64),lo,hi),g=x*f(x);
+            if(g>cell.upper)throw std::runtime_error("Local analytic enclosure violated");
+            if(cell.upper>0)maxLocalRatio=std::max(maxLocalRatio,g/cell.upper);
+        }
+    }
+
     std::ofstream out(output);
     out<<std::setprecision(21)<<"# total="<<cdf.IntegralValue()<<" total_error_estimate="<<cdf.IntegralError()
        <<" reference="<<fine.prefix.back()<<" reference_coarse="<<coarse.prefix.back()<<"\n";
+    out<<"# envelope upper="<<envelope.Upper()<<" lower="<<envelope.ObservedMaximum()<<" cells="<<envelope.Cells()
+       <<" evaluations="<<envelope.Evaluations()<<" checks="<<checks<<" max_ratio="<<maxRatio<<" max_local_ratio="<<maxLocalRatio<<"\n";
     out<<"u\tx\tsmall_tail_reference\trelative_probability_error\treference_change_relative\tevaluations\titerations\n";
     for (double u:{1e-12,1e-10,1e-8,1e-6,1e-4,.001,.01,.1,.25,.5,.75,.9,.99,.999,1-1e-4,1-1e-6,1-1e-8,1-1e-10,1-1e-12}) {
         const auto count=cdf.Evaluations(),iterations=cdf.Iterations();
         const double x=cdf.Quantile(u),p=u>.5?1-u:u;
+        checkPoint(x);
+        const double proposal=std::clamp((std::log(x)-std::log(lo))/(std::log(hi)-std::log(lo)),0.,1.);
+        const auto candidate=envelope.Proposal(proposal);
+        if(!(candidate.y>0) || !envelope.Accept(candidate,candidate.y/envelope.Upper()/2))
+            throw std::runtime_error("A deterministic tail proposal was not retained");
         const long double actual=fine.probability(x,u>.5),check=coarse.probability(x,u>.5);
         out<<u<<'\t'<<x<<'\t'<<actual<<'\t'<<actual/p-1<<'\t'<<(actual-check)/p<<'\t'<<cdf.Evaluations()-count<<'\t'<<cdf.Iterations()-iterations<<'\n';
     }
+    out<<"# bounded_tail_proposals 19\n";
     // Full construction and inversion for every draw: no cached CDF shortcut.
     // Preserve repeated block timings for a fair comparison with the old code.
     out<<"# benchmark: sampler repeat N seconds checksum\n";
-    for (int repeat=0;repeat<3;++repeat) for (int offset=0;offset<3;++offset) {
-        const int mode=(repeat+offset)%3;
+    for (int repeat=0;repeat<3;++repeat) for (int offset=0;offset<4;++offset) {
+        const int mode=(repeat+offset)%4;
         mcray::Randomizer rng(20261020+repeat);Utils::MathUtils math;
         double sum=0,integral=0,x=0;
         const auto start=std::chrono::steady_clock::now();
         for (int i=0;i<128;++i) {
             const bool ok=mode==0?math.SampleLogDistributionCDF(f,rng,x,integral,lo,hi,tol):
                 mode==1?LegacyRejectionSampleLogDistribution(f,rng,x,integral,lo,hi,tol):
-                HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,lo,hi,tol);
+                mode==2?HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,lo,hi,tol):
+                math.SampleLogDistributionBounded(f,rng,x,integral,lo,hi,tol);
             if (!ok) throw std::runtime_error("Benchmark sampling failed");
             sum+=std::log(x);
         }
         const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
-        out<<"# benchmark "<<(mode==0?"cdf":mode==1?"rejection":"nr")<<' '<<repeat<<" 128 "<<seconds<<' '<<sum<<'\n';
+        out<<"# benchmark "<<(mode==0?"cdf":mode==1?"rejection":mode==2?"nr":"bounded")<<' '<<repeat<<" 128 "<<seconds<<' '<<sum<<'\n';
     }
     if (!out) throw std::runtime_error("Cannot write invariant CDF diagnostics");
 }

@@ -1,3 +1,4 @@
+#include "BoundedLogEnvelope.h"
 /*
  * MathUtils.cpp
  *
@@ -1091,6 +1092,37 @@ bool MathUtils::SampleLogDistribution(const Function& aDistrib, mcray::Randomize
     new_xmax = exp(new_xmax);
     double out_int;
     return SampleLogDistribution(aDistrib, aRandomizer,  aOutputX, out_int, new_xmin, new_xmax, aRelError, max_recurse-1);
+}
+
+bool MathUtils::SampleLogDistributionBounded(const Function& density,mcray::Randomizer& rng,
+        double& x,double& integral,double xmin,double xmax,double tolerance,BoundedSamplingStats* stats) {
+    if(stats)*stats={};
+    if(!density.HasIntervalUpperBound()) {
+        if(stats)stats->fallback=1;
+        return SampleLogDistributionCDF(density,rng,x,integral,xmin,xmax,tolerance);
+    }
+    xmin=std::max(xmin,density.Xmin());xmax=std::min(xmax,density.Xmax());
+    if(!(xmin>0 && xmax>xmin && tolerance>0 && tolerance<=.1))
+        throw new Exception("Invalid bounded sampler arguments",false);
+    struct LogPDF : Function {
+        const Function& density;mutable double maximum=0;
+        explicit LogPDF(const Function& density):density(density){}
+        double f(double t) const override {
+            const double x=std::exp(t),value=x*density(x);
+            if(value<0 || !std::isfinite(value))throw new Exception("Invalid bounded sampler density",false);
+            maximum=std::max(maximum,value);return value;
+        }
+    } pdf(density);
+    integral=Integration_qag(pdf,std::log(xmin),std::log(xmax),0,tolerance,1000,GSL_INTEG_GAUSS61);
+    if(integral==0){x=0;return false;}
+    if(!(integral>0 && std::isfinite(integral)))throw new Exception("Invalid bounded sampler normalization",false);
+    BoundedLogEnvelope envelope(density,xmin,xmax,pdf.maximum);
+    if(!envelope.Supported()) {
+        if(stats)stats->fallback=1;
+        return SampleLogDistributionCDF(density,rng,x,integral,xmin,xmax,tolerance);
+    }
+    if(stats){stats->cells=envelope.Cells();stats->envelopeGap=envelope.Upper()/envelope.ObservedMaximum();}
+    x=envelope.Draw(rng,stats?&stats->proposals:nullptr);return true;
 }
 
 bool MathUtils::SampleLogDistributionCDF(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError) {

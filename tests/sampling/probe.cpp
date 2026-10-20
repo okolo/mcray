@@ -19,7 +19,7 @@ using namespace Interactions;
 bool HistoricalSampleLogDistribution(const Function&, double, double&, double&, double, double, double);
 namespace {
 bool historical=false, diagnostic=false;
-bool rejection=false, profiling=false;
+bool rejection=false, profiling=false, cdfMode=false;
 using Clock=std::chrono::steady_clock;
 double invariantSeconds=0.;
 unsigned long long invariantCalls=0;
@@ -75,7 +75,8 @@ bool SamplingProbe(const Function& f,Randomizer& rng,double& x,double& integral,
         const auto start=profiling?Clock::now():Clock::time_point{};
         const bool ok=historical ? HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,xmin,xmax,tol)
             : rejection ? math.SampleLogDistribution(f,rng,x,integral,xmin,xmax,tol)
-            : math.SampleLogDistributionCDF(f,rng,x,integral,xmin,xmax,tol);
+            : cdfMode ? math.SampleLogDistributionCDF(f,rng,x,integral,xmin,xmax,tol)
+            : math.SampleLogDistributionBounded(f,rng,x,integral,xmin,xmax,tol);
         if(profiling){invariantSeconds+=std::chrono::duration<double>(Clock::now()-start).count();++invariantCalls;}
         return ok;
     }
@@ -129,8 +130,8 @@ int main(int argc,char** argv) {
             }
         } else if(std::string(argv[1])=="interactions" && argc==8) {
             const std::string mode=argv[2], process=argv[6];
-            if((mode!="current"&&mode!="rejection")||(process!="ICS"&&process!="PP"))throw std::runtime_error("Invalid generation case");
-            rejection=mode=="rejection";
+            if((mode!="current"&&mode!="rejection"&&mode!="cdf")||(process!="ICS"&&process!="PP"))throw std::runtime_error("Invalid generation case");
+            rejection=mode=="rejection";cdfMode=mode=="cdf";
             const auto n=std::stoull(argv[3]);const auto seed=std::stoul(argv[4]);const double energy=std::stod(argv[7]);
             if(!n||!seed||!std::isfinite(energy)||energy<=1e12)throw std::runtime_error("Invalid generation parameters");
             const bool pair=process=="PP";
@@ -151,8 +152,8 @@ int main(int argc,char** argv) {
                 <<"# sampler="<<mode<<" process="<<process<<" E_eV="<<energy<<" N="<<n<<" seed="<<seed<<" tolerance="<<tolerance<<" checksum="<<checksum<<"\n";
             if(!out)throw std::runtime_error("Output failed");
         } else if(std::string(argv[1])=="cascade" && (argc==7 || argc==8)) {
-            const std::string mode=argv[2];if(mode!="old"&&mode!="current"&&mode!="rejection")throw std::runtime_error("Invalid sampler");
-            rejection=mode=="rejection";
+            const std::string mode=argv[2];if(mode!="old"&&mode!="current"&&mode!="rejection"&&mode!="cdf")throw std::runtime_error("Invalid sampler");
+            rejection=mode=="rejection";cdfMode=mode=="cdf";
             historical=mode=="old";int n=std::stoi(argv[3]);unsigned long seed=std::stoul(argv[4]);
             double distance=std::stod(argv[6]);
             const double rateVariation=argc==8?std::stod(argv[7]):0.;

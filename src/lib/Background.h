@@ -231,6 +231,9 @@ class MonochromaticBackgroundIntegral : public BackgroundIntegral
 	{
 	public:
 		RateSKern(const Function& aSigmaS, const Particle& aParticle);
+		bool HasIntervalUpperBound() const override {return fSigma.HasIntervalUpperBound();}
+		double LogDensityUpperBound(double lo,double hi,double atLo,double atHi) const override;
+		double LogDensityUpperBound(double lo,double hi,double atLo,double atHi,double stopAt) const override;
 
 		//(s-m^2) sigma(s)
 		double f(double _x) const;
@@ -300,6 +303,9 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 	{
 	public:
 		RateSKern(const Function&	aBackrgoundIntegral, const Function& aSigma, const Particle& aParticle);
+		bool HasIntervalUpperBound() const override {return fSigma.HasIntervalUpperBound();}
+		double LogDensityUpperBound(double lo,double hi,double atLo,double atHi) const override;
+		double LogDensityUpperBound(double lo,double hi,double atLo,double atHi,double stopAt) const override;
 
 		//(s-m^2) sigma(s) I((s-m^2)/2/E/(1+beta),z)
 		double f(double _x) const;
@@ -307,6 +313,9 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 	private:
 		const Function&		fBackrgoundIntegral;
 	protected:
+		virtual double BackgroundValue(double s) const;
+		virtual double BackgroundUpper(double lo,double hi) const;
+		virtual double BackgroundSlopeDrop(double lo,double hi) const;
 		const Function&		fSigma;
 		double				fM2;
 		// 1/2/E/(1+beta)
@@ -318,6 +327,12 @@ class ContinuousBackgroundIntegral : public BackgroundIntegral{
 	{
 	public:
 		RateSKernZ(const Function&	aBackrgoundIntegralZ1, const Function&	aBackrgoundIntegralZ2, double aZ1, double aZ2, const Function& aSigma, const Particle& aParticle);
+		bool HasIntervalUpperBound() const override {return fCoef1>=0 && fCoef2>=0 && RateSKern::HasIntervalUpperBound();}
+	protected:
+		double BackgroundValue(double s) const override;
+		double BackgroundUpper(double lo,double hi) const override;
+		double BackgroundSlopeDrop(double lo,double hi) const override;
+	public:
 
 		//(s-m^2) sigma(s) I((s-m^2)/2/E/(1+beta),z)
 		double f(double _x) const;

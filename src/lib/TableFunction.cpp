@@ -235,6 +235,16 @@ double GSLTableFunc::f_scaled(double _x) const
 
 void GSLTableFunc::Init(const gsl_interp_type * aInterpType)
 {
+    fInterpType=aInterpType;
+    if(aInterpType==gsl_interp_linear && dynamic_cast<LogScale*>(static_cast<IScale<double>*>(fXscale)) && dynamic_cast<LogScale*>(static_cast<IScale<double>*>(fYscale))) {
+        fNegativeSlopePrefix.assign(m_x.size()+1,0.);double previous=0.;
+        for(size_t i=0;i+1<m_x.size();++i) {
+            const double slope=(m_y[i+1]-m_y[i])/(m_x[i+1]-m_x[i]);
+            if(!std::isfinite(slope)||slope>0){fNegativeSlopePrefix.clear();break;}
+            fNegativeSlopePrefix[i+1]=fNegativeSlopePrefix[i]+std::max(0.,previous-slope);previous=slope;
+        }
+        if(!fNegativeSlopePrefix.empty())fNegativeSlopePrefix.back()=fNegativeSlopePrefix[m_x.size()-1];
+    }
     fAcc = gsl_interp_accel_alloc ();
     fSpline = gsl_spline_alloc (aInterpType, m_x.size());
     try{
@@ -246,6 +256,18 @@ void GSLTableFunc::Init(const gsl_interp_type * aInterpType)
     	Print(std::cerr);
     	throw ex;
     }
+}
+
+double GSLTableFunc::LogSlopeDrop(double lo,double hi) const {
+    if(fNegativeSlopePrefix.empty() || !(lo>0 && hi>=lo) || hi>=fXmax
+       || (lo<fXmin && m_leftVal!=fYscale->FromScale(m_y.front())))return std::numeric_limits<double>::quiet_NaN();
+    double a=std::log(lo),b=std::log(hi);
+    // Include boundary knots despite physical/log coordinate roundoff.
+    for(int i=0;i<8;++i){a=std::nextafter(a,-INFINITY);b=std::nextafter(b,INFINITY);}
+    const auto left=std::lower_bound(m_x.begin(),m_x.end(),a)-m_x.begin();
+    const auto right=std::upper_bound(m_x.begin(),m_x.end(),b)-m_x.begin();
+    return std::max(0.,fNegativeSlopePrefix[right]-fNegativeSlopePrefix[left])
+        +1e-12*(1+fNegativeSlopePrefix[right]+fNegativeSlopePrefix[left]);
 }
 
 

@@ -46,6 +46,9 @@ class GammaPP : public RandomInteractionS, EMInteraction{
 	{
 	public:
 		Sigma();
+		bool HasIntervalUpperBound() const override {return true;}
+		double IntervalUpperBound(double lo,double hi,double atLo,double atHi) const override;
+		double LogConcavityBound(double lo,double hi,double atLo,double atHi) const override;
 		double f(double s) const;
 		double Xmin() const { return fThresholdS; }
 	private:

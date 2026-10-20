@@ -49,6 +49,20 @@ public:
 	// localized features. Numerical samplers split at these points; no PDF or
 	// interpolation semantics are changed.
 	virtual std::vector<X> IntegrationBreakpoints() const {return {};}
+	// Optional analytic enclosure, not a maximum inferred from sampled values.
+	virtual bool HasIntervalUpperBound() const {return false;}
+	// Nonnegative K with (log f)'' >= -K in log(argument), away from zeros.
+	virtual X LogConcavityBound(X lo,X hi,X atLo,X atHi) const {return std::numeric_limits<X>::quiet_NaN();}
+	// Sum of downward jumps in d(log f)/d(log x) for a nonincreasing,
+	// piecewise power-law function. Smooth log-curvature is nonnegative.
+	virtual X LogSlopeDrop(X lo,X hi) const {return std::numeric_limits<X>::quiet_NaN();}
+	virtual X IntervalUpperBound(X lo,X hi,X atLo,X atHi) const {return std::numeric_limits<X>::quiet_NaN();}
+	virtual X LogDensityUpperBound(X lo,X hi,X atLo,X atHi) const {
+		return hi*IntervalUpperBound(lo,hi,atLo/lo,atHi/hi);
+	}
+	virtual X LogDensityUpperBound(X lo,X hi,X atLo,X atHi,X stopAt) const {
+		return LogDensityUpperBound(lo,hi,atLo,atHi);
+	}
 	inline X operator()(X _x) const {return f(_x);};
 	virtual ~FunctionX(){};
 
@@ -195,6 +209,7 @@ typedef ParamlessFunctionX<double> ParamlessFunction;
 	///TODO: make implementation using boost odeint and dense output and get rid of nr library
 class MathUtils {
 public:
+    struct BoundedSamplingStats {size_t fallback=0,proposals=0,cells=0;double envelopeGap=0;};
 	MathUtils();
 	~MathUtils();
     static inline double RelDifference(double aVal1, double aVal2){
@@ -231,6 +246,7 @@ public:
     // Full-support numerical inversion for background invariant distributions.
     // The legacy method above remains for the noisy nested PPP secondary PDF.
     bool SampleLogDistributionCDF(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError);
+    bool SampleLogDistributionBounded(const Function& aDistrib, mcray::Randomizer& aRandomizer, double& aOutputX, double& aOutputIntegral, double xMin, double xMax, double aRelError, BoundedSamplingStats* stats=nullptr);
 
 
 

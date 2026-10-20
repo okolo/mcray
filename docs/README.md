@@ -24,6 +24,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Fixed-invariant diagnosis of the two ICS endpoint errors](validation/ics_endpoint_diagnosis.md)
 - [ICS/PP numerical correction, short checks and frozen server rerun](validation/em_sampling_fix.md)
 - [Numerical invariant CDF sampling: contract, checks and performance](validation/invariant_cdf_sampling.md)
+- [Analytically bounded invariant rejection sampling](validation/bounded_rejection_sampling.md)
 - [SOPHIA table generation](validation/sophia_table_generation.md)
 - [Nuclear decay / TALYS diagnostics](validation/nuclear_decay_comparison_results.md)
 - [Nuclear transport regression baseline](validation/nuclear_transport_baseline.md)

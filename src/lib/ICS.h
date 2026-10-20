@@ -42,6 +42,9 @@ class ICS : public RandomInteractionS, EMInteraction{
 	{
 	public:
 		Sigma(double rMin);
+		bool HasIntervalUpperBound() const override {return true;}
+		double IntervalUpperBound(double lo,double hi,double atLo,double atHi) const override;
+		double LogConcavityBound(double lo,double hi,double atLo,double atHi) const override;
 		double f(double s) const;
 		double Xmin() const {return fXmin;}
 	private:

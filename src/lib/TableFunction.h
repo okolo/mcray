@@ -166,6 +166,7 @@ typedef LinearFuncX<double> LinearFunc;
 class GSLTableFunc  : public TableFunction
 {
 public:
+	double LogSlopeDrop(double lo,double hi) const override;
 	GSLTableFunc(const Vector& _x, const Vector& _y, const gsl_interp_type * aInterpType=gsl_interp_linear,
 			double _leftVal=0., double _rightVal=0.):
 	  TableFunction(_x, _y, _leftVal, _rightVal),fAcc(0),fSpline(0) {Init(aInterpType);}
@@ -191,6 +192,7 @@ private:
     gsl_interp_accel *fAcc;
     gsl_spline *fSpline;
     const gsl_interp_type *fInterpType;
+    std::vector<double> fNegativeSlopePrefix;
 };
 
 template<typename X = double >

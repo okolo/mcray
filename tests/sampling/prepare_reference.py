@@ -34,7 +34,7 @@ for name in headers:
 prefix = '#include "MathUtils.h"\n' + ''.join('#include "' + h + '"\n' for h in headers)
 (a.output / 'historical_sampler.cpp').write_text(prefix + 'using namespace Utils;\n' + reference)
 background = (a.repo / 'src/lib/Background.cpp').read_text()
-needle = 'math.SampleLogDistributionCDF(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel)'
+needle = 'math.SampleLogDistributionBounded(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel)'
 assert background.count(needle) == 1, 'Sampling call changed; review adapter'
 background = background.replace(needle, 'SamplingProbe(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel)')
 background = '#include "MathUtils.h"\nextern bool SamplingProbe(const Utils::Function&, mcray::Randomizer&, double&, double&, double, double, double);\n' + background
@@ -43,6 +43,14 @@ background = '#include "MathUtils.h"\nextern bool SamplingProbe(const Utils::Fun
 # validation-only control with the same corrected conditional secondary laws.
 LEGACY = '1cc28f381e961f3d4947d08f0149ac72d63c3635'
 math = (a.repo / 'src/lib/MathUtils.cpp').read_text()
+CDF = 'fa562d207b58af6d1357220e3809b44e0e2aa1ea'
+assert (a.repo/'src/lib/NumericalLogCDF.h').read_bytes() == subprocess.check_output(
+    ['git','-C',str(a.repo),'show',CDF+':src/lib/NumericalLogCDF.h']), 'CDF control header changed'
+frozen_math = subprocess.check_output(['git','-C',str(a.repo),'show',CDF+':src/lib/MathUtils.cpp'],text=True)
+def cdf_body(source):
+    start=source.index('bool MathUtils::SampleLogDistributionCDF(')
+    return source[start:source.index('\n}',start)+2]
+assert cdf_body(math)==cdf_body(frozen_math), 'CDF control function changed'
 (a.output / 'audited_math.cpp').write_text(math)
 legacy = subprocess.check_output(['git','-C',str(a.repo),'show',LEGACY+':src/lib/MathUtils.cpp'],text=True)
 start = legacy.index('class LogscaleDistr :')

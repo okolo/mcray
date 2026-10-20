@@ -54,8 +54,8 @@ def main():
                 path=directory/('oracle-'+str(cells)+'.tsv');paths.append(path)
                 run([binary,'oracle',*common,cells,order,path],logs/(case+'-oracle.log'),deadline,cwd=repo/'bin')
             references[case]=stats.freeze_reference(paths);counts[case]={};seeds[case]={}
-            for mode,algorithm in (('old','rejection'),('current','current')):
-                value=seed(case+'local-cdf-20261020'+mode);seeds[case][mode]=value
+            for mode,algorithm in (('old','rejection'),('cdf','cdf'),('current','current')):
+                value=seed(case+'local-bounded-20261020'+mode);seeds[case][mode]=value
                 stem=directory/mode
                 run([binary,'sample',*common,algorithm,args.events,value,str(stem)+'.events',str(stem)+'.tsv'],
                     logs/(case+'-'+mode+'.log'),deadline,cwd=repo/'bin')
@@ -63,14 +63,14 @@ def main():
                     raise RuntimeError('Incomplete local raw event file')
                 counts[case][mode]=stats.read_counts([Path(str(stem)+'.tsv')])
             print(case,round(time.monotonic()-started,3),flush=True)
-        labels={'old':'Frozen rejection (1cc28f3)','current':'Numerical log-CDF inversion','old_minus_current':'Baseline minus CDF'}
+        labels={'old':'Frozen rejection (1cc28f3)','cdf':'Numerical log-CDF control','current':'Analytic bounded rejection','old_minus_current':'Control minus bounded'}
         data={'references':references,'counts':counts,'planned_n':{case:args.events for case in references},
-              'complete':True,'sampler_labels':labels}
+              'complete':True,'sampler_labels':labels,'controls':['old','cdf']}
         save(root/'analysis-input.json',data);save(root/'seeds.json',seeds)
-        run([sys.executable,repo/'tests/sampling/analyze_secondary.py',root/'analysis-input.json',root/'report.json'],
+        run([sys.executable,repo/'tests/sampling/analyze_bounded_secondary.py',root/'analysis-input.json',root/'report.json'],
             logs/'analysis.log',deadline)
         report=json.loads((root/'report.json').read_text())
-        status['status']=report['status'];status['main_events']=args.events*2*len(CASES)
+        status['status']=report['status'];status['main_events']=args.events*3*len(CASES)
         status['binary_sha256']=hashlib.sha256(binary.read_bytes()).hexdigest()
     except Exception as error:
         status.update(status='execution_error',error=str(error))

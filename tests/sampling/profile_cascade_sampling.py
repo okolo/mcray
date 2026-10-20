@@ -54,7 +54,7 @@ def main():
         for scenario, tail in scenarios:
             for repeat in range(args.repeats):
                 # Alternate order to reduce systematic warm-up and thermal effects.
-                for mode in (('rejection', 'current') if repeat % 2 == 0 else ('current', 'rejection')):
+                for mode in (('rejection', 'current', 'cdf') if repeat % 2 == 0 else ('cdf', 'current', 'rejection')):
                     stem = f'{scenario}-r{repeat}-{mode}'
                     result = output / (stem + '.tsv')
                     command = [str(binary), args.scope, mode, str(args.primaries), str(20261020 + repeat),
@@ -74,12 +74,13 @@ def main():
                     print(stem, f'total={total:.4f}s S={invariant/total:.2%}', flush=True)
         summaries = []
         for scenario, _ in scenarios:
-            groups = {mode: [r for r in records if r['mode'] == mode and r['scenario'] == scenario] for mode in ('rejection', 'current')}
+            groups = {mode: [r for r in records if r['mode'] == mode and r['scenario'] == scenario] for mode in ('rejection', 'current', 'cdf')}
             medians = {mode: {key: statistics.median(r[key] for r in group)
                              for key in ('transport_seconds', 'invariant_seconds', 'invariant_fraction', 'invariant_calls')}
                        for mode, group in groups.items()}
             summaries.append(dict(scenario=scenario, medians=medians,
-                                  transport_ratio=medians['current']['transport_seconds']/medians['rejection']['transport_seconds']))
+                                  transport_ratio=medians['current']['transport_seconds']/medians['rejection']['transport_seconds'],
+                                  cdf_over_bounded=medians['cdf']['transport_seconds']/medians['current']['transport_seconds']))
         manifest.update(status='complete', summaries=summaries)
     except BaseException as error:
         manifest.update(status='execution_error', error=str(error))

@@ -1,3 +1,4 @@
+#include "BoundedLogEnvelope.h"
 /*
  * Background.cpp
  *
@@ -511,6 +512,7 @@ fEnableDebugOutput(false)
 		for(int iK=nIntervalsE-1; iK>=0; iK--,k/=fLogStepK)
 		{
 			double I = math.Integration_qag(kern, k, k*fLogStepK, 0, fEpsRel, (int)(1./fEpsRel));
+            if(!std::isfinite(I) || I<0)throw new Exception("Nonpositive photon-background integral contract violated",false);
 			ASSERT_VALID_NO(I);
 			sum += I;
 			(*fData[iZ])[iK]=sum;
@@ -574,12 +576,55 @@ std::vector<double> ContinuousBackgroundIntegral::RateKKernZ::IntegrationBreakpo
 //(s-m^2) sigma(s) I((s-m^2)/2/E/(1+beta),z)
 double ContinuousBackgroundIntegral::RateSKern::f(double s) const
 {
-	double bi = fBackrgoundIntegral((s-fM2)*fMult);
-	if(fMaxEmult>0)
-	{
-		bi -= fBackrgoundIntegral((s-fM2)*fMaxEmult);
-	}
-	return fSigma(s)*(s-fM2)*bi;
+    return fSigma(s)*(s-fM2)*BackgroundValue(s);
+}
+
+double ContinuousBackgroundIntegral::RateSKern::BackgroundValue(double s) const {
+    double bi=fBackrgoundIntegral((s-fM2)*fMult);
+    if(fMaxEmult>0)bi-=fBackrgoundIntegral((s-fM2)*fMaxEmult);
+    return bi;
+}
+
+double ContinuousBackgroundIntegral::RateSKern::BackgroundUpper(double lo,double hi) const {
+    const double first=fBackrgoundIntegral((lo-fM2)*fMult);
+    const double second=fMaxEmult>0?fBackrgoundIntegral((hi-fM2)*fMaxEmult):0.;
+    // The positive cumulative integral is nonincreasing, including every
+    // interpolation knot and its constant/zero exterior. Keep cancellation
+    // roundoff additive when the two kinematic contributions almost agree.
+    return SamplingUpperRound(std::max(0.L,static_cast<long double>(first)-second)
+        +1e-14L*(first+second));
+}
+
+double ContinuousBackgroundIntegral::RateSKern::BackgroundSlopeDrop(double lo,double hi) const {
+    if(fMaxEmult>0 && fBackrgoundIntegral((lo-fM2)*fMaxEmult)>0)return NAN;
+    return fBackrgoundIntegral.LogSlopeDrop((lo-fM2)*fMult,(hi-fM2)*fMult);
+}
+
+double ContinuousBackgroundIntegral::RateSKern::LogDensityUpperBound(double lo,double hi,double atLo,double atHi) const {
+    return LogDensityUpperBound(lo,hi,atLo,atHi,0.);
+}
+
+double ContinuousBackgroundIntegral::RateSKern::LogDensityUpperBound(double lo,double hi,double atLo,double atHi,double stopAt) const {
+    const double blo=BackgroundValue(lo),bhi=BackgroundValue(hi);
+    const auto recover=[&](double x,double value,double background) {
+        if(background>0 && value>0 && x>fM2)
+            return static_cast<double>(static_cast<long double>(value)/x/(x-fM2)/background);
+        return fSigma(x);
+    };
+    const double a=recover(lo,atLo,blo),b=recover(hi,atHi,bhi);
+    const double sigma=fSigma.IntervalUpperBound(lo,hi,a,b);
+    const double product=SamplingUpperRound(static_cast<long double>(hi)*(hi-fM2)*sigma*BackgroundUpper(lo,hi));
+    if(product<=stopAt || !(atLo>0 && atHi>0 && lo>fM2))return product;
+    const double curvature=fSigma.LogConcavityBound(lo,hi,a,b),drop=BackgroundSlopeDrop(lo,hi);
+    if(!(curvature>=0 && drop>=0))return product;
+    const long double h=std::log(static_cast<long double>(hi)/lo),q=lo/(lo-fM2);
+    const long double k=curvature+q*fM2/(lo-fM2);
+    // Smooth log-background curvature is nonnegative: powers composed with
+    // log(s-m^2) and positive redshift mixtures. Downward slope jumps are
+    // retained explicitly as the Green-function contribution h*drop/4.
+    const long double padding=k*h*h/8+h*q*drop/4;
+    if(padding>1)return product;
+    return std::min(product,SamplingUpperRound(std::max(atLo,atHi)*std::exp(padding)));
 }
 
 ContinuousBackgroundIntegral::RateKKern::RateKKern(const Function&	aBackrgoundIntegral, const Function& aSigma, const Particle& aParticle) :
@@ -619,20 +664,34 @@ ContinuousBackgroundIntegral::RateSKernZ::RateSKernZ(const Function&	aBackrgound
 //(s-m^2) sigma(s) I((s-m^2)/2/E/(1+beta),z)
 double ContinuousBackgroundIntegral::RateSKernZ::f(double s) const
 {
-	double k = (s-fM2)*fMult;
-	double bi1 = fBackrgoundIntegralZ1(k);
-	double bi2 = fBackrgoundIntegralZ2(k);
-	if(fMaxEmult>0)
-	{
-		k = (s-fM2)*fMaxEmult;
-		bi1 -= fBackrgoundIntegralZ1(k);
-		bi2 -= fBackrgoundIntegralZ2(k);
-	}
-	double bi = fCoef1*bi1 + fCoef2*bi2;
-	double result = fSigma(s)*(s-fM2)*bi;
-	//std::cout.precision(15);
-	//std::cout << s << "\t" << result << std::endl;
-	return result;
+    return fSigma(s)*(s-fM2)*BackgroundValue(s);
+}
+
+double ContinuousBackgroundIntegral::RateSKernZ::BackgroundValue(double s) const {
+    double k=(s-fM2)*fMult;
+    double first=fBackrgoundIntegralZ1(k),second=fBackrgoundIntegralZ2(k);
+    if(fMaxEmult>0) {
+        k=(s-fM2)*fMaxEmult;
+        first-=fBackrgoundIntegralZ1(k);second-=fBackrgoundIntegralZ2(k);
+    }
+    return fCoef1*first+fCoef2*second;
+}
+
+double ContinuousBackgroundIntegral::RateSKernZ::BackgroundUpper(double lo,double hi) const {
+    const double a=(lo-fM2)*fMult,b=(hi-fM2)*fMaxEmult;
+    const double first=fCoef1*fBackrgoundIntegralZ1(a)+fCoef2*fBackrgoundIntegralZ2(a);
+    const double second=fMaxEmult>0?fCoef1*fBackrgoundIntegralZ1(b)+fCoef2*fBackrgoundIntegralZ2(b):0.;
+    return SamplingUpperRound(std::max(0.L,static_cast<long double>(first)-second)
+        +1e-14L*(first+second));
+}
+
+double ContinuousBackgroundIntegral::RateSKernZ::BackgroundSlopeDrop(double lo,double hi) const {
+    const double a=(lo-fM2)*fMult,b=(hi-fM2)*fMult;
+    if(fMaxEmult>0 && ((fCoef1>0 && fBackrgoundIntegralZ1((lo-fM2)*fMaxEmult)>0)
+                      ||(fCoef2>0 && fBackrgoundIntegralZ2((lo-fM2)*fMaxEmult)>0)))return NAN;
+    const double first=fCoef1>0?fBackrgoundIntegralZ1.LogSlopeDrop(a,b):0.;
+    const double second=fCoef2>0?fBackrgoundIntegralZ2.LogSlopeDrop(a,b):0.;
+    return first+second;
 }
 
 ContinuousBackgroundIntegral::RateKKernZ::RateKKernZ(const Function&	aBackrgoundIntegralZ1, const Function&	aBackrgoundIntegralZ2, double aZ1, double aZ2, const Function& aSigma, const Particle& aParticle):
@@ -691,7 +750,7 @@ double ContinuousBackgroundIntegral::GetRateAndSampleS(const Function& aSigma, c
 		kern = new RateSKernZ(*fIntegrals[iZ], *fIntegrals[iZ + 1], iZ * fStepZ, (iZ + 1) * fStepZ, aSigma, aParticle);
 	else
 		kern = new RateSKern(*fIntegrals[iZ], aSigma, aParticle);
-	if(math.SampleLogDistributionCDF(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
+	if(math.SampleLogDistributionBounded(*kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
 	}
@@ -989,6 +1048,22 @@ double MonochromaticBackgroundIntegral::RateSKern::f(double s) const
 	return fSigma(s)*(s-fM2);
 }
 
+double MonochromaticBackgroundIntegral::RateSKern::LogDensityUpperBound(double lo,double hi,double atLo,double atHi) const {
+    return LogDensityUpperBound(lo,hi,atLo,atHi,0.);
+}
+
+double MonochromaticBackgroundIntegral::RateSKern::LogDensityUpperBound(double lo,double hi,double atLo,double atHi,double stopAt) const {
+    const double a=atLo>0 && lo>fM2?static_cast<double>(static_cast<long double>(atLo)/lo/(lo-fM2)):fSigma(lo);
+    const double b=atHi>0 && hi>fM2?static_cast<double>(static_cast<long double>(atHi)/hi/(hi-fM2)):fSigma(hi);
+    const double product=SamplingUpperRound(static_cast<long double>(hi)*(hi-fM2)*fSigma.IntervalUpperBound(lo,hi,a,b));
+    if(product<=stopAt)return product;
+    const double curvature=fSigma.LogConcavityBound(lo,hi,a,b);
+    if(!(atLo>0 && atHi>0 && lo>fM2 && curvature>=0))return product;
+    const long double h=std::log(static_cast<long double>(hi)/lo),k=curvature+static_cast<long double>(lo)*fM2/((lo-fM2)*(lo-fM2));
+    if(k*h*h/8>1)return product;
+    return std::min(product,SamplingUpperRound(std::max(atLo,atHi)*std::exp(k*h*h/8)));
+}
+
 double MonochromaticBackgroundIntegral::RateKKern::f(double k) const
 {
 	return fSigma(k)*k;
@@ -1020,7 +1095,7 @@ double MonochromaticBackgroundIntegral::GetRateAndSampleS(const Function& aSigma
 	double totalRate = 0.;//rate times 8*E*beta
 	RateSKern kern(aSigma, aParticle);
 
-	if(math.SampleLogDistributionCDF(kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
+	if(math.SampleLogDistributionBounded(kern, aRand, aS, totalRate, Smin, Smax, fEpsRel))
 	{
 		return totalRate*n/k/k/8./aParticle.Energy/aParticle.Energy/aParticle.beta();
 	}

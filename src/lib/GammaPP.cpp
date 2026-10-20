@@ -27,6 +27,7 @@
 
 #include "GammaPP.h"
 #include "EMSecondarySampling.h"
+#include "BoundedLogEnvelope.h"
 #include <math.h>
 #include "MathUtils.h"
 #include "Output.h"
@@ -102,6 +103,29 @@ double GammaPP::Sigma::f(double s) const
 	double result = SigmaCoef*((3.-beta2*beta2)*log((1.+beta)/(1.-beta))-2.*beta*(2.-beta2))/s;
 	ASSERT_VALID_NO(result);
 	return result;
+}
+
+double GammaPP::Sigma::IntervalUpperBound(double lo,double hi,double,double atHi) const {
+    // s*sigma(s) increases with beta=sqrt(1-4*m^2/s). For the bracket
+    // A(beta), A/beta=2+4*beta^2-4/5*beta^4+sum_{n>=3} a_n*beta^(2*n),
+    // a_n=(8*n-20)/((2*n+1)*(2*n-3))>0. Its derivative is positive.
+    // Consequently sigma(s)<=hi*sigma(hi)/lo, with no threshold derivative.
+    return Utils::SamplingUpperRound(static_cast<long double>(atHi)*hi/lo);
+}
+
+double GammaPP::Sigma::LogConcavityBound(double lo,double hi,double atLo,double) const {
+    const long double a2=1-static_cast<long double>(fThresholdS)/lo,b2=1-static_cast<long double>(fThresholdS)/hi;
+    if(!(a2>0 && b2<1 && atLo>0))return NAN;
+    const long double a=std::sqrt(a2),b=std::sqrt(b2),logarithm=std::log((1+b)/(1-b));
+    const auto term=[](long double v){return 5*v-4*v*v*v;};
+    long double psi=std::max(term(a),term(b));const long double critical=std::sqrt(5.L/12);
+    if(a<critical && b>critical)psi=std::max(psi,term(critical));
+    const long double first=1/a+psi;
+    const long double negativeSecond=(1-a2)/(2*a)*(1/a2+16*b2)
+        +2*(1-a2)*std::max(0.L,1-2*a2)*logarithm;
+    const long double bracketMinimum=static_cast<long double>(atLo)*lo/SigmaCoef;
+    // For sigma=C*A/s, (log sigma)''=A_tt/A-(A_t/A)^2.
+    return SamplingUpperRound(negativeSecond/bracketMinimum+first*first/(bracketMinimum*bracketMinimum));
 }
 
 double GammaPP::Rate(const Particle& aParticle) const

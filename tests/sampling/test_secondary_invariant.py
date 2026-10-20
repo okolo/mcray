@@ -8,6 +8,18 @@ from invariant_diagnostics import PROBABILITIES, summarize
 
 
 class InvariantControls(unittest.TestCase):
+    def test_bounded_enclosure_and_tail_controls_are_required_together(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'ICS.tsv';self.fixture(path)
+            text=path.read_text()+'# envelope upper=1.005 lower=1 cells=8 evaluations=10 checks=100 max_ratio=0.999 max_local_ratio=0.999\n'
+            text+=''.join(f'# benchmark bounded {r} 128 0.015 0\n' for r in range(3))
+            path.write_text(text)
+            self.assertEqual(summarize([path])['status'],'unresolved')
+            path.write_text(text+'# bounded_tail_proposals 19\n')
+            self.assertEqual(summarize([path])['status'],'within_control')
+            path.write_text((text+'# bounded_tail_proposals 19\n').replace('upper=1.005','upper=0.5'))
+            self.assertEqual(summarize([path])['status'],'unresolved')
+
     def fixture(self, path, error=0., reference_change=0.):
         out=io.StringIO()
         out.write('# total=2 total_error_estimate=1e-10 reference=2 reference_coarse=2\n')

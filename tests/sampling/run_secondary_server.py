@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 
 OLD='d05723f449c1eecee4f00af392014df4c898ebe9'
 REJECTION='1cc28f381e961f3d4947d08f0149ac72d63c3635'
+CDF='fa562d207b58af6d1357220e3809b44e0e2aa1ea'
 NR_HEADERS=('nr3.h','stepper.h','odeint.h','stepperdopr5.h')
 EDGES=[0,1e-12,1e-10,1e-8,1e-6,1e-5,1e-4,1e-3,.01,.03,.1,.2,.35,.5,.65,.8,.9,.97,.99,.999,.9999,1-1e-5,1-1e-6,1-1e-8,1-1e-10,1-1e-12,1]
 CASES=[('ICS',e) for e in (1e13,1e14,1e15,1e16,1e18,1e20)]+[('PP',e) for e in (1e14,1e15,1e16,1e18,1e20)]
@@ -88,8 +89,8 @@ def main():
     p.add_argument('--server',action='store_true',required=True,help='Explicit external server acknowledgement')
     p.add_argument('--repo',required=True,help='Remote URL or server-side Git repository')
     p.add_argument('--ref',default='talys')
-    p.add_argument('--baseline',choices=('rejection','nr'),default='rejection',
-                   help='Frozen rejection control (1cc28f3), or historical NR control')
+    p.add_argument('--baseline',choices=('both','rejection','cdf','nr'),default='both',
+                   help='Both rejection and CDF controls (default), or a single control')
     p.add_argument('--nr',type=Path,help='Local historical NR headers; otherwise download the pinned NR repository')
     p.add_argument('--data-dir',type=Path,required=True)
     p.add_argument('--hours',type=float,default=24)
@@ -130,12 +131,17 @@ def main():
         run(['git','-C',source,'cat-file','-e',OLD+':src/lib/MathUtils.cpp'],logs/'fetch.log',work_deadline)
         run(['git','-C',source,'archive','--format=tar','--output='+str(root/'historical-source.tar'),OLD],logs/'fetch.log',work_deadline)
         status['resolved_commit']=commit;status['historical_commit']=OLD;save(root/'status.json',status)
-        status['current_algorithm']='full_support_numerical_log_cdf'
+        status['current_algorithm']='analytic_bounded_log_rejection'
+        status['cdf_control_commit']=CDF
+        status['alpha_allocation']={c:.005 for c in ('rejection','cdf')} if a.baseline=='both' else {a.baseline:.01}
         status['rejection_control_commit']=REJECTION
-        status['baseline_commit']=REJECTION if a.baseline=='rejection' else OLD
-        labels={'old':'Frozen rejection (1cc28f3)' if a.baseline=='rejection' else 'Historical NR (d05723f)',
-                'current':'Numerical log-CDF inversion','old_minus_current':'Baseline minus CDF'}
-        modes={'old':'rejection' if a.baseline=='rejection' else 'old','current':'current'}
+        status['baseline_commit']=OLD if a.baseline=='nr' else CDF if a.baseline=='cdf' else REJECTION
+        baseline='rejection' if a.baseline=='both' else a.baseline
+        labels={'old':{'rejection':'Frozen rejection (1cc28f3)','cdf':'Numerical log-CDF control','nr':'Historical NR (d05723f)'}[baseline],
+                'current':'Analytic bounded rejection','old_minus_current':'Control minus bounded rejection',
+                'cdf':'Numerical log-CDF control'}
+        modes={'old':{'rejection':'rejection','cdf':'cdf','nr':'old'}[baseline],'current':'current'}
+        if a.baseline=='both':modes={'old':'rejection','cdf':'cdf','current':'current'}
         save(root/'sampler-labels.json',labels)
         run(['git','-C',source,'archive','--format=tar','--output='+str(root/'frozen-source.tar'),commit],logs/'fetch.log',work_deadline)
         run(['git','-C',source,'update-ref','refs/reproducibility/current',commit],logs/'fetch.log',work_deadline)
@@ -178,7 +184,7 @@ def main():
             diagnostic_paths.append(path)
         controls=invariant_diagnostics.summarize(diagnostic_paths)
         save(root/'invariant-diagnostics.json',controls)
-        if controls['status']!='within_control':
+        if controls['status']!='within_control' or any('bounded' not in x['median_seconds_per_draw'] for x in controls['cases'].values()):
             raise RuntimeError('Invariant quantile controls unresolved; see invariant-diagnostics.json')
         references={};pilots={};case_args={};counts={};completed={};plan={}
         for process,energy in cases:
@@ -190,7 +196,7 @@ def main():
                 run([binary,'oracle',*args,cells,order,path],logs/(key+'-oracle.log'),work_deadline,cwd=source/'bin')
             references[key]=stats.freeze_reference(paths)
             pilots[key]={}
-            for mode in ('old','current'):
+            for mode in modes:
                 begin=time.monotonic();n=100 if a.smoke else 1000
                 run([binary,'sample',*args,modes[mode],n,seed(key+mode+'pilot'),directory/(mode+'-pilot.events'),directory/(mode+'-pilot.tsv')],logs/(key+'-pilot.log'),work_deadline,cwd=source/'bin')
                 pilots[key][mode]=(time.monotonic()-begin)/n
@@ -200,7 +206,7 @@ def main():
         if available<=0:raise TimeoutError('No time remains after references/pilots')
         # Allocate equal wall time per case using BOTH measured sampler costs.
         # Samples, seeds and chunk boundaries are frozen before the first main event.
-        disk_limit=int(a.raw_gib*1024**3/(2*len(cases)*26))
+        disk_limit=int(a.raw_gib*1024**3/(len(modes)*len(cases)*26))
         if shutil.disk_usage(root).free < a.raw_gib*1024**3*2+2*1024**3:
             raise RuntimeError('Insufficient disk for raw data, archive and build; lower --raw-gib')
         for key in references:
@@ -208,22 +214,22 @@ def main():
             if n<1000:raise RuntimeError('Insufficient runtime or disk budget for the frozen experiment')
             chunks=[]
             for i,offset in enumerate(range(0,n,100000)):
-                chunks.append({'index':i,'N':min(100000,n-offset),'seeds':{mode:seed(key+mode+str(i)) for mode in ('old','current')}})
-            plan[key]={'N':n,'chunks':chunks};counts[key]={'old':[],'current':[]};completed[key]={'old':0,'current':0}
-        all_seeds=[c['seeds'][m] for x in plan.values() for c in x['chunks'] for m in ('old','current')]
-        all_seeds += [seed(k+m+'pilot') for k in plan for m in ('old','current')]
+                chunks.append({'index':i,'N':min(100000,n-offset),'seeds':{mode:seed(key+mode+str(i)) for mode in modes}})
+            plan[key]={'N':n,'chunks':chunks};counts[key]={m:[] for m in modes};completed[key]={m:0 for m in modes}
+        all_seeds=[c['seeds'][m] for x in plan.values() for c in x['chunks'] for m in modes]
+        all_seeds += [seed(k+m+'pilot') for k in plan for m in modes]
         if len(all_seeds)!=len(set(all_seeds)):raise RuntimeError('Seed collision; frozen design invalid')
         from scipy.stats import norm
-        family=sum(len(ref)*9 for ref in references.values())
+        family=sum(len(ref)*9 for ref in references.values())*(2 if a.baseline=='both' else 1)
         z=float(norm.isf(.01/(2*family)))
         forecast={k:{oid:{'expected_multiplicity_counts':[plan[k]['N']*p for p in r['p']],
                          'approximate_simultaneous_relative_halfwidth':None if r['mean']==0 else z*(max(0.,r['p'][1]+4*r['p'][2]-r['mean']**2)/plan[k]['N'])**.5/r['mean'],
                          'target':r['target']} for oid,r in ref.items()} for k,ref in references.items()}
         save(root/'expected-statistics.json',{'diagnostic_only':'normal approximation for runtime planning; exact intervals determine results','cases':forecast})
-        save(root/'frozen-plan.json',{'alpha':.01,'core_relative_target':.01,'tail_relative_target':.1,'cases':plan,'background':'CMB T=2.7255 K, z=0, k/T=[0.001,1000], grid=0.01','Emin_eV':1e12,'sampler_tolerance':.001,'smoke':a.smoke,'sampler_labels':labels,'baseline_commit':status['baseline_commit']})
+        save(root/'frozen-plan.json',{'alpha':.01,'core_relative_target':.01,'tail_relative_target':.1,'cases':plan,'background':'CMB T=2.7255 K, z=0, k/T=[0.001,1000], grid=0.01','Emin_eV':1e12,'sampler_tolerance':.001,'smoke':a.smoke,'sampler_labels':labels,'baseline_commit':status['baseline_commit'],'samplers':modes,'alpha_allocation':status['alpha_allocation']})
         for key in plan:
             for c in plan[key]['chunks']:
-                for mode in ('old','current'):
+                for mode in modes:
                     stem=results/key/(mode+'-'+str(c['index']))
                     run([binary,'sample',*case_args[key],modes[mode],c['N'],c['seeds'][mode],str(stem)+'.events',str(stem)+'.tsv'],logs/(key+'-'+mode+'.log'),work_deadline,cwd=source/'bin')
                     if Path(str(stem)+'.events').stat().st_size != 8+26*c['N']:
@@ -233,8 +239,8 @@ def main():
         aggregate={k:{m:stats.read_counts(paths) for m,paths in modes.items()} for k,modes in counts.items()}
         save(root/'diagnostics.json',{k:{m:[path.read_text().splitlines()[0] for path in paths] for m,paths in modes.items()} for k,modes in counts.items()})
         # Analysis in a subprocess is also bounded by the total deadline.
-        save(root/'analysis-input.json',{'references':references,'counts':aggregate,'planned_n':{k:v['N'] for k,v in plan.items()},'complete':not a.smoke,'sampler_labels':labels})
-        run([sys.executable,overlay/'analyze_secondary.py',root/'analysis-input.json',root/'report.json'],logs/'analysis.log',deadline-reserve*.3)
+        save(root/'analysis-input.json',{'references':references,'counts':aggregate,'planned_n':{k:v['N'] for k,v in plan.items()},'complete':not a.smoke,'sampler_labels':labels,'controls':['old','cdf'] if a.baseline=='both' else ['old']})
+        run([sys.executable,overlay/'analyze_bounded_secondary.py',root/'analysis-input.json',root/'report.json'],logs/'analysis.log',deadline-reserve*.3)
         report=json.loads((root/'report.json').read_text());status['status']=report['status'];status['smoke']=a.smoke
         exitcode={'within_target':0,'deviation':2,'inconclusive':3}[report['status']]
         status['completed_utc']=datetime.now(timezone.utc).isoformat()
