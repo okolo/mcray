@@ -71,6 +71,14 @@ TEST(BoundedRejection, UnsupportedDensityUsesCDFBeforeDrawing) {
     EXPECT_DOUBLE_EQ(x,y);EXPECT_DOUBLE_EQ(ix,iy);EXPECT_DOUBLE_EQ(a.Rand(),b.Rand());
 }
 
+TEST(BoundedRejection, QuadratureFailureCannotDiscardOnlyAnUnluckyHistory) {
+    gsl_set_error_handler_off();Curved f;MathUtils math;mcray::Randomizer rng(12345);
+    bool failed=false;
+    try {double x,total;math.SampleLogDistributionBounded(f,rng,x,total,1,100,1e-30);}
+    catch(Exception* e){failed=true;EXPECT_FALSE(e->Retryable());delete e;}
+    EXPECT_TRUE(failed);
+}
+
 TEST(BoundedRejection, SamplesWithoutNarrowingOrPointMassFallback) {
     gsl_set_error_handler_off();Curved f;MathUtils math;mcray::Randomizer rng(12345);
     int below=0,above=0;

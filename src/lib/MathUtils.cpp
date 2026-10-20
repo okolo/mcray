@@ -1113,8 +1113,16 @@ bool MathUtils::SampleLogDistributionBounded(const Function& density,mcray::Rand
             maximum=std::max(maximum,value);return value;
         }
     } pdf(density);
-    integral=Integration_qag(pdf,std::log(xmin),std::log(xmax),0,tolerance,1000,GSL_INTEG_GAUSS61);
-    if(integral==0){x=0;return false;}
+    try {
+        integral=Integration_qag(pdf,std::log(xmin),std::log(xmax),0,tolerance,1000,GSL_INTEG_GAUSS61);
+    } catch(Exception* error) {
+        const std::string message=error->Message();delete error;
+        throw new Exception("Bounded sampling normalization failed: "+message,false);
+    }
+    if(integral==0) {
+        if(pdf.maximum>0)throw new Exception("Bounded sampling normalization underflow",false);
+        x=0;return false;
+    }
     if(!(integral>0 && std::isfinite(integral)))throw new Exception("Invalid bounded sampler normalization",false);
     BoundedLogEnvelope envelope(density,xmin,xmax,pdf.maximum);
     if(!envelope.Supported()) {
