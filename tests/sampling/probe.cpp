@@ -11,12 +11,18 @@
 #include <iostream>
 #include <map>
 #include <stdexcept>
+#include <chrono>
+#include <cstdlib>
 using namespace Utils;
 using namespace mcray;
 using namespace Interactions;
 bool HistoricalSampleLogDistribution(const Function&, double, double&, double&, double, double, double);
 namespace {
 bool historical=false, diagnostic=false;
+bool rejection=false, profiling=false;
+using Clock=std::chrono::steady_clock;
+double invariantSeconds=0.;
+unsigned long long invariantCalls=0;
 int sampleCount=20000, gridCount=4096;
 std::vector<double> samples;
 struct LogPDF : Function {
@@ -64,8 +70,15 @@ public:
 };
 }
 bool SamplingProbe(const Function& f,Randomizer& rng,double& x,double& integral,double xmin,double xmax,double tol) {
-    MathUtils math;
-    if(!diagnostic) return historical ? HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,xmin,xmax,tol) : math.SampleLogDistributionCDF(f,rng,x,integral,xmin,xmax,tol);
+    static thread_local MathUtils math;
+    if(!diagnostic) {
+        const auto start=profiling?Clock::now():Clock::time_point{};
+        const bool ok=historical ? HistoricalSampleLogDistribution(f,rng.Rand(),x,integral,xmin,xmax,tol)
+            : rejection ? math.SampleLogDistribution(f,rng,x,integral,xmin,xmax,tol)
+            : math.SampleLogDistributionCDF(f,rng,x,integral,xmin,xmax,tol);
+        if(profiling){invariantSeconds+=std::chrono::duration<double>(Clock::now()-start).count();++invariantCalls;}
+        return ok;
+    }
     Reference ref(f,xmin,xmax);
     LogPDF logpdf(f);
     const double qag=math.Integration_qag(logpdf,std::log(xmin),std::log(xmax),0.,tol,1000,GSL_INTEG_GAUSS61);
@@ -90,7 +103,8 @@ bool SamplingProbe(const Function& f,Randomizer& rng,double& x,double& integral,
 int main(int argc,char** argv) {
     try {
         gsl_set_error_handler_off();
-        if(argc<2)throw std::runtime_error("Usage: em_sampling_probe kernels [N grid tolerance] | cascade old|current N seed output.tsv distance_Mpc [max_rate_variation]");
+        if(argc<2)throw std::runtime_error("Usage: em_sampling_probe kernels [N grid tolerance] | cascade old|current|rejection N seed output.tsv distance_Mpc [max_rate_variation] | interactions current|rejection N seed output.tsv ICS|PP E_EV; MCRAY_PROFILE_S=1 enables timing");
+        profiling=std::getenv("MCRAY_PROFILE_S")!=nullptr;
         cosmology.Init(0.1,0.692,67.8);
         const double tolerance=(std::string(argv[1])=="kernels" && argc>4)?std::stod(argv[4]):(std::string(argv[1])=="cascade"?1e-3:1e-4);
         if(!std::isfinite(tolerance) || tolerance<=0. || tolerance>0.01)throw std::runtime_error("Invalid tolerance");
@@ -113,8 +127,32 @@ int main(int argc,char** argv) {
                 for(double value:samples){std::vector<Particle> products;if(photon)pp.SampleSecondaries(p,products,value,rng);else ics.SampleSecondaries(p,products,value,rng);fraction+=products[0].Energy/p.Energy;}
                 std::cout<<'\t'<<fraction/sampleCount<<'\n'<<std::flush;
             }
+        } else if(std::string(argv[1])=="interactions" && argc==8) {
+            const std::string mode=argv[2], process=argv[6];
+            if((mode!="current"&&mode!="rejection")||(process!="ICS"&&process!="PP"))throw std::runtime_error("Invalid generation case");
+            rejection=mode=="rejection";
+            const auto n=std::stoull(argv[3]);const auto seed=std::stoul(argv[4]);const double energy=std::stod(argv[7]);
+            if(!n||!seed||!std::isfinite(energy)||energy<=1e12)throw std::runtime_error("Invalid generation parameters");
+            const bool pair=process=="PP";
+            Particle p(pair?Photon:Electron,0.);p.Energy=energy*units.eV;
+            ICS ics(back,1e12*units.eV);GammaPP pp(back);Randomizer rng(seed);
+            double checksum=0.;
+            const auto start=Clock::now();
+            for(unsigned long long i=0;i<n;++i) {
+                double s;std::vector<Particle> products;
+                if(!(pair?pp.SampleS(p,s,rng):ics.SampleS(p,s,rng)))throw std::runtime_error("SampleS failed");
+                if(pair)pp.SampleSecondaries(p,products,s,rng);else ics.SampleSecondaries(p,products,s,rng);
+                if(products.size()!=2)throw std::runtime_error("Invalid multiplicity");
+                checksum+=products[0].Energy/p.Energy;
+            }
+            const double seconds=std::chrono::duration<double>(Clock::now()-start).count();
+            std::ofstream out(argv[5]);
+            out<<std::setprecision(17)<<"# transport_seconds="<<seconds<<" invariant_seconds="<<invariantSeconds<<" invariant_calls="<<invariantCalls<<" profiling="<<profiling<<"\n"
+                <<"# sampler="<<mode<<" process="<<process<<" E_eV="<<energy<<" N="<<n<<" seed="<<seed<<" tolerance="<<tolerance<<" checksum="<<checksum<<"\n";
+            if(!out)throw std::runtime_error("Output failed");
         } else if(std::string(argv[1])=="cascade" && (argc==7 || argc==8)) {
-            const std::string mode=argv[2];if(mode!="old"&&mode!="current")throw std::runtime_error("Invalid sampler");
+            const std::string mode=argv[2];if(mode!="old"&&mode!="current"&&mode!="rejection")throw std::runtime_error("Invalid sampler");
+            rejection=mode=="rejection";
             historical=mode=="old";int n=std::stoi(argv[3]);unsigned long seed=std::stoul(argv[4]);
             double distance=std::stod(argv[6]);
             const double rateVariation=argc==8?std::stod(argv[7]):0.;
@@ -128,10 +166,13 @@ int main(int argc,char** argv) {
             engine.AddInteraction(PCELInteraction(new IcsCEL(back,1e12*units.eV)));
             engine.SetPropagationFilter(new EnergyBasedFilter(1e12*units.eV));
             for(int i=0;i<n;++i){Particle p(Photon,0.01);p.Energy=1e15*units.eV;stack.AddPrimary(p);}
+            const auto transportStart=Clock::now();
             engine.Run(rateVariation);
+            const double transportSeconds=std::chrono::duration<double>(Clock::now()-transportStart).count();
             if(engine.FailureCount())throw std::runtime_error("Discarded cascade histories");
             std::ofstream out(argv[5]);if(!out)throw std::runtime_error("Cannot write output");
             out<<std::setprecision(17)<<"# sampler="<<mode<<" N="<<n<<" seed="<<seed<<" E0_eV=1e15 Emin_eV=1e12 L_Mpc="<<distance<<" source_z=0.01 CMB_K=2.7255 no_thinning tolerance="<<tolerance<<" max_rate_variation="<<rateVariation<<"\n# bin count_sum count_sumsq energy_sum energy_sumsq\n";
+            out<<"# transport_seconds="<<transportSeconds<<" invariant_seconds="<<invariantSeconds<<" invariant_calls="<<invariantCalls<<" profiling="<<profiling<<"\n";
             for(int j=0;j<32;++j){double c=0,c2=0,e=0,e2=0;for(const auto& h:output->histories){c+=h.second.counts[j];c2+=std::pow(h.second.counts[j],2);e+=h.second.energy[j];e2+=std::pow(h.second.energy[j],2);}out<<j<<'\t'<<c<<'\t'<<c2<<'\t'<<e<<'\t'<<e2<<'\n';}
             if(!out)throw std::runtime_error("Output failed");
         } else throw std::runtime_error("Invalid arguments");

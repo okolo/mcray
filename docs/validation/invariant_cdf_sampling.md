@@ -107,6 +107,70 @@ Machine-readable measurements and environment records are in
 quantiles are in [the TSV table](data/invariant_cdf_quantiles_20261020.tsv).
 The `linux` rows refer to amd64 emulation on the arm64 workstation.
 
+## Fraction of transport and generation time spent selecting the invariant
+
+The opt-in `em_sampling_probe` adapter now accepts `rejection` as a cascade
+control and `MCRAY_PROFILE_S=1` to time invariant selection, including its
+normalization. The control calls the unchanged production rejection function;
+its body is byte-identical to revision `1cc28f3`. A thread-local MathUtils
+retains the integration workspace. Production sources are unchanged by this
+profiling addition. Kernel construction outside the sampler is not included
+in the invariant timer. The loop timer excludes background initialization
+and final disk output, and includes the profiling clock calls.
+
+Native macOS arm64 measurements used three repetitions of 30 independent
+primary histories per mode and distance, seeds 20261020--20261022. Cascades
+start with 1e15 eV photons at z=0.01 on CMB at 2.7255 K, with GammaPP, hard
+ICS and ICS continuous losses, a 1e12 eV transport/secondary threshold,
+no thinning, and `max_rate_variation=0`. Background integration tolerance
+is 1e-3. Entries below are medians over the three runs.
+
+| Distance | Rejection loop, s | CDF loop, s | Rejection S fraction | CDF S fraction | Loop time ratio |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 0.1 Mpc | 2.218 | 3.349 | 1.71% | 27.10% | 1.51 |
+| 1.0 Mpc | 7.574 | 8.706 | 0.76% | 13.76% | 1.15 |
+
+These are small timing ensembles, not spectral acceptance tests. The sampler
+changes random-number consumption and trajectories, so the loop ratios also
+include differences in realized work. The earlier 107x result refers to a
+particular fixed-energy invariant kernel, not a full transport calculation.
+Most transport time in this configuration lies outside invariant selection.
+The fraction depends on the transport setup and must be profiled on the
+actual server workload before making server performance claims.
+
+The separate `interactions` adapter measures SampleS plus SampleSecondaries,
+vector construction and a checksum, without transport, histogram accumulation
+or raw-event I/O. Across the original eleven physical cases, three blocks of
+1000 events per mode (66000 events total), at integration tolerance 1e-4,
+the median S fractions range from 71.65--94.68% for rejection and
+98.95--99.67% for CDF. These fractions are not the fraction of an entire
+server acceptance run, which also builds references, writes raw events and
+accumulates/analyzes observables. Turning profiling on/off preserves the
+1000-event secondary checksums exactly in four ICS/GammaPP controls.
+
+Machine-readable timings, all repeated measurements, source/binary hashes
+and configuration are in
+[invariant_sampling_profile_20261020.json](data/invariant_sampling_profile_20261020.json).
+The bounded runner preserves exact source, local source changes, adapter,
+executable, seeds, commands, output/logs and SHA-256 hashes:
+
+```bash
+python3 tests/sampling/profile_cascade_sampling.py \
+  --binary build/native/tests/em_sampling_probe --output /tmp/cascade-profile \
+  --distances 0.1 1 --primaries 30 --repeats 3 --seconds 480
+python3 tests/sampling/profile_cascade_sampling.py \
+  --binary build/native/tests/em_sampling_probe --output /tmp/generation-profile \
+  --scope interactions --primaries 1000 --repeats 3 --seconds 180
+```
+
+Each subprocess has an additional 60-second limit. A variable-rate pilot was
+stopped because it exceeded the intended short profiling cost; it supplies
+no performance conclusion. The full native runs above completed. Ubuntu
+22.04/Python 3.10 under amd64 emulation also rebuilt the adapter and completed
+all eleven generation cases (132 events), and all 19 Python tests passed on
+both platforms. The emulated run is a compatibility smoke check; its timing
+is not a physical server estimate.
+
 ## Bounded local spectrum check
 
 The completed fixed-size native check uses production commit

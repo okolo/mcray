@@ -1,0 +1,1019 @@
+{
+  "production_revision": "0579f387e4d423989b25de581b9aacffaf7a556f",
+  "rejection_reference": "1cc28f381e961f3d4947d08f0149ac72d63c3635",
+  "rejection_function_body_identical": true,
+  "sampler_timing_scope": "Invariant selection including normalization; excludes kernel construction. Loop time excludes background initialization and final disk output.",
+  "environment": "Native macOS 26.5 arm64; timings are not physical Linux amd64 server estimates.",
+  "seeds": [
+    20261020,
+    20261021,
+    20261022
+  ],
+  "cascade": {
+    "arguments": {
+      "primaries": 30,
+      "repeats": 3,
+      "seconds": 480.0,
+      "scope": "cascade",
+      "distances": [
+        0.1,
+        1.0
+      ],
+      "rate_variations": [
+        0.0
+      ]
+    },
+    "binary_sha256": "9ee97dd02c568bbb0efc7134ceeb885178bf238edfa445e0ab918f00efd6a390",
+    "summaries": [
+      {
+        "scenario": "d0.1-v0.0",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 2.21799075,
+            "invariant_seconds": 0.03852759799999999,
+            "invariant_fraction": 0.017129832279768553,
+            "invariant_calls": 1882
+          },
+          "current": {
+            "transport_seconds": 3.348873792,
+            "invariant_seconds": 0.9132924580000011,
+            "invariant_fraction": 0.27102178562608026,
+            "invariant_calls": 2049
+          }
+        },
+        "transport_ratio": 1.5098682408842328
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 7.574379875,
+            "invariant_seconds": 0.057889831999999974,
+            "invariant_fraction": 0.007642847725537396,
+            "invariant_calls": 2706
+          },
+          "current": {
+            "transport_seconds": 8.706168708,
+            "invariant_seconds": 1.1976453680000008,
+            "invariant_fraction": 0.1375628486155452,
+            "invariant_calls": 2716
+          }
+        },
+        "transport_ratio": 1.1494232995542755
+      }
+    ],
+    "records": [
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 2.366104416,
+        "invariant_seconds": 0.03921810600000005,
+        "invariant_fraction": 0.016574968431148075,
+        "invariant_calls": 1905
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 3.348873792,
+        "invariant_seconds": 0.9338779550000008,
+        "invariant_fraction": 0.27886328748217,
+        "invariant_calls": 2073
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 3.442642875,
+        "invariant_seconds": 0.9132924580000011,
+        "invariant_fraction": 0.26528817863514265,
+        "invariant_calls": 2049
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 2.21799075,
+        "invariant_seconds": 0.03852759799999999,
+        "invariant_fraction": 0.017370495345843978,
+        "invariant_calls": 1882
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 2.206877708,
+        "invariant_seconds": 0.03780344500000004,
+        "invariant_fraction": 0.017129832279768553,
+        "invariant_calls": 1821
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 3.203379042,
+        "invariant_seconds": 0.8681855080000023,
+        "invariant_fraction": 0.27102178562608026,
+        "invariant_calls": 1921
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 7.664452542,
+        "invariant_seconds": 0.060798553999999984,
+        "invariant_fraction": 0.007932537081655007,
+        "invariant_calls": 2790
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 7.505485792,
+        "invariant_seconds": 1.0915506379999986,
+        "invariant_fraction": 0.14543370918954618,
+        "invariant_calls": 2444
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 9.326462458,
+        "invariant_seconds": 1.262281268,
+        "invariant_fraction": 0.13534405715826878,
+        "invariant_calls": 2882
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 7.574379875,
+        "invariant_seconds": 0.057889831999999974,
+        "invariant_fraction": 0.007642847725537396,
+        "invariant_calls": 2706
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 7.000784041,
+        "invariant_seconds": 0.05298264799999987,
+        "invariant_fraction": 0.0075681020425294775,
+        "invariant_calls": 2494
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 8.706168708,
+        "invariant_seconds": 1.1976453680000008,
+        "invariant_fraction": 0.1375628486155452,
+        "invariant_calls": 2716
+      }
+    ],
+    "source_probe_sha256": "c94327a400f634dc018352f6a4ac275e202373a01835eb328f965a0cfd5c9c81"
+  },
+  "interactions": {
+    "arguments": {
+      "primaries": 1000,
+      "repeats": 3,
+      "seconds": 180.0,
+      "scope": "interactions",
+      "distances": [
+        0.01,
+        0.1
+      ],
+      "rate_variations": [
+        0.0
+      ]
+    },
+    "binary_sha256": "9ee97dd02c568bbb0efc7134ceeb885178bf238edfa445e0ab918f00efd6a390",
+    "summaries": [
+      {
+        "scenario": "ICS-1e+13",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.018732875,
+            "invariant_seconds": 0.016380293000000008,
+            "invariant_fraction": 0.8744142583559655,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.2923445,
+            "invariant_seconds": 0.2899809480000001,
+            "invariant_fraction": 0.9919914315886657,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 15.605960110234015
+      },
+      {
+        "scenario": "ICS-1e+14",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.035773,
+            "invariant_seconds": 0.033599347999999994,
+            "invariant_fraction": 0.9392376373242388,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.499277333,
+            "invariant_seconds": 0.49710931300000005,
+            "invariant_fraction": 0.9956576839029062,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 13.956820311408045
+      },
+      {
+        "scenario": "ICS-1e+15",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.009233208,
+            "invariant_seconds": 0.007063951999999999,
+            "invariant_fraction": 0.7650593379895697,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.661912291,
+            "invariant_seconds": 0.65973613,
+            "invariant_fraction": 0.9967123121452959,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 71.68822482933344
+      },
+      {
+        "scenario": "ICS-1e+16",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.009959667,
+            "invariant_seconds": 0.007772577999999983,
+            "invariant_fraction": 0.7723997456549392,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.643738417,
+            "invariant_seconds": 0.641551747,
+            "invariant_fraction": 0.996603169948765,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 64.6345321585551
+      },
+      {
+        "scenario": "ICS-1e+18",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.008273875,
+            "invariant_seconds": 0.006155264,
+            "invariant_fraction": 0.7429828882442719,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.645817709,
+            "invariant_seconds": 0.6435564510000004,
+            "invariant_fraction": 0.9964986125829516,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 78.05504784638396
+      },
+      {
+        "scenario": "ICS-1e+20",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.0174795,
+            "invariant_seconds": 0.015345488999999988,
+            "invariant_fraction": 0.8784406093718397,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.641094,
+            "invariant_seconds": 0.6389328100000001,
+            "invariant_fraction": 0.9966289030937742,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 36.676907234188626
+      },
+      {
+        "scenario": "PP-1e+14",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.045335375,
+            "invariant_seconds": 0.04293255599999994,
+            "invariant_fraction": 0.9467785698666081,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.227008708,
+            "invariant_seconds": 0.22461275899999986,
+            "invariant_fraction": 0.9894966931191621,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 5.007319515940918
+      },
+      {
+        "scenario": "PP-1e+15",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.042811042,
+            "invariant_seconds": 0.04038095199999998,
+            "invariant_fraction": 0.9432368406263033,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.317915917,
+            "invariant_seconds": 0.31556174300000017,
+            "invariant_fraction": 0.9925592026144238,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 7.426026140639137
+      },
+      {
+        "scenario": "PP-1e+16",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.009122417,
+            "invariant_seconds": 0.006710113000000009,
+            "invariant_fraction": 0.7351694822624537,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.413817417,
+            "invariant_seconds": 0.4114231560000002,
+            "invariant_fraction": 0.9942142092100492,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 45.36269466743298
+      },
+      {
+        "scenario": "PP-1e+18",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.0093805,
+            "invariant_seconds": 0.006701961999999991,
+            "invariant_fraction": 0.7165485012204154,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.622062083,
+            "invariant_seconds": 0.6194433259999993,
+            "invariant_fraction": 0.9957901999308955,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 66.31438441447683
+      },
+      {
+        "scenario": "PP-1e+20",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 0.017853166,
+            "invariant_seconds": 0.015170177000000007,
+            "invariant_fraction": 0.8490402676342403,
+            "invariant_calls": 1000
+          },
+          "current": {
+            "transport_seconds": 0.623559125,
+            "invariant_seconds": 0.6209001619999998,
+            "invariant_fraction": 0.9957358285792062,
+            "invariant_calls": 1000
+          }
+        },
+        "transport_ratio": 34.9270894025183
+      }
+    ],
+    "records": [
+      {
+        "scenario": "ICS-1e+13",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.018931792,
+        "invariant_seconds": 0.016579203999999986,
+        "invariant_fraction": 0.875733475204037,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+13",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.286750334,
+        "invariant_seconds": 0.28446515600000044,
+        "invariant_fraction": 0.9920307747575299,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+13",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.2923445,
+        "invariant_seconds": 0.2899809480000001,
+        "invariant_fraction": 0.991915182259287,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+13",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.018732875,
+        "invariant_seconds": 0.016380293000000008,
+        "invariant_fraction": 0.8744142583559655,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+13",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.018398792,
+        "invariant_seconds": 0.016085644000000017,
+        "invariant_fraction": 0.8742771808062191,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+13",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.292508833,
+        "invariant_seconds": 0.29016625599999996,
+        "invariant_fraction": 0.9919914315886657,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+14",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.035773,
+        "invariant_seconds": 0.033599347999999994,
+        "invariant_fraction": 0.9392376373242388,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+14",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.49776525,
+        "invariant_seconds": 0.49562271200000013,
+        "invariant_fraction": 0.9956956858679873,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+14",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.499277333,
+        "invariant_seconds": 0.49710931300000005,
+        "invariant_fraction": 0.9956576839029062,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+14",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.038190834,
+        "invariant_seconds": 0.035975236999999945,
+        "invariant_fraction": 0.9419861582493837,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+14",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.0352295,
+        "invariant_seconds": 0.03305933199999995,
+        "invariant_fraction": 0.9383991257326942,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+14",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.502877208,
+        "invariant_seconds": 0.5006333750000003,
+        "invariant_fraction": 0.9955380101458093,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+15",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.009233208,
+        "invariant_seconds": 0.007063951999999999,
+        "invariant_fraction": 0.7650593379895697,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+15",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.661912291,
+        "invariant_seconds": 0.65973613,
+        "invariant_fraction": 0.9967123121452959,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+15",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.659549916,
+        "invariant_seconds": 0.6573933010000005,
+        "invariant_fraction": 0.9967301716705859,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+15",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.01014425,
+        "invariant_seconds": 0.0077614659999999894,
+        "invariant_fraction": 0.7651098898390704,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+15",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.009132083,
+        "invariant_seconds": 0.006982489000000009,
+        "invariant_fraction": 0.76461076843038,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+15",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.670586625,
+        "invariant_seconds": 0.6683394379999995,
+        "invariant_fraction": 0.9966489236196733,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+16",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.009959667,
+        "invariant_seconds": 0.007772577999999983,
+        "invariant_fraction": 0.7804054091366692,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+16",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.665090541,
+        "invariant_seconds": 0.6628003679999993,
+        "invariant_fraction": 0.9965565996524965,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+16",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.641002667,
+        "invariant_seconds": 0.6388280490000006,
+        "invariant_fraction": 0.9966074743336452,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+16",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.010261334,
+        "invariant_seconds": 0.007921250000000003,
+        "invariant_fraction": 0.7719512882048282,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+16",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.009436,
+        "invariant_seconds": 0.007288364000000006,
+        "invariant_fraction": 0.7723997456549392,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+16",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.643738417,
+        "invariant_seconds": 0.641551747,
+        "invariant_fraction": 0.996603169948765,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+18",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.008483583,
+        "invariant_seconds": 0.0063031570000000045,
+        "invariant_fraction": 0.7429828882442719,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+18",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.657779792,
+        "invariant_seconds": 0.6553779540000005,
+        "invariant_fraction": 0.9963485682758715,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+18",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.640370666,
+        "invariant_seconds": 0.6381752890000006,
+        "invariant_fraction": 0.9965717089858088,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+18",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.008175209,
+        "invariant_seconds": 0.006057084999999992,
+        "invariant_fraction": 0.7409088868553687,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+18",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.008273875,
+        "invariant_seconds": 0.006155264,
+        "invariant_fraction": 0.743939689685909,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+18",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.645817709,
+        "invariant_seconds": 0.6435564510000004,
+        "invariant_fraction": 0.9964986125829516,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+20",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.01758275,
+        "invariant_seconds": 0.015461740000000005,
+        "invariant_fraction": 0.879369836914021,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+20",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.640188917,
+        "invariant_seconds": 0.6379962820000008,
+        "invariant_fraction": 0.9965750188080822,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+20",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.641094,
+        "invariant_seconds": 0.6389328100000001,
+        "invariant_fraction": 0.9966289030937742,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+20",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.0172965,
+        "invariant_seconds": 0.015193948000000023,
+        "invariant_fraction": 0.8784406093718397,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+20",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.0174795,
+        "invariant_seconds": 0.015345488999999988,
+        "invariant_fraction": 0.8779134986698698,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "ICS-1e+20",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.642816958,
+        "invariant_seconds": 0.6406618540000001,
+        "invariant_fraction": 0.9966474064301211,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+14",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.045335375,
+        "invariant_seconds": 0.04293255599999994,
+        "invariant_fraction": 0.9469990266982449,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+14",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.224408542,
+        "invariant_seconds": 0.22208211700000008,
+        "invariant_fraction": 0.9896330817924038,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+14",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.227008708,
+        "invariant_seconds": 0.22461275899999986,
+        "invariant_fraction": 0.9894455634715117,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+14",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.044919334,
+        "invariant_seconds": 0.04249641400000002,
+        "invariant_fraction": 0.9460606428403417,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+14",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.04573,
+        "invariant_seconds": 0.04329618399999999,
+        "invariant_fraction": 0.9467785698666081,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+14",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.228235167,
+        "invariant_seconds": 0.2258379429999997,
+        "invariant_fraction": 0.9894966931191621,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+15",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.044044959,
+        "invariant_seconds": 0.04156716100000002,
+        "invariant_fraction": 0.943743891327042,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+15",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.321016,
+        "invariant_seconds": 0.31859178999999976,
+        "invariant_fraction": 0.9924483203329421,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+15",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.317540833,
+        "invariant_seconds": 0.3151780759999999,
+        "invariant_fraction": 0.9925592026144238,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+15",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.042709792,
+        "invariant_seconds": 0.04027917600000001,
+        "invariant_fraction": 0.9430899593236137,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+15",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.042811042,
+        "invariant_seconds": 0.04038095199999998,
+        "invariant_fraction": 0.9432368406263033,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+15",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.317915917,
+        "invariant_seconds": 0.31556174300000017,
+        "invariant_fraction": 0.9925949791309133,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+16",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.009835041,
+        "invariant_seconds": 0.007230422000000005,
+        "invariant_fraction": 0.7351694822624537,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+16",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.413817417,
+        "invariant_seconds": 0.4114231560000002,
+        "invariant_fraction": 0.9942142092100492,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+16",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.423322041,
+        "invariant_seconds": 0.4208598699999999,
+        "invariant_fraction": 0.9941836928826485,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+16",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.009122417,
+        "invariant_seconds": 0.006710113000000009,
+        "invariant_fraction": 0.7355630640432255,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+16",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.009023833,
+        "invariant_seconds": 0.006604692000000005,
+        "invariant_fraction": 0.731916470528655,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+16",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.412689334,
+        "invariant_seconds": 0.4103287109999996,
+        "invariant_fraction": 0.9942799030517218,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+18",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.00911575,
+        "invariant_seconds": 0.006531877000000002,
+        "invariant_fraction": 0.7165485012204154,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+18",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.622062083,
+        "invariant_seconds": 0.6194433259999993,
+        "invariant_fraction": 0.9957901999308955,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+18",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.64979925,
+        "invariant_seconds": 0.6470553359999996,
+        "invariant_fraction": 0.9957772896783116,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+18",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.009942916,
+        "invariant_seconds": 0.007127405999999997,
+        "invariant_fraction": 0.7168325670256087,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+18",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.0093805,
+        "invariant_seconds": 0.006701961999999991,
+        "invariant_fraction": 0.7144567986781079,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+18",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.615438875,
+        "invariant_seconds": 0.6128952009999997,
+        "invariant_fraction": 0.9958668941736898,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+20",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 0.017853166,
+        "invariant_seconds": 0.015170177000000007,
+        "invariant_fraction": 0.8497191478531039,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+20",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 0.617992083,
+        "invariant_seconds": 0.6153678800000004,
+        "invariant_fraction": 0.9957536624300095,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+20",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 0.625114208,
+        "invariant_seconds": 0.6224203609999998,
+        "invariant_fraction": 0.9956906322628325,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+20",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 0.017193209,
+        "invariant_seconds": 0.014590650999999986,
+        "invariant_fraction": 0.8486287231196913,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+20",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 0.018008458,
+        "invariant_seconds": 0.015289905999999978,
+        "invariant_fraction": 0.8490402676342403,
+        "invariant_calls": 1000
+      },
+      {
+        "scenario": "PP-1e+20",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 0.623559125,
+        "invariant_seconds": 0.6209001619999998,
+        "invariant_fraction": 0.9957358285792062,
+        "invariant_calls": 1000
+      }
+    ],
+    "source_probe_sha256": "c94327a400f634dc018352f6a4ac275e202373a01835eb328f965a0cfd5c9c81"
+  },
+  "instrumentation_rng_check": [
+    {
+      "process": "ICS",
+      "mode": "rejection",
+      "checksum_equal": true
+    },
+    {
+      "process": "ICS",
+      "mode": "current",
+      "checksum_equal": true
+    },
+    {
+      "process": "PP",
+      "mode": "rejection",
+      "checksum_equal": true
+    },
+    {
+      "process": "PP",
+      "mode": "current",
+      "checksum_equal": true
+    }
+  ],
+  "verification": {
+    "native_python_tests": 19,
+    "ubuntu_22_python_310_tests": 19,
+    "linux_amd64_emulated_generation_events": 132,
+    "linux_amd64_emulated_generation_cases": 11,
+    "production_sources_changed": false
+  }
+}
