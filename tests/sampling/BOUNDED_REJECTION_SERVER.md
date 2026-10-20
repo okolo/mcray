@@ -50,6 +50,13 @@ Reanalysis uses the saved frozen input:
 python3 sampling/analyze_bounded_secondary.py RESULT/analysis-input.json RESULT/reanalysis.json
 ```
 
+An independent optional audit reconstructs all saved multiplicity bins directly
+from binary events, checks types/kinematic support/energy and verifies hashes:
+
+```bash
+python3 sampling/audit_secondary_raw.py RESULT /tmp/raw-audit.json --seconds 600
+```
+
 Deterministic controls audit global/local envelopes throughout the support,
 table-knot neighborhoods, and tail proposals corresponding to probabilities
 down to 1e-12. CDF quantiles are checked against independent refined integration.
