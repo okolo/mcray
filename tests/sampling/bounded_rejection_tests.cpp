@@ -47,6 +47,19 @@ TEST(BoundedRejection, RetainsTinyTailAndBothEndpoints) {
         EXPECT_TRUE(envelope.Accept(p,0));
     }
     EXPECT_NEAR(envelope.Proposal(1).y,1e-12,1e-26);
+    EXPECT_DOUBLE_EQ(envelope.Proposal(0).x,1);
+    EXPECT_DOUBLE_EQ(envelope.Proposal(1).x,1000);
+}
+
+TEST(BoundedRejection, CollapsedAbsoluteLogCoordinatesCannotReturnAnEmptyInteraction) {
+    gsl_set_error_handler_off();RareTail f;MathUtils math;mcray::Randomizer rng(12345);
+    const double lo=std::exp(10.),hi=std::nextafter(lo,INFINITY);
+    ASSERT_EQ(std::log(lo),std::log(hi));MathUtils::BoundedSamplingStats stats;
+    try {
+        double x,total;EXPECT_TRUE(math.SampleLogDistributionBounded(f,rng,x,total,lo,hi,.001,&stats));
+        EXPECT_GT(total,0);EXPECT_GE(x,lo);EXPECT_LE(x,hi);
+    } catch(Exception* e){EXPECT_FALSE(e->Retryable());delete e;}
+    EXPECT_EQ(stats.fallback,1u);
 }
 
 TEST(BoundedRejection, FailsOnInvalidEnvelopeInsteadOfAdjustingIt) {

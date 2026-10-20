@@ -1104,6 +1104,10 @@ bool MathUtils::SampleLogDistributionBounded(const Function& density,mcray::Rand
     xmin=std::max(xmin,density.Xmin());xmax=std::min(xmax,density.Xmax());
     if(!(xmin>0 && xmax>xmin && tolerance>0 && tolerance<=.1))
         throw new Exception("Invalid bounded sampler arguments",false);
+    if(!(std::log(xmax)>std::log(xmin))) {
+        if(stats)stats->fallback=1;
+        return SampleLogDistributionCDF(density,rng,x,integral,xmin,xmax,tolerance);
+    }
     struct LogPDF : Function {
         const Function& density;mutable double maximum=0;
         explicit LogPDF(const Function& density):density(density){}

@@ -27,6 +27,7 @@ public:
         cells=std::priority_queue<Cell>(std::less<Cell>(),std::move(storage));
         if(!(xmin>0 && xmax>xmin && std::isfinite(logmin) && std::isfinite(logmax)))
             throw new Exception("Invalid bounded sampler support",false);
+        if(!(logmax>logmin))return;
         cells.push(cell(point(logmin),point(logmax)));
         for(int iteration=0;iteration<4096;++iteration) {
             if(cells.top().upper<=1.01*maximum){supported=true;return;}
@@ -63,7 +64,8 @@ public:
     }
 private:
     Point point(double t) const {
-        const double x=std::clamp(std::exp(t),xmin,xmax),y=x*density(x);
+        const double x=t==logmin?xmin:t==logmax?xmax:std::clamp(std::exp(t),xmin,xmax);
+        const double y=x*density(x);
         if(!std::isfinite(y)||y<0)throw new Exception("Invalid bounded sampling density",false);
         ++evaluations;maximum=std::max(maximum,y);return {t,x,y};
     }
