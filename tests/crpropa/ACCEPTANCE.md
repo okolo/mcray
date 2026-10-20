@@ -141,6 +141,13 @@ archives into separate retained directories and adjust the corresponding two
 arguments below. Preserve nested paths and executable modes. Do not copy
 partial summaries in place of full reference payloads. The supplied pinned
 reference binary requires the same server ABI as the successful pilot run.
+Keep `reference-build/reference/libcrpropa.so` with the probe. The runner
+prepends that retained library directory to each CRPropa job's library search
+path, overriding the probe's original absolute RUNPATH. Its original pilot
+payload SHA-256 is checked before any histories and included in the campaign
+identity; it must remain unchanged on resume. The retained library also needs
+the system single-precision FFTW runtime (`sudo apt-get install libfftw3-single3`
+on Ubuntu 22.04), alongside the existing Fortran/OpenMP runtimes.
 
 Run in tmux/screen if desired. Choose eight CPU workers, or an appropriate
 positive worker count for the server's CPU and memory:

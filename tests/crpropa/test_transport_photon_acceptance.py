@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from run_transport_photon_acceptance import PROTOCOL, jobs, summary, interval, report, reserve_campaign, sha
+from run_transport_photon_acceptance import PROTOCOL, jobs, summary, interval, report, reserve_campaign, sha, command
 
 
 class AcceptanceTest(unittest.TestCase):
@@ -103,6 +103,19 @@ class AcceptanceTest(unittest.TestCase):
         self.assertEqual(result['status'], 'inconclusive')
         self.assertFalse(result['execution_complete'])
         self.assertEqual(result['simultaneous_family_size'], 384)
+
+    def test_reference_command_uses_the_retained_runtime_library(self):
+        bundle = self.root/'bundle'
+        (bundle/'nuclei').mkdir(parents=True)
+        (bundle/'nuclei/masses.tsv').write_text('56 26 52100 NIST\n')
+        references = self.root/'relocated-reference'
+        job = next(j for j in jobs(self.protocol) if j['code'] == 'crpropa')
+        argv, env = command(job, self.protocol, bundle, references, None,
+                            references/'reference-build/crpropa_decay_probe', self.root/'out.tsv')
+        self.assertEqual(env['LD_LIBRARY_PATH'].split(':')[0],
+                         str(references/'reference-build/reference'))
+        self.assertEqual(env['CRPROPA_DATA_PATH'], str(references/'cmb'))
+        self.assertEqual(argv[0], str(references/'reference-build/crpropa_decay_probe'))
 
 
 if __name__ == '__main__':

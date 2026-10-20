@@ -20,6 +20,8 @@ from run_transport_photon_pilots import sha, summarize, PIN, ROOT
 from run_network_rate_scan import verify
 
 PROTOCOL = Path(__file__).parent/'protocols/transport_photons_v1.json'
+# Original successful pilot archive's libcrpropa.so payload fingerprint.
+REFERENCE_LIBRARY_SHA256 = 'fae591c411199be359f5fd72cf4c337dbf0154c929460d0bfb338096a7dcfa42'
 ENV = {**os.environ, 'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1'}
 
 
@@ -188,9 +190,13 @@ def command(job, protocol, bundle, references, native, reference_probe, target):
     masses = {tuple(map(int, r[:2])): float(r[2]) for line in (bundle/'nuclei/masses.tsv').read_text().splitlines()
               if line and not line.startswith('#') for r in [line.split()]}
     gamma = 56*protocol['energy_per_nucleon_eV']/(masses[56, 26]*1e6)
+    library_dir = references/'reference-build/reference'
+    library_path = str(library_dir)
+    if ENV.get('LD_LIBRARY_PATH'):
+        library_path += os.pathsep+ENV['LD_LIBRARY_PATH']
     return ([str(reference_probe), '--mode', 'transport', '--gamma', str(gamma),
         '--step-fraction', str(protocol['reference_step_fractions'][job['level']])]+common,
-        {**ENV, 'CRPROPA_DATA_PATH': str(references/bg)})
+        {**ENV, 'CRPROPA_DATA_PATH': str(references/bg), 'LD_LIBRARY_PATH': library_path})
 
 
 def check_coefficients(entry, protocol, cache, bundle, references, out, native_probe=None):
@@ -278,6 +284,9 @@ def main():
     probe = references/'reference-build/crpropa_decay_probe'
     if sha(probe) != protocol['crpropa_probe_sha256']:
         raise ValueError('Pinned CRPropa binary changed')
+    reference_library_sha = sha(references/'reference-build/reference/libcrpropa.so')
+    if reference_library_sha != REFERENCE_LIBRARY_SHA256:
+        raise ValueError('Pinned CRPropa runtime library changed')
     build = json.loads((references/'reference-build.json').read_text())
     if build['commit'] != PIN or build['probe_sha256'] != sha(probe):
         raise ValueError('Pinned CRPropa source provenance mismatch')
@@ -294,6 +303,7 @@ def main():
     identity = dict(protocol_sha256=sha(PROTOCOL), source_commit=source,
         source_patch_sha256=__import__('hashlib').sha256(subprocess.check_output(['git','diff','HEAD'],cwd=ROOT)).hexdigest(),
         driver_sha256=sha(Path(__file__)), native_sha256=sha(native) if native.exists() else None,
+        reference_library_sha256=reference_library_sha,
         input_manifest_sha256=sha(bundle/'inputs-manifest.json'))
     plan = dict(identity=identity, jobs=all_jobs, status='plan only; no histories', workers=a.workers,
         started_utc=datetime.now(timezone.utc).isoformat(), host=platform.platform(),

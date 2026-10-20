@@ -13,10 +13,10 @@ Bins, means, normalizations, seeds, tolerances, confidence family and the
 
 Confirmed short checks:
 
-- All six acceptance bookkeeping/statistics tests pass, including cap and
+- All seven acceptance bookkeeping/statistics tests pass, including cap and
   seed accounting, complete-history aggregation, equivalence boundaries,
   duplicate-campaign rejection, raw-output report reconstruction and
-  incomplete-result handling.
+  incomplete-result handling and retained-library search paths.
 - All six pilot bookkeeping tests and the shared photon-table control pass.
 - The external shell wrapper passes `bash -n`.
 - Plan-only validation verifies the original input bundle, retained pinned
@@ -42,6 +42,14 @@ OpenSSL 3 and CMake 3.22 are supported by the current build helper. The prior
 [YAML/OpenSSL regression checks](yaml_configuration.md) passed 144/144 on
 macOS and Ubuntu 22.04; publishing these Python tools does not change the
 production transport kernels.
+
+The retained CRPropa probe has an absolute RUNPATH pointing to its original
+server build. Reference jobs now explicitly load `libcrpropa.so` from the
+supplied retained reference directory. The original pilot archive manifest's
+library fingerprint is checked before histories and included in resume
+identity. This prevents a relocated archive from using an unrelated library.
+The Ubuntu runtime prerequisites include single-precision FFTW. Statistical
+protocol bytes, table payloads and numerical targets remain unchanged.
 
 This campaign isolates Fe56 PD+decays and both photon sources at one energy
 and distance on two backgrounds. It excludes GZK, PPP and EM propagation.
