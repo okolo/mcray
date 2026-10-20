@@ -190,7 +190,7 @@ std::set<TalysData::Identity> NuclearDecayData::ValidateNetwork(unsigned int a,u
         for (const auto& channel:Get(key.first,key.second)) {
             const auto ids=Products(key,channel.code); pending.insert(pending.end(),ids.begin(),ids.end());
         }
-        if (pd && !isotope.terminal) {
+        if (pd && !fNuclei->PDInactive(isotope)) {
             fNuclei->RequirePhotonCoverage(key.first,key.second);
             if (!isotope.total || isotope.channels.empty()) Exception::Throw("Missing reachable photodisintegration data with nuclear decays");
             for (const auto& channel:isotope.channels) {

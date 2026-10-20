@@ -49,6 +49,27 @@ protected:
         catch (Utils::Exception* e) { const auto text=e->Message(); delete e; EXPECT_NE(text.find(message),std::string::npos)<<text; }
     }
 };
+TEST_F(NuclearGzkTest, MissingPDCompatibilityKeepsGzkReachabilityAndArtificialDecays) {
+    std::string grid;
+    for (int i=1;i<=513;++i) grid+=std::to_string(i)+"\n";
+    Write("grid_external.tsv",grid); Write("grid_talys.tsv",grid);
+    Write("total.tsv",""); Write("channels.tsv",""); Write("terminals.tsv","");
+    auto strict=std::make_shared<TalysData>(dir.string(),true,true);
+    NuclearDecayData strictDecay(dir.string(),strict);
+    Error([&] { strictDecay.ValidateNetwork(4,2,true,true); }, "Missing reachable photodisintegration");
+    auto compatible=std::make_shared<TalysData>(dir.string(),true,true,false,
+        TalysData::MissingPDPolicy::CRPropa);
+    auto decay=std::make_shared<NuclearDecayData>(dir.string(),compatible);
+    const auto reached=decay->ValidateNetwork(4,2,true,true);
+    EXPECT_TRUE(reached.count({3,1})); EXPECT_TRUE(reached.count({2,1}));
+    EXPECT_TRUE(reached.count({1,0})); EXPECT_TRUE(reached.count({1,1}));
+    EXPECT_NE(compatible->MissingPDMetadata(reached).find("skipped_missing_PD_count=4"),std::string::npos);
+    Particle p(Nucleus,0.); compatible->SetParticle(p,3,1); p.Energy=3e20*units.eV;
+    TalysPhotoDisintegration pd(new GzkPhoton,compatible);
+    EXPECT_DOUBLE_EQ(pd.Rate(p),0.);
+    NuclearDecay process(decay); EXPECT_GT(process.Rate(p),0.);
+    GZK gzk(new GzkPhoton,20261020,decay); EXPECT_GT(gzk.Rate(p),0.);
+}
 TEST(NuclearGzk, RateModifierBoundaries) {
     EXPECT_DOUBLE_EQ(GZK::NuclearModifier(1,1),1.);
     EXPECT_DOUBLE_EQ(GZK::NuclearModifier(56,0),0.);

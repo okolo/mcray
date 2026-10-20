@@ -102,6 +102,30 @@ TEST_F(NuclearPhotonsTest, CompoundEmissionAttachesPhotonLinesOnlyOnce) {
     Randomizer random(20261011);std::vector<Particle> out;ASSERT_TRUE(process.GetSecondaries(p,out,random));ASSERT_EQ(out.size(),4u);
     EXPECT_EQ(out[0].Type,Photon);for(size_t i=1;i<4;++i)EXPECT_EQ(out[i].MassNumber(),4u);
 }
+TEST_F(NuclearPhotonsTest, ExpandedGzkPhotonExceptionsRetainNuclearInteractions) {
+    std::ofstream(dir/"masses.tsv",std::ios::app)
+        << "8 3 7450 NIST\n7 3 6520 NIST\n8 5 7450 NIST\n7 4 6520 NIST\n";
+    Write("total.tsv","8 3"+Sigma(2.)+"8 5"+Sigma(2.));
+    Write("channels.tsv","8 3 100000"+Sigma(2.)+"8 5 010000"+Sigma(2.));
+    Write("pd_photon_transitions.tsv",""); Write("pd_photons.tsv","");
+    Write("pd_photon_exceptions.tsv","8 3 7 3\n8 5 7 4\n");
+    auto data=Load(); TalysPhotoDisintegration process(new LineBackground,data,true,true);
+    Randomizer random(20261020);
+    for (unsigned z : {3u,5u}) {
+        data->RequirePhotonCoverage(8,z);
+        Particle p(Nucleus,0.); data->SetParticle(p,8,z); p.Energy=p.Mass()*1e8; p.Weight=3.;
+        EXPECT_GT(process.Rate(p),0.);
+        EXPECT_TRUE(process.PhotonYields(p,{7,z==3 ? 3u : 4u}).empty());
+        std::vector<Particle> products;
+        ASSERT_TRUE(process.GetSecondaries(p,products,random)); ASSERT_EQ(products.size(),2u);
+        EXPECT_EQ(products[0].MassNumber(),7u);
+        EXPECT_EQ(products[1].Type,z==3 ? Neutron : Proton);
+        EXPECT_NEAR((products[0].Energy+products[1].Energy)/p.Energy,1.,1e-14);
+        for (const auto& q : products) EXPECT_DOUBLE_EQ(q.Weight,p.Weight);
+    }
+    EXPECT_NE(data->Metadata().find("PD photon exception 8 3 7 3"),std::string::npos);
+    EXPECT_NE(data->Metadata().find("PD photon exception 8 5 7 4"),std::string::npos);
+}
 TEST_F(NuclearPhotonsTest, MissingCoverageAndInvalidLinesAreErrors) {
     Write("pd_photon_transitions.tsv","");Error([&]{Load();},"no transition");
     Write("pd_photons.tsv","");auto data=Load();Error([&]{data->RequirePhotonCoverage(4,2);},"Missing PD photon transition");

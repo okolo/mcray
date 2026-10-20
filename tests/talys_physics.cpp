@@ -49,6 +49,46 @@ protected:
         }
     }
 };
+TEST_F(TalysTest, MissingPDPolicySkipsOnlyWhollyAbsentTablesAndPreservesClones) {
+    Write("total.tsv", Row("56 26",50));
+    Write("channels.tsv", Row("56 26 510000",2));
+    auto strict = std::make_shared<TalysData>(dir.string());
+    ExpectError([&] { strict->ValidateNetwork(4,2); }, "Incomplete reachable");
+    auto compatible = std::make_shared<TalysData>(dir.string(),true,false,false,
+        TalysData::MissingPDPolicy::CRPropa);
+    const auto reached = compatible->ValidateNetwork(4,2);
+    EXPECT_EQ(reached.size(),1u);
+    EXPECT_EQ(compatible->MissingPDMetadata(reached),
+        "# skipped_missing_PD_count=1\n# skipped_missing_PD A=4 Z=2\n");
+    EXPECT_EQ(compatible->MissingPDMetadata(compatible->ValidateNetwork(56,26)),
+        "# skipped_missing_PD_count=0\n");
+    Particle p(Nucleus,0.); compatible->SetParticle(p,4,2); p.Energy=1e20*units.eV;
+    TalysPhotoDisintegration process(new FixedK,compatible);
+    std::unique_ptr<RandomInteraction> clone(process.Clone());
+    EXPECT_DOUBLE_EQ(process.Rate(p),0.); EXPECT_DOUBLE_EQ(clone->Rate(p),0.);
+    EXPECT_DOUBLE_EQ(process.ChannelRates(p).exclusiveSum,0.);
+    std::vector<Particle> products; Randomizer random(20261020);
+    EXPECT_FALSE(process.GetSecondaries(p,products,random)); EXPECT_TRUE(products.empty());
+    compatible->SetParticle(p,56,26);
+    EXPECT_DOUBLE_EQ(process.Rate(p),TalysPhotoDisintegration(new FixedK,strict).Rate(p));
+    p.SetPsbNucleus(4);
+    ExpectError([&] { process.Rate(p); }, "tabulated nuclear mass");
+    ExpectError([&] { compatible->ValidateNetwork(5,2); }, "Missing TALYS isotope");
+}
+TEST_F(TalysTest, MissingPDCompatibilityRejectsPartialTablesAndUnloadedCrossSections) {
+    for (bool totalOnly : {false,true}) {
+        Write("total.tsv",totalOnly ? Row("4 2",1) : "");
+        Write("channels.tsv",totalOnly ? "" : Row("4 2 011000",1));
+        auto data=std::make_shared<TalysData>(dir.string(),true,false,false,
+            TalysData::MissingPDPolicy::CRPropa);
+        ExpectError([&] { data->ValidateNetwork(4,2); }, "Incomplete reachable");
+        Particle p(Nucleus,0.); data->SetParticle(p,4,2);
+        TalysPhotoDisintegration process(new FixedK,data);
+        ExpectError([&] { process.Rate(p); }, "Incomplete TALYS isotope");
+    }
+    ExpectError([&] { TalysData data(dir.string(),false,false,false,
+        TalysData::MissingPDPolicy::CRPropa); }, "requires loaded cross sections");
+}
 TEST_F(TalysTest, MassOnlyLoadingSupportsHeavyIsotopesWithoutCrossSections) {
     Write("masses.tsv","238 92 221700 NIST\n26 13 24200 NuDat3\n");
     Write("grid_talys.tsv","not a grid\n");

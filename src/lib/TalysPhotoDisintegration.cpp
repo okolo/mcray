@@ -62,8 +62,12 @@ double CheckedRate(double value) {
 }
 }
 
-TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool crpropaFallback, bool loadPhotons)
-    : fCRPropaFallback(crpropaFallback) {
+TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool crpropaFallback, bool loadPhotons, MissingPDPolicy missingPD)
+    : fMissingPD(missingPD), fCRPropaFallback(crpropaFallback) {
+    if (!loadCrossSections && missingPD != MissingPDPolicy::Strict)
+        Exception::Throw("Missing PD compatibility requires loaded cross sections");
+    fMetadata += std::string("# missing_PD_policy=") +
+        (missingPD == MissingPDPolicy::Strict ? "Strict\n" : "CRPropa\n");
     const auto metadata = ReadLines(directory + "/provenance.txt");
     if (metadata.size() < 3 || metadata[0] != "mcray-talys-v1" ||
         metadata[1] != "34b10e27375c0e9894d7c984ac15fb96e12975ef" ||
@@ -160,7 +164,7 @@ TalysData::TalysData(const std::string& directory, bool loadCrossSections, bool 
         }
 
         const std::set<std::array<unsigned int,4>> approved={{2,1,1,1},{3,1,1,1},{3,1,2,1},{3,2,1,1},
-            {3,2,2,1},{4,2,2,1},{4,2,3,2},{7,3,6,2}};
+            {3,2,2,1},{4,2,2,1},{4,2,3,2},{7,3,6,2},{8,3,7,3},{8,5,7,4}};
         for (const auto& line:ReadLines(directory+"/pd_photon_exceptions.tsv")) {
             std::istringstream row(line); std::array<unsigned int,4> key{};
             if (!(row>>key[0]>>key[1]>>key[2]>>key[3]) || !approved.count(key))
@@ -203,6 +207,27 @@ void TalysData::SetParticle(Particle& p, unsigned int a, unsigned int z) const {
     if (a == 1 && z <= 1) p.SetType(z ? Proton : Neutron);
     else p.SetNucleus(a, z, Get(a,z).mass, Particle::NuclearMassModel::TALYS);
 }
+bool TalysData::PDInactive(const Isotope& isotope) const {
+    // Only wholly absent tables are skippable. Partial or malformed data
+    // remain errors, and neither policy supplies masses or decay records.
+    return isotope.terminal || (fMissingPD == MissingPDPolicy::CRPropa &&
+                                !isotope.total && isotope.channels.empty());
+}
+std::string TalysData::MissingPDMetadata(const std::set<Identity>& reached) const {
+    std::string result;
+    unsigned int count = 0;
+    for (const auto& key : reached) {
+        if (key.first <= 1 || key.second == 0 || key.second == key.first) continue;
+        const auto& isotope = Get(key.first, key.second);
+        if (!isotope.terminal && PDInactive(isotope)) {
+            result += "# skipped_missing_PD A=" + Utils::ToString(key.first) +
+                      " Z=" + Utils::ToString(key.second) + "\n";
+            ++count;
+        }
+    }
+    return "# skipped_missing_PD_count=" + Utils::ToString(count) + "\n" + result;
+}
+
 std::set<TalysData::Identity> TalysData::ValidateNetwork(unsigned int a, unsigned int z) const {
     std::set<Identity> reached;
     std::vector<Identity> pending{{a,z}};
@@ -210,7 +235,7 @@ std::set<TalysData::Identity> TalysData::ValidateNetwork(unsigned int a, unsigne
         const auto key = pending.back(); pending.pop_back();
         if (!reached.insert(key).second || key.first == 1) continue;
         const auto& isotope = Get(key.first,key.second);
-        if (isotope.terminal) continue;
+        if (PDInactive(isotope)) continue;
         RequirePhotonCoverage(key.first,key.second);
         if (!isotope.total || isotope.channels.empty()) Exception::Throw("Incomplete reachable TALYS cross sections");
         for (const auto& channel : isotope.channels) {
@@ -235,7 +260,7 @@ const TalysData::Isotope& TalysPhotoDisintegration::Validate(const Particle& p) 
     const auto& isotope = fData->Get(p.MassNumber(),p.AtomicNumber());
     if (p.MassModel() != Particle::NuclearMassModel::TALYS || p.Mass() != isotope.mass)
         Exception::Throw("TALYS requires the pinned tabulated nuclear mass");
-    if (!isotope.terminal && (!isotope.total || isotope.channels.empty()))
+    if (!fData->PDInactive(isotope) && (!isotope.total || isotope.channels.empty()))
         Exception::Throw("Incomplete TALYS isotope encountered during propagation");
     if (fPhotons) fData->RequirePhotonCoverage(p.MassNumber(),p.AtomicNumber());
     return isotope;
@@ -243,13 +268,13 @@ const TalysData::Isotope& TalysPhotoDisintegration::Validate(const Particle& p) 
 double TalysPhotoDisintegration::Rate(const Particle& p) const {
     if (p.Type != Nucleus) return 0.;
     const auto& isotope = Validate(p);
-    return isotope.terminal ? 0. : CheckedRate(fBackground->GetRateK(*isotope.total, p));
+    return fData->PDInactive(isotope) ? 0. : CheckedRate(fBackground->GetRateK(*isotope.total, p));
 }
 TalysPhotoDisintegration::Rates TalysPhotoDisintegration::ChannelRates(const Particle& p) const {
     Rates rates;
     if (p.Type != Nucleus) return rates;
     const auto& isotope = Validate(p);
-    if (isotope.terminal) return rates;
+    if (fData->PDInactive(isotope)) return rates;
     rates.total = CheckedRate(fBackground->GetRateK(*isotope.total, p));
     for (const auto& channel : isotope.channels) {
         const double rate = CheckedRate(fBackground->GetRateK(*channel.sigma, p));

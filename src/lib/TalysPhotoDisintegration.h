@@ -15,6 +15,7 @@ namespace Interactions {
 // Immutable raw cross sections and tabulated masses shared by process clones.
 class TalysData {
 public:
+    enum class MissingPDPolicy { Strict, CRPropa };
     using Identity = std::pair<unsigned int, unsigned int>; // A,Z
     struct Channel {
         std::string code;
@@ -30,9 +31,12 @@ public:
         std::vector<Channel> channels;
     };
     explicit TalysData(const std::string& directory, bool loadCrossSections = true,
-                       bool crpropaFallback = false, bool loadPhotons = false);
+                       bool crpropaFallback = false, bool loadPhotons = false,
+                       MissingPDPolicy missingPD = MissingPDPolicy::Strict);
     const Isotope& Get(unsigned int a, unsigned int z) const;
     const Isotope* Find(unsigned int a, unsigned int z) const;
+    bool PDInactive(const Isotope& isotope) const;
+    std::string MissingPDMetadata(const std::set<Identity>& reached) const;
     bool CRPropaFallback() const { return fCRPropaFallback; }
     bool PhotonsLoaded() const { return fPhotonsLoaded; }
     bool GzkBundle() const { return fGzkBundle; }
@@ -51,6 +55,7 @@ public:
 private:
     std::map<Identity, Isotope> fIsotopes;
     std::string fMetadata;
+    MissingPDPolicy fMissingPD;
     bool fCRPropaFallback = false, fGzkBundle = false, fPhotonsLoaded = false;
     std::map<std::pair<Identity,Identity>,PhotonTransition> fPhotons;
 };

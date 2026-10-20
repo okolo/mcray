@@ -31,7 +31,7 @@ def prepare(repo, bundle, output, decay_reference):
         sources[name]=hashlib.sha256(data).hexdigest()
         return [s.split() for s in data.decode().splitlines() if s.strip() and not s.startswith('#')]
     payload={}
-    exceptions=[(2,1,1,1),(3,1,1,1),(3,1,2,1),(3,2,1,1),(3,2,2,1),(4,2,2,1),(4,2,3,2),(7,3,6,2)]
+    exceptions=[(2,1,1,1),(3,1,1,1),(3,1,2,1),(3,2,1,1),(3,2,2,1),(4,2,2,1),(4,2,3,2),(7,3,6,2),(8,3,7,3),(8,5,7,4)]
     payload["pd_photon_exceptions.tsv"]="# Explicit approved no-photon transitions; missing source record is not physical zero\n"+"\n".join(" ".join(map(str,key)) for key in exceptions)+"\n"
     grid=[float(x) for row in raw('tables/PD_Talys1.8_Khan/eps.txt') for x in row]
     for filename,target,offset in [('xs_photon_sum.txt','pd_photon_transitions.tsv',4),
@@ -86,7 +86,7 @@ def prepare(repo, bundle, output, decay_reference):
         payload['decay_photons.tsv']='# A Z channel energy_keV probability; attached once per selected channel\n'+'\n'.join(lines)+'\n'
     payload['photon_provenance.txt']='\n'.join(['mcray-nuclear-photons-v1',REVISION,
         'PD=native-convolution; denominator=pinned-xs_photon_sum; numerator=pinned-xs_photon_thin',
-        'PD-missing-transition=error-except-eight-approved-light-transitions; see-pd_photon_exceptions.tsv',
+        'PD-missing-transition=error-except-ten-approved-light-transitions; see-pd_photon_exceptions.tsv',
         'PD-explicit-empty-transition=no-retained-lines-in-pinned-model; not-physical-zero',
         'decay=corrected-exclusive-channel; photons-once-before-compound-sequence',
         'boost=CRPropa-ultrarelativistic-isotropic; residual-and-beta-Q=not-debited',
