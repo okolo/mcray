@@ -252,3 +252,13 @@ and refined diagnostic quadrature plus the endpoint term. Its default cases
 are Be11, Be9 and Fe56. This is an explanation/control of reference differences,
 not a replacement production rate or a change to the zero-padded tail model.
 Include both scripts and their test files in transferred tool bundles.
+
+## Frozen initial-point acceptance
+
+[ACCEPTANCE.md](ACCEPTANCE.md) gives the frozen PD/decay/photon contract,
+384 simultaneous comparisons, history ledger and external multicore commands.
+`run_external_transport_photon_acceptance.sh` fetches a published exact source,
+builds/tests it, checks the retained native deterministic coefficients and runs
+272 fixed independent batch jobs. A wrapper `passed` status is execution
+success; physical conclusions are in `acceptance-report.json`. Insufficient
+precision remains inconclusive. The local `--plan-only` path starts no histories.

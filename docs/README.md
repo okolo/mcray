@@ -15,6 +15,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Nuclear process photons](usage/nuclear_photons.md)
 - [Tests and validation tools](../tests/README.md)
 - [CRPropa adapters and external Linux runs](../tests/crpropa/README.md)
+- [Frozen PD/decay/photon acceptance and multicore server commands](../tests/crpropa/ACCEPTANCE.md)
 - [Docker Linux amd64](../docker/README.md)
 
 ## Validation results
@@ -29,6 +30,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Native Linux transport and secondary-photon pilots](validation/nuclear_transport_photon_pilot_results.md)
 - [Deterministic photodisintegration reference](validation/deterministic_pd_reference.md)
 - [Deterministic PD+decay energy-state reference](validation/deterministic_coupled_reference.md)
+- [Native Linux full PD+decay numerical matrix](validation/deterministic_coupled_full_matrix.md)
+- [Frozen acceptance publication checks](validation/transport_photon_acceptance_preflight.md)
 
 Results distinguish confirmed checks from remaining limitations and pilot
 observations. Read their version and configuration scope before reuse.

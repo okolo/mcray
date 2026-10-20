@@ -1,5 +1,10 @@
 # Deterministic PD+decay initial controls, 2026-10-17
 
+The [full native Linux numerical matrix](deterministic_coupled_full_matrix.md)
+completed on 2026-10-20. Its audited results supersede the earlier pending
+server status for this injection point; final Monte Carlo acceptance remains
+open. Historical implementation checks and the first failed attempt follow.
+
 The joint energy-state reference is implemented on talys. Its
 [public contract, commands and external runner](../../tests/deterministic/COUPLED.md)
 describe the actual reduction, numerical controls and limits. Production

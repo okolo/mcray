@@ -143,3 +143,24 @@ acceptance; the 99% simultaneous confidence, 1%/5% budgets and 200000-history
 limit remain unchanged.
 
 See [initial implementation results](../../docs/validation/deterministic_coupled_reference.md).
+
+## Audit a completed full matrix
+
+`analyze_coupled_matrix.py` reads an extracted server result directory with
+`manifest.json` and `deterministic-coupled/`. It verifies payload, case, input,
+tool and output identities, recomputes the moment/bin invariants and all
+archived refinement reports, separates tighter-Radau grid differences from
+path errors, and checks restricted energy-state populations. It uses Python
+3.10+ standard-library modules and Git; the frozen source revision must be
+available in the public checkout's local object database.
+
+```bash
+python3 tests/deterministic/analyze_coupled_matrix.py \
+  --results /path/to/extracted/RUN_ID --output /path/to/new-analysis
+```
+
+This runs no transport and generates no histories. The output records the
+auditor's SHA-256 and deliberately supplies no acceptance verdict. Nodal
+restriction differences are not final physical spectral-bin errors. See
+the [audited full-matrix results](../../docs/validation/deterministic_coupled_full_matrix.md)
+for the supported conclusions and rare-output limitations.

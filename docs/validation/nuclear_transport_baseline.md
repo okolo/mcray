@@ -99,3 +99,64 @@ Strict/CRPropa yields and explicit light-transition exclusions are now
 implemented. All 125 entries pass on macOS and Docker Linux amd64 emulation.
 See [photon diagnostics](nuclear_photon_results.md) for the independent dated
 scope, short controls and remaining physical-validation limitations.
+
+## Missing-PD compatibility and expanded photon coverage, 2026-10-20
+
+Implemented on talys over source `7fc04ae6ce2e76887287ba85562b721d6b31ddf8`;
+these checks used the uncommitted implementation patch SHA-256
+`35ab10daddcb388fdac2ebd5a99007be0dba5bb819007b5349c9c3835fd88011`.
+`--pd-missing-data Strict|CRPropa` now independently controls wholly absent
+PD tables. Strict remains the default. Compatibility skips only PD for those
+states; partial/malformed tables and missing masses/required decays still fail.
+The original 13 explicit terminals are unchanged. Clones share the selected
+immutable policy. The CLI records the policy and each reachable missing-table
+identity in `params` in these pre-YAML controls. Current runs instead record
+settings in `config.yaml` and provenance/exceptions in `run.yaml`, as documented
+in the [YAML contract](../usage/yaml_configuration.md).
+
+The combined Fe56 GZK/PD/decay graph contains 836 identities; 582 reachable
+bound states lack PD tables and are explicitly recorded as skipped. This
+includes states formerly rejected by preflight, not evidence that 582 states
+were visited in these short histories. An exhaustive photon-coverage inventory
+of that reachable graph finds exactly two additional absent transitions beyond
+the original eight: Li8 -> Li7 and B8 -> Be7. Both are explicit approved
+no-photon exceptions, matching CRPropa; their nuclear interactions/products
+remain enabled. Other absent photon transitions still fail. Fresh photon-data
+preparation includes all ten explicit exceptions and preserves their hashes.
+Original eight-exception bundles remain supported for their original network.
+
+Synthetic tests verify Strict errors, compatibility zero PD rates, unchanged
+rates for covered states, clone behavior, rejection of partial/unloaded data,
+continued GZK and artificial decays, metadata, independent CLI policies and
+retained nuclear products/energy/weights for both new photon exceptions.
+All 134 CTest checks pass on macOS arm64 (14.90 s) and Docker Linux amd64
+emulation (47.68 s). These timings describe regression runs, not a performance
+benchmark. All 21 deterministic Python controls also pass in the existing
+NumPy/SciPy environment.
+
+Short real-data CLI controls use Fe56, seed 20261020, total energy 5.6e19 eV,
+source z=1e-8, CMB, two primary histories and two worker threads. Strict with
+GZK residual compatibility rejects missing PD data before creating output.
+Missing-PD compatibility completes a TALYS+decay+GZK run. With the newly
+prepared ten-exception photon bundle, native and Linux controls also complete
+TALYS + decays + GZK + PPP Full + both photon sources + the EM cascade.
+Effective params confirm all requested switches and the 582-state exception
+inventory. These tiny controls verify functional wiring and data preflight,
+not interaction statistics, propagated spectra or physical acceptance.
+
+Reproduce the full-process control using the command in
+[the GZK contract](../usage/nuclear_gzk.md), omit `--noEMcascade`, use a fresh
+photon-enriched GZK bundle and add `--nuclear-ppp Full
+--photodisintegration-photons On --decay-photons On`. The prepared control
+bundle's manifest SHA-256 values are:
+
+- nuclear: `f1eb796059cc66e5351cdeb1eff025d12e8fa42757a893f543d4267f6249c608`;
+- decay: `a32f343739fee7b01bd85d5944e8b90cc882c0143c0f1eae211b2f778e23beae`;
+- photon: `01e4517adb191b11d567039d1e58485f4e0268f3603a9d4d007aae94de29a9ab`.
+
+The [frozen initial-point acceptance workflow](../../tests/crpropa/ACCEPTANCE.md)
+is separate: it retains the original piloted nuclear/photon input hashes,
+uses independent deterministic M/C targets, and excludes GZK/PPP/EM to isolate
+PD+decays and photon creation. Its 272-job plan is prepared without launching
+new final histories on the workstation. Neither this functional control nor a
+successful workload archive substitutes for its statistical verdict.
