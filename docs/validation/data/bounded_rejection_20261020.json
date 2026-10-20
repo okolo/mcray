@@ -1,0 +1,1836 @@
+{
+  "scope": "Short numerical, physical-envelope, performance and MC checks; the external 24-hour acceptance run remains pending.",
+  "branch": "codex/bounded-rejection-sampling",
+  "computational_commit": "837d0108dd5995a2f7b3b080ba5ec28e7228f07d",
+  "controls": {
+    "rejection": "1cc28f381e961f3d4947d08f0149ac72d63c3635",
+    "cdf": "fa562d207b58af6d1357220e3809b44e0e2aa1ea"
+  },
+  "native_diagnostics": {
+    "scope": "Numerical quantile controls and full per-draw construction cost; not a Monte Carlo acceptance result",
+    "small_tail_relative_control": 0.001,
+    "reference_change_guard": 0.0001,
+    "status": "within_control",
+    "cases": {
+      "ICS-1e+13": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 2.768175464185063e-06,
+        "max_relative_reference_change": 7.91167747093112e-08,
+        "relative_normalization_error": 2.8392832529533507e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0002582659453125,
+            0.0002594108046875,
+            0.0002596640625
+          ],
+          "rejection": [
+            1.7168625e-05,
+            1.44921875e-05,
+            1.60849609375e-05
+          ],
+          "nr": [
+            1.10325546875e-05,
+            1.07701875e-05,
+            1.0909828125e-05
+          ],
+          "bounded": [
+            3.3175125e-05,
+            3.04573515625e-05,
+            3.24046171875e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0002594108046875,
+          "rejection": 1.60849609375e-05,
+          "nr": 1.0909828125e-05,
+          "bounded": 3.24046171875e-05
+        },
+        "cdf_over_rejection_time": 16.127537125857568,
+        "cdf_over_nr_time": 23.77771690949531,
+        "envelope": {
+          "upper": 1.868941559051098e-18,
+          "lower": 1.8510455206961146e-18,
+          "cells": 21.0,
+          "evaluations": 22.0,
+          "checks": 394730.0,
+          "max_ratio": 0.9905216461314355,
+          "max_local_ratio": 0.9974386394383594
+        },
+        "bounded_over_rejection_time": 2.0145909780826905,
+        "cdf_over_bounded_time": 8.005365506603395
+      },
+      "ICS-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.255163775754525e-06,
+        "max_relative_reference_change": 2.529444115642078e-08,
+        "relative_normalization_error": 1.0009326700810561e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0004321884765625,
+            0.0004333050078125,
+            0.00042415625
+          ],
+          "rejection": [
+            1.98072890625e-05,
+            1.947265625e-05,
+            1.9390625e-05
+          ],
+          "nr": [
+            8.359046875e-06,
+            8.171875e-06,
+            8.1416015625e-06
+          ],
+          "bounded": [
+            3.524609375e-05,
+            3.48505859375e-05,
+            3.44329453125e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0004321884765625,
+          "rejection": 1.947265625e-05,
+          "nr": 8.171875e-06,
+          "bounded": 3.48505859375e-05
+        },
+        "cdf_over_rejection_time": 22.194633901705114,
+        "cdf_over_nr_time": 52.88730879541109,
+        "envelope": {
+          "upper": 4.5724521569441045e-16,
+          "lower": 4.539094487399023e-16,
+          "cells": 20.0,
+          "evaluations": 21.0,
+          "checks": 395954.0,
+          "max_ratio": 0.9934358831689455,
+          "max_local_ratio": 0.9956859976337763
+        },
+        "bounded_over_rejection_time": 1.7897191574724174,
+        "cdf_over_bounded_time": 12.40118250343262
+      },
+      "ICS-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 4.169695386968542e-06,
+        "max_relative_reference_change": 5.439296672034473e-07,
+        "relative_normalization_error": 6.395550755655677e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0005703219375,
+            0.00057087890625,
+            0.0005697522734375
+          ],
+          "rejection": [
+            6.865234375e-06,
+            6.6064453125e-06,
+            6.7766953125e-06
+          ],
+          "nr": [
+            6.29915625e-06,
+            5.7548828125e-06,
+            5.7991484375e-06
+          ],
+          "bounded": [
+            1.8047203125e-05,
+            1.85338515625e-05,
+            1.80582734375e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0005703219375,
+          "rejection": 6.7766953125e-06,
+          "nr": 5.7991484375e-06,
+          "bounded": 1.80582734375e-05
+        },
+        "cdf_over_rejection_time": 84.159300544029,
+        "cdf_over_nr_time": 98.34580777619558,
+        "envelope": {
+          "upper": 7.02244626903833e-15,
+          "lower": 6.9558767070631406e-15,
+          "cells": 16.0,
+          "evaluations": 17.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9908832225103114,
+          "max_local_ratio": 0.9908815483718424
+        },
+        "bounded_over_rejection_time": 2.6647610088342746,
+        "cdf_over_bounded_time": 31.58230710559867
+      },
+      "ICS-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.095624569854799e-06,
+        "max_relative_reference_change": 2.1913711215635137e-08,
+        "relative_normalization_error": 2.1919133175174466e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.000556062171875,
+            0.0005557705078125,
+            0.0005521451875
+          ],
+          "rejection": [
+            7.1943359375e-06,
+            6.8935546875e-06,
+            6.8623046875e-06
+          ],
+          "nr": [
+            5.2213515625e-06,
+            5.2395859375e-06,
+            5.059890625e-06
+          ],
+          "bounded": [
+            1.95221328125e-05,
+            1.9563796875e-05,
+            1.95185546875e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0005557705078125,
+          "rejection": 6.8935546875e-06,
+          "nr": 5.2213515625e-06,
+          "bounded": 1.95221328125e-05
+        },
+        "cdf_over_rejection_time": 80.62175945601359,
+        "cdf_over_nr_time": 106.44188600592818,
+        "envelope": {
+          "upper": 1.3909061248613639e-13,
+          "lower": 1.379488307786344e-13,
+          "cells": 18.0,
+          "evaluations": 19.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9919399826338869,
+          "max_local_ratio": 0.9975625946592012
+        },
+        "bounded_over_rejection_time": 2.831939934834962,
+        "cdf_over_bounded_time": 28.468739207462043
+      },
+      "ICS-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.538056519651448e-06,
+        "max_relative_reference_change": 2.5620029905332553e-06,
+        "relative_normalization_error": 5.607736497381666e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.000551359703125,
+            0.000548851234375,
+            0.000547246421875
+          ],
+          "rejection": [
+            5.918296875e-06,
+            5.7141953125e-06,
+            5.9742890625e-06
+          ],
+          "nr": [
+            8.478515625e-06,
+            8.31478125e-06,
+            8.4749375e-06
+          ],
+          "bounded": [
+            1.86311796875e-05,
+            1.8435546875e-05,
+            1.94013671875e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.000548851234375,
+          "rejection": 5.918296875e-06,
+          "nr": 8.4749375e-06,
+          "bounded": 1.86311796875e-05
+        },
+        "cdf_over_rejection_time": 92.73803696692724,
+        "cdf_over_nr_time": 64.7616851894188,
+        "envelope": {
+          "upper": 3.035493794668084e-11,
+          "lower": 3.023526520735579e-11,
+          "cells": 18.0,
+          "evaluations": 19.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9962463281257661,
+          "max_local_ratio": 0.9965736018452673
+        },
+        "bounded_over_rejection_time": 3.1480643977495633,
+        "cdf_over_bounded_time": 29.45874837669213
+      },
+      "ICS-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.828181565807448e-06,
+        "max_relative_reference_change": 2.4639343189722278e-08,
+        "relative_normalization_error": 5.446754158811018e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0005579404296875,
+            0.00055845703125,
+            0.00055875
+          ],
+          "rejection": [
+            1.518425e-05,
+            1.49521484375e-05,
+            1.49485625e-05
+          ],
+          "nr": [
+            7.3092421875e-06,
+            7.1145859375e-06,
+            7.1383515625e-06
+          ],
+          "bounded": [
+            2.83623046875e-05,
+            2.761328125e-05,
+            2.78681640625e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.00055845703125,
+          "rejection": 1.49521484375e-05,
+          "nr": 7.1383515625e-06,
+          "bounded": 2.78681640625e-05
+        },
+        "cdf_over_rejection_time": 37.3496179217556,
+        "cdf_over_nr_time": 78.2333324942624,
+        "envelope": {
+          "upper": 4.694863664824636e-09,
+          "lower": 4.661390164421946e-09,
+          "cells": 18.0,
+          "evaluations": 19.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9949270757925642,
+          "max_local_ratio": 0.9956165784020463
+        },
+        "bounded_over_rejection_time": 1.8638233949448109,
+        "cdf_over_bounded_time": 20.03924729298805
+      },
+      "PP-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.563207391508392e-05,
+        "max_relative_reference_change": 2.395805048164938e-05,
+        "relative_normalization_error": 1.1008880473895033e-09,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0001905524140625,
+            0.0001902073515625,
+            0.0001920989609375
+          ],
+          "rejection": [
+            4.1755203125e-05,
+            4.10670546875e-05,
+            4.176171875e-05
+          ],
+          "nr": [
+            1.04466171875e-05,
+            1.02666015625e-05,
+            1.03942109375e-05
+          ],
+          "bounded": [
+            5.02535859375e-05,
+            4.99156875e-05,
+            5.02154921875e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0001905524140625,
+          "rejection": 4.1755203125e-05,
+          "nr": 1.03942109375e-05,
+          "bounded": 5.02154921875e-05
+        },
+        "cdf_over_rejection_time": 4.563560940945608,
+        "cdf_over_nr_time": 18.332552149295847,
+        "envelope": {
+          "upper": 3.610034648597773e-20,
+          "lower": 3.5758315473872296e-20,
+          "cells": 13.0,
+          "evaluations": 14.0,
+          "checks": 394394.0,
+          "max_ratio": 0.9907836565789968,
+          "max_local_ratio": 0.9971297550320815
+        },
+        "bounded_over_rejection_time": 1.2026164029707376,
+        "cdf_over_bounded_time": 3.7946937441336814
+      },
+      "PP-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.315424051906433e-05,
+        "max_relative_reference_change": 2.39358944318378e-05,
+        "relative_normalization_error": 1.1372014441235478e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.00027156575,
+            0.00027159375,
+            0.0002688990859375
+          ],
+          "rejection": [
+            1.78551484375e-05,
+            1.73349609375e-05,
+            1.7515625e-05
+          ],
+          "nr": [
+            5.4853515625e-06,
+            5.3382109375e-06,
+            5.3089140625e-06
+          ],
+          "bounded": [
+            2.724934375e-05,
+            2.7040359375e-05,
+            2.72861328125e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.00027156575,
+          "rejection": 1.7515625e-05,
+          "nr": 5.3382109375e-06,
+          "bounded": 2.724934375e-05
+        },
+        "cdf_over_rejection_time": 15.504199821587868,
+        "cdf_over_nr_time": 50.87205304914012,
+        "envelope": {
+          "upper": 5.335269896324738e-15,
+          "lower": 5.302327173853048e-15,
+          "cells": 15.0,
+          "evaluations": 16.0,
+          "checks": 394994.0,
+          "max_ratio": 0.9938694510769371,
+          "max_local_ratio": 0.9972733090134163
+        },
+        "bounded_over_rejection_time": 1.5557163247100803,
+        "cdf_over_bounded_time": 9.965955602141795
+      },
+      "PP-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.7445236885960114e-05,
+        "max_relative_reference_change": 2.6776777849769963e-05,
+        "relative_normalization_error": 1.235818114508902e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0003518219375,
+            0.0003558362578125,
+            0.00035627571875
+          ],
+          "rejection": [
+            6.8303984375e-06,
+            6.7610703125e-06,
+            6.681640625e-06
+          ],
+          "nr": [
+            4.9498671875e-06,
+            4.787109375e-06,
+            4.8447265625e-06
+          ],
+          "bounded": [
+            1.61276015625e-05,
+            1.60315703125e-05,
+            1.5947265625e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0003558362578125,
+          "rejection": 6.7610703125e-06,
+          "nr": 4.8447265625e-06,
+          "bounded": 1.60315703125e-05
+        },
+        "cdf_over_rejection_time": 52.63016672887175,
+        "cdf_over_nr_time": 73.44816125781092,
+        "envelope": {
+          "upper": 1.9660596977074542e-13,
+          "lower": 1.954732333188492e-13,
+          "cells": 14.0,
+          "evaluations": 15.0,
+          "checks": 395594.0,
+          "max_ratio": 0.9952128341150667,
+          "max_local_ratio": 0.9957248489839707
+        },
+        "bounded_over_rejection_time": 2.371158643752087,
+        "cdf_over_bounded_time": 22.195970255954926
+      },
+      "PP-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.05142901623001e-05,
+        "max_relative_reference_change": 2.3936392278018102e-05,
+        "relative_normalization_error": 9.201084338883447e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.000543818359375,
+            0.0005333779296875,
+            0.0005254036484375
+          ],
+          "rejection": [
+            6.73990625e-06,
+            6.551109375e-06,
+            6.5302734375e-06
+          ],
+          "nr": [
+            5.6005859375e-06,
+            5.350265625e-06,
+            5.50228125e-06
+          ],
+          "bounded": [
+            1.94140625e-05,
+            1.8888671875e-05,
+            1.95126953125e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0005333779296875,
+          "rejection": 6.551109375e-06,
+          "nr": 5.50228125e-06,
+          "bounded": 1.94140625e-05
+        },
+        "cdf_over_rejection_time": 81.4179552127383,
+        "cdf_over_nr_time": 96.93759832569445,
+        "envelope": {
+          "upper": 5.0299756993031215e-11,
+          "lower": 4.99213760290167e-11,
+          "cells": 16.0,
+          "evaluations": 17.0,
+          "checks": 396794.0,
+          "max_ratio": 0.9924800645660984,
+          "max_local_ratio": 0.9975715916658282
+        },
+        "bounded_over_rejection_time": 2.963477082841408,
+        "cdf_over_bounded_time": 27.473792756539236
+      },
+      "PP-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.0819390540373064e-05,
+        "max_relative_reference_change": 2.3934457008195676e-05,
+        "relative_normalization_error": 1.460025433885903e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0005312731171875,
+            0.0005384417265625,
+            0.0005251158828125
+          ],
+          "rejection": [
+            1.52584609375e-05,
+            1.47340546875e-05,
+            1.48958359375e-05
+          ],
+          "nr": [
+            7.87271875e-06,
+            7.5384140625e-06,
+            7.849609375e-06
+          ],
+          "bounded": [
+            2.5131515625e-05,
+            2.525e-05,
+            2.64283828125e-05
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0005312731171875,
+          "rejection": 1.48958359375e-05,
+          "nr": 7.849609375e-06,
+          "bounded": 2.525e-05
+        },
+        "cdf_over_rejection_time": 35.665881352118646,
+        "cdf_over_nr_time": 67.68147200796218,
+        "envelope": {
+          "upper": 8.308178898234168e-09,
+          "lower": 8.26797904280314e-09,
+          "cells": 15.0,
+          "evaluations": 16.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9952482577924618,
+          "max_local_ratio": 0.9967892875428924
+        },
+        "bounded_over_rejection_time": 1.6951045987579374,
+        "cdf_over_bounded_time": 21.04051949257426
+      }
+    },
+    "environment": {
+      "platform": "macOS-26.5-arm64-arm-64bit",
+      "machine": "arm64",
+      "python": "3.12.14 (main, Sep  3 2026, 03:46:19) [Clang 21.1.8 ]",
+      "binary_sha256": "6307a4a56199c2b0e3dd3331de1a68d457991cef9ed8e5edd14aeb68c5e1440d",
+      "elapsed_seconds": 3.3135101669977303
+    }
+  },
+  "linux_amd64_emulated_diagnostics": {
+    "scope": "Numerical quantile controls and full per-draw construction cost; not a Monte Carlo acceptance result",
+    "small_tail_relative_control": 0.001,
+    "reference_change_guard": 0.0001,
+    "status": "within_control",
+    "cases": {
+      "ICS-1e+13": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 2.7681754646893255e-06,
+        "max_relative_reference_change": 7.91174955105265e-08,
+        "relative_normalization_error": 2.8393609685650745e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.01106854590625,
+            0.0110762552109375,
+            0.0110354804765625
+          ],
+          "rejection": [
+            0.00032548665625,
+            0.00028780925,
+            0.0003052740859375
+          ],
+          "nr": [
+            0.000281122390625,
+            0.0002703326796875,
+            0.000275690109375
+          ],
+          "bounded": [
+            0.000668334640625,
+            0.000631191734375,
+            0.000666208984375
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.01106854590625,
+          "rejection": 0.0003052740859375,
+          "nr": 0.000275690109375,
+          "bounded": 0.000666208984375
+        },
+        "cdf_over_rejection_time": 36.257731711024135,
+        "cdf_over_nr_time": 40.14850562228299,
+        "envelope": {
+          "upper": 1.868941559051059e-18,
+          "lower": 1.8510455206960757e-18,
+          "cells": 21.0,
+          "evaluations": 22.0,
+          "checks": 394730.0,
+          "max_ratio": 0.9905216461314585,
+          "max_local_ratio": 0.9974386394383781
+        },
+        "bounded_over_rejection_time": 2.182330617186405,
+        "cdf_over_bounded_time": 16.61422491417448
+      },
+      "ICS-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.2551637858353285e-06,
+        "max_relative_reference_change": 2.5294447611208885e-08,
+        "relative_normalization_error": 1.0015432927446e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0222023769609375,
+            0.0220076246875,
+            0.0219793004609375
+          ],
+          "rejection": [
+            0.00053635775,
+            0.000528380859375,
+            0.00052454915625
+          ],
+          "nr": [
+            0.0002105423203125,
+            0.0002002874296875,
+            0.00020105859375
+          ],
+          "bounded": [
+            0.000908265625,
+            0.0008955960234375,
+            0.0008956666640625
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0220076246875,
+          "rejection": 0.000528380859375,
+          "nr": 0.00020105859375,
+          "bounded": 0.0008956666640625
+        },
+        "cdf_over_rejection_time": 41.651063427111865,
+        "cdf_over_nr_time": 109.45876163276408,
+        "envelope": {
+          "upper": 4.572452156944134e-16,
+          "lower": 4.539094487399041e-16,
+          "cells": 20.0,
+          "evaluations": 21.0,
+          "checks": 395954.0,
+          "max_ratio": 0.9934358831689276,
+          "max_local_ratio": 0.9956859976337763
+        },
+        "bounded_over_rejection_time": 1.6951156503321245,
+        "cdf_over_bounded_time": 24.571222275572264
+      },
+      "ICS-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 4.169695382877738e-06,
+        "max_relative_reference_change": 5.439295741499297e-07,
+        "relative_normalization_error": 6.395550755655677e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0302365713046875,
+            0.0299016771015625,
+            0.029813078140625
+          ],
+          "rejection": [
+            0.0001832294921875,
+            0.0001722327421875,
+            0.000173736
+          ],
+          "nr": [
+            0.0001463170625,
+            0.00013766178125,
+            0.000138667640625
+          ],
+          "bounded": [
+            0.0004692591171875,
+            0.000478859375,
+            0.0004687578125
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0299016771015625,
+          "rejection": 0.000173736,
+          "nr": 0.000138667640625,
+          "bounded": 0.0004692591171875
+        },
+        "cdf_over_rejection_time": 172.10985116246778,
+        "cdf_over_nr_time": 215.63557991460922,
+        "envelope": {
+          "upper": 7.022446269038328e-15,
+          "lower": 6.955876707063138e-15,
+          "cells": 16.0,
+          "evaluations": 17.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9908832225103116,
+          "max_local_ratio": 0.9908815483718423
+        },
+        "bounded_over_rejection_time": 2.7009895311708574,
+        "cdf_over_bounded_time": 63.721036004111994
+      },
+      "ICS-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.095624573317686e-06,
+        "max_relative_reference_change": 2.1913671744760063e-08,
+        "relative_normalization_error": 2.191358206005134e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.024313191734375,
+            0.02431769271875,
+            0.0242703704609375
+          ],
+          "rejection": [
+            0.0001760732421875,
+            0.000174045578125,
+            0.00017263053125
+          ],
+          "nr": [
+            0.0001152431640625,
+            0.0001094609375,
+            0.00010871646875
+          ],
+          "bounded": [
+            0.0004750686875,
+            0.0004983551484375,
+            0.0004736588515625
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.024313191734375,
+          "rejection": 0.000174045578125,
+          "nr": 0.0001094609375,
+          "bounded": 0.0004750686875
+        },
+        "cdf_over_rejection_time": 139.69439497574135,
+        "cdf_over_nr_time": 222.11751780743703,
+        "envelope": {
+          "upper": 1.3909061248613634e-13,
+          "lower": 1.3794883077863434e-13,
+          "cells": 18.0,
+          "evaluations": 19.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9919399826338873,
+          "max_local_ratio": 0.9975625946592012
+        },
+        "bounded_over_rejection_time": 2.729564822145636,
+        "cdf_over_bounded_time": 51.17826616256412
+      },
+      "ICS-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 7.5380565209044064e-06,
+        "max_relative_reference_change": 2.562002959104544e-06,
+        "relative_normalization_error": 5.605516051332415e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.024424616875,
+            0.02401859278125,
+            0.0239474772265625
+          ],
+          "rejection": [
+            0.000198092453125,
+            0.00017390625,
+            0.0001744143828125
+          ],
+          "nr": [
+            0.0002390830078125,
+            0.0002095888671875,
+            0.000208269859375
+          ],
+          "bounded": [
+            0.000511737953125,
+            0.0005064423828125,
+            0.0005025546875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.02401859278125,
+          "rejection": 0.0001744143828125,
+          "nr": 0.0002095888671875,
+          "bounded": 0.0005064423828125
+        },
+        "cdf_over_rejection_time": 137.70993191009146,
+        "cdf_over_nr_time": 114.59860966643214,
+        "envelope": {
+          "upper": 3.035493794668084e-11,
+          "lower": 3.023526520735579e-11,
+          "cells": 18.0,
+          "evaluations": 19.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9962463281257663,
+          "max_local_ratio": 0.9965736018452673
+        },
+        "bounded_over_rejection_time": 2.903673278808312,
+        "cdf_over_bounded_time": 47.42611123473526
+      },
+      "ICS-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 9.828181576140816e-06,
+        "max_relative_reference_change": 2.463935044762066e-08,
+        "relative_normalization_error": 5.353495424742505e-13,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0243474264453125,
+            0.0240457210390625,
+            0.0240658818515625
+          ],
+          "rejection": [
+            0.0004953896484375,
+            0.0004897431640625,
+            0.0004954501953125
+          ],
+          "nr": [
+            0.0002136142578125,
+            0.00019650390625,
+            0.00019800553125
+          ],
+          "bounded": [
+            0.0008224020234375,
+            0.0008273499296875,
+            0.000823121421875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0240658818515625,
+          "rejection": 0.0004953896484375,
+          "nr": 0.00019800553125,
+          "bounded": 0.000823121421875
+        },
+        "cdf_over_rejection_time": 48.57970271980507,
+        "cdf_over_nr_time": 121.54146250175775,
+        "envelope": {
+          "upper": 4.694863664824636e-09,
+          "lower": 4.661390164421946e-09,
+          "cells": 18.0,
+          "evaluations": 19.0,
+          "checks": 396824.0,
+          "max_ratio": 0.994927075792564,
+          "max_local_ratio": 0.9956165784020463
+        },
+        "bounded_over_rejection_time": 1.6615636286934803,
+        "cdf_over_bounded_time": 29.237341189277377
+      },
+      "PP-1e+14": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.5632073906536397e-05,
+        "max_relative_reference_change": 2.3958050633818586e-05,
+        "relative_normalization_error": 1.1008964850844905e-09,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0009223844375,
+            0.000927180015625,
+            0.000912840171875
+          ],
+          "rejection": [
+            0.0001000778046875,
+            9.4821609375e-05,
+            9.61204375e-05
+          ],
+          "nr": [
+            2.8416671875e-05,
+            2.13782578125e-05,
+            2.1619796875e-05
+          ],
+          "bounded": [
+            0.0002289368515625,
+            0.0002265478515625,
+            0.0002289973984375
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0009223844375,
+          "rejection": 9.61204375e-05,
+          "nr": 2.1619796875e-05,
+          "bounded": 0.0002289368515625
+        },
+        "cdf_over_rejection_time": 9.59613232617673,
+        "cdf_over_nr_time": 42.66388083259917,
+        "envelope": {
+          "upper": 3.6100346485977784e-20,
+          "lower": 3.5758315473872296e-20,
+          "cells": 13.0,
+          "evaluations": 14.0,
+          "checks": 394394.0,
+          "max_ratio": 0.9907836565789954,
+          "max_local_ratio": 0.9971297550320813
+        },
+        "bounded_over_rejection_time": 2.381770802515334,
+        "cdf_over_bounded_time": 4.0289906636030945
+      },
+      "PP-1e+15": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.3154240520786911e-05,
+        "max_relative_reference_change": 2.3935894431100182e-05,
+        "relative_normalization_error": 1.1374901021099504e-11,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.00130278353125,
+            0.001306302734375,
+            0.0012982669296875
+          ],
+          "rejection": [
+            4.26591796875e-05,
+            4.24772109375e-05,
+            3.95045546875e-05
+          ],
+          "nr": [
+            1.7681640625e-05,
+            1.19775390625e-05,
+            1.11640625e-05
+          ],
+          "bounded": [
+            0.000214999671875,
+            0.0002090416640625,
+            0.000211751296875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.00130278353125,
+          "rejection": 4.24772109375e-05,
+          "nr": 1.19775390625e-05,
+          "bounded": 0.000211751296875
+        },
+        "cdf_over_rejection_time": 30.670175901305903,
+        "cdf_over_nr_time": 108.76888185894823,
+        "envelope": {
+          "upper": 5.335269896324739e-15,
+          "lower": 5.302327173853048e-15,
+          "cells": 15.0,
+          "evaluations": 16.0,
+          "checks": 394994.0,
+          "max_ratio": 0.9938694510769367,
+          "max_local_ratio": 0.9972733090134163
+        },
+        "bounded_over_rejection_time": 4.985056509161255,
+        "cdf_over_bounded_time": 6.152422915355522
+      },
+      "PP-1e+16": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.7445236886124153e-05,
+        "max_relative_reference_change": 2.677677784879141e-05,
+        "relative_normalization_error": 1.2358203349549512e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0017169674453125,
+            0.0016944541015625,
+            0.0017813489609375
+          ],
+          "rejection": [
+            1.7029296875e-05,
+            1.410775e-05,
+            1.3394859375e-05
+          ],
+          "nr": [
+            1.6769203125e-05,
+            1.0060875e-05,
+            1.0458984375e-05
+          ],
+          "bounded": [
+            0.0001915345,
+            0.0001905485078125,
+            0.0001955172578125
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0017169674453125,
+          "rejection": 1.410775e-05,
+          "nr": 1.0458984375e-05,
+          "bounded": 0.0001915345
+        },
+        "cdf_over_rejection_time": 121.70384684393329,
+        "cdf_over_nr_time": 164.16196676003733,
+        "envelope": {
+          "upper": 1.9660596977074547e-13,
+          "lower": 1.9547323331884924e-13,
+          "cells": 14.0,
+          "evaluations": 15.0,
+          "checks": 395594.0,
+          "max_ratio": 0.9952128341150672,
+          "max_local_ratio": 0.9957248489839703
+        },
+        "bounded_over_rejection_time": 13.57654480693236,
+        "cdf_over_bounded_time": 8.964272469515937
+      },
+      "PP-1e+18": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.0514290166495528e-05,
+        "max_relative_reference_change": 2.3936392275489702e-05,
+        "relative_normalization_error": 9.205525230981948e-12,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.0024965361328125,
+            0.0024804381484375,
+            0.0024762861328125
+          ],
+          "rejection": [
+            1.7578125e-05,
+            1.4156578125e-05,
+            1.37877578125e-05
+          ],
+          "nr": [
+            1.7717453125e-05,
+            1.12763671875e-05,
+            1.12509765625e-05
+          ],
+          "bounded": [
+            0.0002246393203125,
+            0.0002230943984375,
+            0.0002242028046875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.0024804381484375,
+          "rejection": 1.4156578125e-05,
+          "nr": 1.12763671875e-05,
+          "bounded": 0.0002242028046875
+        },
+        "cdf_over_rejection_time": 175.21452758821263,
+        "cdf_over_nr_time": 219.96784134407204,
+        "envelope": {
+          "upper": 5.029975699303122e-11,
+          "lower": 4.99213760290167e-11,
+          "cells": 16.0,
+          "evaluations": 17.0,
+          "checks": 396794.0,
+          "max_ratio": 0.9924800645660983,
+          "max_local_ratio": 0.9975715916658282
+        },
+        "bounded_over_rejection_time": 15.837358626345305,
+        "cdf_over_bounded_time": 11.063368060425482
+      },
+      "PP-1e+20": {
+        "status": "within_control",
+        "quantiles": 19,
+        "max_relative_small_tail_probability_error": 1.0819390518202322e-05,
+        "max_relative_reference_change": 2.3934457009330256e-05,
+        "relative_normalization_error": 1.4600032294254106e-10,
+        "seconds_per_draw_blocks": {
+          "cdf": [
+            0.002562691734375,
+            0.002511895828125,
+            0.0024894798203125
+          ],
+          "rejection": [
+            3.53596953125e-05,
+            3.18873671875e-05,
+            3.212565625e-05
+          ],
+          "nr": [
+            2.25442734375e-05,
+            1.5745765625e-05,
+            1.5671875e-05
+          ],
+          "bounded": [
+            0.0002331708984375,
+            0.0002284508515625,
+            0.0002279153671875
+          ]
+        },
+        "median_seconds_per_draw": {
+          "cdf": 0.002511895828125,
+          "rejection": 3.212565625e-05,
+          "nr": 1.5745765625e-05,
+          "bounded": 0.0002284508515625
+        },
+        "cdf_over_rejection_time": 78.1897125642375,
+        "cdf_over_nr_time": 159.52833847195032,
+        "envelope": {
+          "upper": 8.308178898234168e-09,
+          "lower": 8.26797904280314e-09,
+          "cells": 15.0,
+          "evaluations": 16.0,
+          "checks": 396824.0,
+          "max_ratio": 0.9952482577924618,
+          "max_local_ratio": 0.9967892875428924
+        },
+        "bounded_over_rejection_time": 7.111165287479536,
+        "cdf_over_bounded_time": 10.995344560743696
+      }
+    },
+    "environment": {
+      "platform": "Linux-7.0.14-linuxkit-x86_64-with-glibc2.35",
+      "machine": "x86_64",
+      "python": "3.10.12 (main, Aug 31 2026, 10:18:17) [GCC 11.4.0]",
+      "binary_sha256": "7b0db1504cb9f69bdf2c6b5cdae355ac8c67cb5f9c7d8b879ba7ff1e5a12a4c2",
+      "elapsed_seconds": 89.22434428899578
+    }
+  },
+  "transport": {
+    "status": "complete",
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "machine": "arm64",
+    "head": "de3b3c57907d948094b33a29252ab523f5030a22",
+    "binary_sha256": "74a3974ad84ffeaabe798ffb5c7fc061630e21ebf6e310e5630f4f337aba0747",
+    "arguments": {
+      "primaries": 100,
+      "repeats": 3,
+      "seconds": 600.0,
+      "scope": "cascade",
+      "distances": [
+        0.1,
+        1.0
+      ],
+      "rate_variations": [
+        0.0
+      ]
+    },
+    "records": [
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 7.669769375,
+        "invariant_seconds": 0.1207840749999999,
+        "invariant_fraction": 0.015748071303643325,
+        "invariant_calls": 6145
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 8.268236792,
+        "invariant_seconds": 0.26823793899999965,
+        "invariant_fraction": 0.03244197593125725,
+        "invariant_calls": 6442
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 0,
+        "mode": "cdf",
+        "transport_seconds": 10.584692208,
+        "invariant_seconds": 2.5912085630000026,
+        "invariant_fraction": 0.24480717172309888,
+        "invariant_calls": 6536
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 1,
+        "mode": "cdf",
+        "transport_seconds": 10.881366917,
+        "invariant_seconds": 2.6580979420000017,
+        "invariant_fraction": 0.2442797823357326,
+        "invariant_calls": 6712
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 8.289667958,
+        "invariant_seconds": 0.2787193680000002,
+        "invariant_fraction": 0.033622500854334,
+        "invariant_calls": 6698
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 7.708156666,
+        "invariant_seconds": 0.12319165699999982,
+        "invariant_fraction": 0.015981986658806166,
+        "invariant_calls": 6250
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 7.709559916,
+        "invariant_seconds": 0.1245610459999998,
+        "invariant_fraction": 0.016156699909873274,
+        "invariant_calls": 6335
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 8.273857209,
+        "invariant_seconds": 0.2701949280000003,
+        "invariant_fraction": 0.03265646495640414,
+        "invariant_calls": 6477
+      },
+      {
+        "scenario": "d0.1-v0.0",
+        "repeat": 2,
+        "mode": "cdf",
+        "transport_seconds": 10.324781375,
+        "invariant_seconds": 2.530445385000007,
+        "invariant_fraction": 0.24508464567851507,
+        "invariant_calls": 6420
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 0,
+        "mode": "rejection",
+        "transport_seconds": 24.73290925,
+        "invariant_seconds": 0.18249213599999933,
+        "invariant_fraction": 0.007378514761663121,
+        "invariant_calls": 8904
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 0,
+        "mode": "current",
+        "transport_seconds": 25.256772083,
+        "invariant_seconds": 0.379105494,
+        "invariant_fraction": 0.0150100532543971,
+        "invariant_calls": 8890
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 0,
+        "mode": "cdf",
+        "transport_seconds": 28.07026675,
+        "invariant_seconds": 3.4644630799999896,
+        "invariant_fraction": 0.1234210957400321,
+        "invariant_calls": 8914
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 1,
+        "mode": "cdf",
+        "transport_seconds": 29.948775,
+        "invariant_seconds": 3.681105231999998,
+        "invariant_fraction": 0.122913382333668,
+        "invariant_calls": 9153
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 1,
+        "mode": "current",
+        "transport_seconds": 26.064634125,
+        "invariant_seconds": 0.405173347000001,
+        "invariant_fraction": 0.015544946652881551,
+        "invariant_calls": 9280
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 1,
+        "mode": "rejection",
+        "transport_seconds": 25.3545205,
+        "invariant_seconds": 0.18722122300000138,
+        "invariant_fraction": 0.007384135819093932,
+        "invariant_calls": 8980
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 2,
+        "mode": "rejection",
+        "transport_seconds": 25.29733875,
+        "invariant_seconds": 0.18189846700000023,
+        "invariant_fraction": 0.0071904190712550825,
+        "invariant_calls": 8744
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 2,
+        "mode": "current",
+        "transport_seconds": 26.236219333,
+        "invariant_seconds": 0.39719671699999987,
+        "invariant_fraction": 0.015139251275445947,
+        "invariant_calls": 9168
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "repeat": 2,
+        "mode": "cdf",
+        "transport_seconds": 29.493659333,
+        "invariant_seconds": 3.5928178009999923,
+        "invariant_fraction": 0.12181661693569655,
+        "invariant_calls": 9115
+      }
+    ],
+    "scope": "cascade; single-thread loop only; excludes initialization and final output. Invariant selection includes its normalization. Same corrected secondary laws in both modes.",
+    "summaries": [
+      {
+        "scenario": "d0.1-v0.0",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 7.708156666,
+            "invariant_seconds": 0.12319165699999982,
+            "invariant_fraction": 0.015981986658806166,
+            "invariant_calls": 6250
+          },
+          "current": {
+            "transport_seconds": 8.273857209,
+            "invariant_seconds": 0.2701949280000003,
+            "invariant_fraction": 0.03265646495640414,
+            "invariant_calls": 6477
+          },
+          "cdf": {
+            "transport_seconds": 10.584692208,
+            "invariant_seconds": 2.5912085630000026,
+            "invariant_fraction": 0.24480717172309888,
+            "invariant_calls": 6536
+          }
+        },
+        "transport_ratio": 1.0733898605739627,
+        "cdf_over_bounded": 1.2792935556690967
+      },
+      {
+        "scenario": "d1.0-v0.0",
+        "medians": {
+          "rejection": {
+            "transport_seconds": 25.29733875,
+            "invariant_seconds": 0.18249213599999933,
+            "invariant_fraction": 0.007378514761663121,
+            "invariant_calls": 8904
+          },
+          "current": {
+            "transport_seconds": 26.064634125,
+            "invariant_seconds": 0.39719671699999987,
+            "invariant_fraction": 0.015139251275445947,
+            "invariant_calls": 9168
+          },
+          "cdf": {
+            "transport_seconds": 29.493659333,
+            "invariant_seconds": 3.5928178009999923,
+            "invariant_fraction": 0.122913382333668,
+            "invariant_calls": 9115
+          }
+        },
+        "transport_ratio": 1.030331070891795,
+        "cdf_over_bounded": 1.1315585398803292
+      }
+    ]
+  },
+  "transport_scope_note": "Native macOS arm64, 3 blocks of 100 primaries per method and distance. No independent timing confidence claim. Source de3b3c5; final endpoint guards replayed identically.",
+  "endpoint_guard_raw_replay": {
+    "all_raw_streams_identical_to_de3b": true,
+    "files": {
+      "PP-1e+16/current.events": true,
+      "PP-1e+16/old.events": true,
+      "PP-1e+16/cdf.events": true,
+      "PP-1e+20/current.events": true,
+      "PP-1e+20/old.events": true,
+      "PP-1e+20/cdf.events": true,
+      "PP-1e+18/current.events": true,
+      "PP-1e+18/old.events": true,
+      "PP-1e+18/cdf.events": true,
+      "ICS-1e+16/current.events": true,
+      "ICS-1e+16/old.events": true,
+      "ICS-1e+16/cdf.events": true,
+      "ICS-1e+18/current.events": true,
+      "ICS-1e+18/old.events": true,
+      "ICS-1e+18/cdf.events": true,
+      "ICS-1e+20/current.events": true,
+      "ICS-1e+20/old.events": true,
+      "ICS-1e+20/cdf.events": true,
+      "PP-1e+14/current.events": true,
+      "PP-1e+14/old.events": true,
+      "PP-1e+14/cdf.events": true,
+      "PP-1e+15/current.events": true,
+      "PP-1e+15/old.events": true,
+      "PP-1e+15/cdf.events": true,
+      "ICS-1e+14/current.events": true,
+      "ICS-1e+14/old.events": true,
+      "ICS-1e+14/cdf.events": true,
+      "ICS-1e+13/current.events": true,
+      "ICS-1e+13/old.events": true,
+      "ICS-1e+13/cdf.events": true,
+      "ICS-1e+15/current.events": true,
+      "ICS-1e+15/old.events": true,
+      "ICS-1e+15/cdf.events": true
+    }
+  },
+  "endpoint_guard_transport_replay": [
+    {
+      "distance_mpc": 0.1,
+      "primaries": 100,
+      "all_physics_rows_identical": true,
+      "invariant_calls": 6442
+    },
+    {
+      "distance_mpc": 1.0,
+      "primaries": 100,
+      "all_physics_rows_identical": true,
+      "invariant_calls": 8890
+    }
+  ],
+  "native_spectrum": {
+    "source_commit": "837d0108dd5995a2f7b3b080ba5ec28e7228f07d",
+    "N_per_sampler_case": 20000,
+    "main_events": 660000,
+    "bounded_events": 220000,
+    "status": "inconclusive",
+    "global_alpha": 0.01,
+    "family_size": 24516,
+    "significant_comparisons": {},
+    "pair_summaries": {
+      "old": {
+        "alpha": 0.005,
+        "family_size": 12258,
+        "precision_states": {
+          "within_target": 2038,
+          "inconclusive": 2048
+        },
+        "significant_comparisons": {},
+        "bounded_precision_states": {
+          "within_target": 690,
+          "inconclusive": 672
+        },
+        "direct_difference_states": {
+          "within_target": 662,
+          "inconclusive": 700
+        }
+      },
+      "cdf": {
+        "alpha": 0.005,
+        "family_size": 12258,
+        "precision_states": {
+          "within_target": 2046,
+          "inconclusive": 2040
+        },
+        "significant_comparisons": {},
+        "bounded_precision_states": {
+          "within_target": 690,
+          "inconclusive": 672
+        },
+        "direct_difference_states": {
+          "within_target": 668,
+          "inconclusive": 694
+        }
+      }
+    },
+    "elapsed_seconds": 123.34937200000422,
+    "binary_sha256": "6307a4a56199c2b0e3dd3331de1a68d457991cef9ed8e5edd14aeb68c5e1440d"
+  },
+  "bounded_counters": {
+    "fallbacks": 0,
+    "proposals": 2410187,
+    "max_cells": 21,
+    "max_envelope_gap": 1.0096680703715235,
+    "max_energy_residual": 2.220446049250313e-16,
+    "max_support_residual": 0.0
+  },
+  "native_raw_audit": {
+    "events": 660000,
+    "files": {
+      "ICS-1e+13/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+13/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+13/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 809
+      },
+      "ICS-1e+14/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+14/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+14/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 717
+      },
+      "ICS-1e+15/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+15/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+15/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 102
+      },
+      "ICS-1e+16/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+16/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+16/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 923
+      },
+      "ICS-1e+18/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+18/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+18/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 754
+      },
+      "ICS-1e+20/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+20/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "ICS-1e+20/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 381
+      },
+      "PP-1e+14/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 1.1102230246251565e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+14/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+14/old.events": {
+        "N": 20000,
+        "max_energy_error": 1.1102230246251565e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 313
+      },
+      "PP-1e+15/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+15/current.events": {
+        "N": 20000,
+        "max_energy_error": 1.1102230246251565e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+15/old.events": {
+        "N": 20000,
+        "max_energy_error": 1.1102230246251565e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 486
+      },
+      "PP-1e+16/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+16/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+16/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 1412
+      },
+      "PP-1e+18/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+18/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+18/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 1796
+      },
+      "PP-1e+20/cdf.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+20/current.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 0
+      },
+      "PP-1e+20/old.events": {
+        "N": 20000,
+        "max_energy_error": 2.220446049250313e-16,
+        "max_support_error": 0.0,
+        "flagged_events": 1172
+      }
+    },
+    "hashes_checked": 161,
+    "all_raw_counts_reproduced": true
+  },
+  "python310_replay": {
+    "all_category_decisions_identical": true,
+    "all_precision_states_identical": true,
+    "global_status": "inconclusive",
+    "raw_events_recounted": 660000,
+    "max_adjusted_p_difference": 0.0
+  },
+  "frozen_control_prefix_checks": {
+    "frozen_source_commit": "fa562d207b58af6d1357220e3809b44e0e2aa1ea",
+    "frozen_binary_sha256": "d8fc63d50fc5d38498e6f9914093cc9206ffa0e663e2cdf23cbc3a6fc7016d59",
+    "checks": [
+      {
+        "case": "ICS-1e+13",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+13",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+14",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+14",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+15",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+15",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+16",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+16",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+18",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+18",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+20",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "ICS-1e+20",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+14",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+14",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+15",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+15",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+16",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+16",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+18",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+18",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+20",
+        "control": "old",
+        "N": 1000,
+        "prefix_identical": true
+      },
+      {
+        "case": "PP-1e+20",
+        "control": "cdf",
+        "N": 1000,
+        "prefix_identical": true
+      }
+    ]
+  },
+  "unit_checks": {
+    "native_cpp": 155,
+    "linux_cpp": 155,
+    "native_python": 25,
+    "linux_python310": 25
+  },
+  "package": {
+    "file": "bounded-rejection-rerun-20261020-final.tar.gz",
+    "sha256": "8c4a3fcc575de12497ed85c697fb42db79542b1b839a3726d7fa2cd175019a0e",
+    "commit": "837d0108dd5995a2f7b3b080ba5ec28e7228f07d",
+    "default_baseline": "both",
+    "maximum_hours": 24
+  },
+  "exact_package_smoke": {
+    "status": "verified",
+    "package_commit": "837d0108dd5995a2f7b3b080ba5ec28e7228f07d",
+    "main_events": 6000,
+    "elapsed_seconds": 285.44581475400264,
+    "cpp_tests": 155,
+    "python_tests": 25,
+    "manifest_files_verified": 595,
+    "archive_files_verified": 596,
+    "archive_sha256": "a8d5f94bb89015c9bef320734fe08b69fb6f1dd3f777e55748705afcbb06a40c",
+    "nr": {
+      "historical_commit": "0e6af5083b426ca9423bc6da60372eba49f6ab6c",
+      "source": "https://github.com/blackstonep/Numerical-Recipes.git",
+      "expected_headers": {
+        "nr3.h": "810ecda5211c1188add4e040f0b9093e47f70f0f324e7dd55a052b9725f852c6",
+        "stepper.h": "ea7b901b3acc969bea190d763356d6c81c8a7b6903ae1036d644a8e24f2df2d9",
+        "odeint.h": "a69204f2093f8a0e46399849817ad7388152463d34ac3b580be86a17fe865e3a",
+        "stepperdopr5.h": "3de59963c627ae608f22ec4e816ab6b9a5af23b364be5fcb958c49f0c1d5e49c"
+      },
+      "resolved_commit": "0e6af5083b426ca9423bc6da60372eba49f6ab6c",
+      "headers": {
+        "nr3.h": "810ecda5211c1188add4e040f0b9093e47f70f0f324e7dd55a052b9725f852c6",
+        "stepper.h": "ea7b901b3acc969bea190d763356d6c81c8a7b6903ae1036d644a8e24f2df2d9",
+        "odeint.h": "a69204f2093f8a0e46399849817ad7388152463d34ac3b580be86a17fe865e3a",
+        "stepperdopr5.h": "3de59963c627ae608f22ec4e816ab6b9a5af23b364be5fcb958c49f0c1d5e49c"
+      }
+    },
+    "alpha_allocation": {
+      "rejection": 0.005,
+      "cdf": 0.005
+    }
+  }
+}
