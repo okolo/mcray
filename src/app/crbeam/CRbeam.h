@@ -40,6 +40,7 @@
 #include "ICS.h"
 #include "GammaPP.h"
 #include "CmdLine.h"
+#include "Configuration.h"
 
 using namespace std;
 using namespace mcray;
@@ -68,7 +69,9 @@ public:
     unsigned int PrimaryA() const { return fPrimaryA; }
     unsigned int PrimaryZ() const { return fPrimaryZ; }
     bool HasExplicitSeed() const { return fExplicitSeed; }
-    unsigned int ConfiguredSeed() const { return fSeed; }
+    unsigned long ConfiguredSeed() const { return fSeed; }
+    const YAML::Node& EffectiveConfiguration() const { return fConfiguration.Effective(); }
+    const std::string& PDMissingDataPolicy() const { return fPDMissingData; }
     const std::string& PDPhotonMode() const { return fPDPhotons; }
     const std::string& DecayPhotonMode() const { return fDecayPhotons; }
     const std::string& PDPhotonYieldPolicy() const { return fPDPhotonYields; }
@@ -91,8 +94,8 @@ private:
     bool fNuclearPrimary;
     unsigned int fPrimaryA, fPrimaryZ;
     bool fExplicitSeed;
-    unsigned int fSeed;
-    std::string fPhotodisintegration, fTalysDataPath, fNuclearDecay, fNuclearPPP, fNuclearGZK, fGzkResiduals, fPDPhotons, fDecayPhotons, fPDPhotonYields;
+    unsigned long fSeed;
+    std::string fPhotodisintegration, fTalysDataPath, fNuclearDecay, fNuclearPPP, fNuclearGZK, fGzkResiduals, fPDPhotons, fDecayPhotons, fPDPhotonYields, fPDMissingData;
 	bool 			fNoEM;
 	double			fMz;
 	int				fBackgroundModel;
@@ -120,6 +123,8 @@ private:
 	double			fEBLMaxE;
     bool            fTauPrint;
 	//double			fMaxDeflection;
+    std::string fResolvedCustomBackground;
+    Configuration fConfiguration;
 	cors::cmdline::CmdLine 		cmd;
 };
 

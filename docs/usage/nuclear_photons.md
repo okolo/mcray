@@ -8,8 +8,8 @@ require `--nuclear-decay On`. PSB photon emission is not implemented.
 Photon creation is independent of transport filtering. With `--noEMcascade`,
 requested photons are created and then discarded by the existing filter.
 Without that flag they enter the existing EM cascade. The effective creation
-switches, yield policy, data provenance and transport/filter state are recorded
-in `params`. Photon-free runs do not need photon payloads and retain their
+switches, yield policy and transport/filter state are recorded in `config.yaml`;
+data provenance is recorded in `run.yaml`. Photon-free runs do not need photon payloads and retain their
 existing sampling path. Enabling creation consumes random numbers even when
 photons are later filtered, so individual nuclear trajectories can differ.
 
@@ -63,7 +63,7 @@ output are invalid.
 
 ## Explicit missing-source exceptions
 
-The following eight transitions suppress photon creation, matching the
+The following ten approved transitions suppress photon creation, matching the
 reference's absent-entry behavior. The list is stored in
 `pd_photon_exceptions.tsv` and copied into effective metadata:
 
@@ -77,6 +77,14 @@ reference's absent-entry behavior. The list is stored in
 | He4 (4,2) | D (2,1) |
 | He4 (4,2) | He3 (3,2) |
 | Li7 (7,3) | He6 (6,2) |
+| Li8 (8,3) | Li7 (7,3) |
+| B8 (8,5) | Be7 (7,4) |
+
+The first eight belong to the original Fe56 PD+decay network; the last two
+are additionally reachable when nuclear GZK is enabled. Existing bundles
+containing only the first eight remain valid for their supported networks.
+Prepare a new photon bundle for the expanded network; do not edit an immutable
+bundle or its hashes in place.
 
 The residual label does not list emitted fragments. Nuclear interactions and
 products remain enabled. These exceptions do not establish physical zero

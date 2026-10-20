@@ -38,11 +38,13 @@ add_executable(nuclear_scenario nuclear_scenario.cpp)
 target_include_directories(nuclear_scenario PRIVATE ../src/lib)
 target_link_libraries(nuclear_scenario PRIVATE mcray)
 
-add_executable(crbeam_input_tests crbeam_input.cpp
+add_executable(crbeam_input_tests crbeam_input.cpp configuration_input.cpp
     ../src/app/crbeam/CRbeam.cpp ../src/app/crbeam/CmdLine.cpp)
 target_include_directories(crbeam_input_tests PRIVATE ../src/lib ../src/app/crbeam)
-target_link_libraries(crbeam_input_tests PRIVATE GTest::gtest_main mcray
+target_link_libraries(crbeam_input_tests PRIVATE GTest::gtest_main mcray crbeam_configuration
     ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${CMAKE_DL_LIBS})
+target_compile_definitions(crbeam_input_tests PRIVATE
+    CRBEAM_FULL_EXAMPLE="${CMAKE_CURRENT_SOURCE_DIR}/../examples/config.full.yaml")
 gtest_discover_tests(crbeam_input_tests TEST_PREFIX "integration."
     DISCOVERY_TIMEOUT 30 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
     PROPERTIES TIMEOUT 30 LABELS "integration")

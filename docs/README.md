@@ -6,6 +6,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Usage and tests
 
+- [YAML configuration, CLI compatibility and run records](usage/yaml_configuration.md)
+- [Complete commented configuration](../examples/config.full.yaml)
 - [Unified nuclei and TALYS](usage/talys_usage.md)
 - [Nuclear decays and data preparation](usage/nuclear_decay.md)
 - [Nuclear pair production](usage/nuclear_pair_production.md)
@@ -17,6 +19,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [YAML configuration regression checks](validation/yaml_configuration.md)
 - [PSB and nucleon results](validation/psb_validation_results.md)
 - [SOPHIA table generation](validation/sophia_table_generation.md)
 - [Nuclear decay / TALYS diagnostics](validation/nuclear_decay_comparison_results.md)

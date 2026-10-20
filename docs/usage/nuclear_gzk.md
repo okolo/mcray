@@ -30,7 +30,8 @@ energy is divided equally among their free nucleons and their weights are
 inherited. This compresses the reference's effectively instantaneous pure
 spectator decay sequence; it is not finite-lifetime transport of a bound state.
 
-The selected policy, mass model and provenance are recorded in `params`.
+The selected policy is recorded in `config.yaml`; the mass model and data
+provenance are recorded in `run.yaml`.
 The internal TALYS mass enum identifies bundle-supplied numeric masses;
 `CRPropaApprox` source tags and the effective `CRPropa-compatible-bundle`
 metadata distinguish approximations from tabulated measurements.
@@ -72,8 +73,26 @@ close the Strict Fe56 GZK/decay network: Li4 (A4Z3) has no verified decay
 record. That run fails explicitly; completing it requires additional verified
 data. CRPropa closes that network with photodisintegration Off. Enabling
 TALYS additionally requires actual cross sections for every reachable state;
-missing PD data remain errors in both policies. The terminal whitelist is
-not expanded by selecting CRPropa.
+missing PD data remain errors under the independent default
+`--pd-missing-data Strict`. Add `--pd-missing-data CRPropa` to skip only
+wholly absent PD tables while retaining the other enabled processes. This
+matches the pinned CRPropa module behavior, records reachable missing-table
+exceptions in `run.yaml`, and does not add them to the PD terminal whitelist.
+Incomplete tables, absent masses and required decay records remain errors.
+For example, a combined Fe56 command from `bin` is:
+
+```sh
+../build/Release/CRbeam --particle nucleus --A 56 --Z 26 \
+  --photodisintegration TALYS --nuclear-decay On --nuclear-gzk On \
+  --nuclear-gzk-residuals CRPropa --pd-missing-data CRPropa \
+  --talys-data /path/to/gzk-bundle --z 0.00001 --emax 5.6e20 \
+  --nparticles 100 --background 0 --noEMcascade --output /path/to/combined-output
+```
+
+This example filters the EM cascade for an isolated transport control. Omit
+`--noEMcascade` to propagate EM secondaries. Enabling either nuclear photon
+source additionally requires its prepared photon tables; missing PD tables
+produce neither PD interactions nor PD photons.
 
 For reproducible isolated controls with an explicit seed, run from the
 repository root (the output files must be new):

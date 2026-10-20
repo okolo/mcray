@@ -38,6 +38,15 @@ protected:
     }
 };
 
+TEST_F(CRbeamInputTest, MissingPDPolicyIsExplicitAndIndependentOfPhotonYields) {
+    Parse({}); EXPECT_EQ(program->PDMissingDataPolicy(),"Strict");
+    Parse({"--particle","nucleus","--A","56","--photodisintegration","TALYS",
+           "--talys-data","unused","--pd-missing-data","CRPropa","--pd-photon-yields","Strict"});
+    EXPECT_EQ(program->PDMissingDataPolicy(),"CRPropa");
+    EXPECT_EQ(program->PDPhotonYieldPolicy(),"Strict");
+    ExpectError([&] { Parse({"--pd-missing-data","unknown"}); }, "--pd-missing-data must be");
+    ExpectError([&] { Parse({"--pd-missing-data","CRPropa"}); }, "requires a nuclear TALYS primary");
+}
 TEST_F(CRbeamInputTest, ExistingDefaultRemainsNonNuclear) {
     Parse({});
     EXPECT_FALSE(program->IsNuclearPrimary());
@@ -104,9 +113,8 @@ TEST_F(CRbeamInputTest, TalysInputAcceptsExplicitIsotopesAndChecksDataAtRunTime)
 }
 TEST_F(CRbeamInputTest, OffDoesNotSilentlySubstituteAnUnsupportedIsotope) {
     for (const auto& isotope : std::vector<std::pair<unsigned,unsigned>>{{26,13},{56,25},{238,92}}) {
-        ExpectError([&] { Parse({"--particle", "nucleus", "--A", std::to_string(isotope.first),
-               "--Z", std::to_string(isotope.second), "--photodisintegration", "Off"}); },
-               "requires a tabulated nuclear mass");
+        Parse({"--particle", "nucleus", "--A", std::to_string(isotope.first),
+               "--Z", std::to_string(isotope.second), "--photodisintegration", "Off"});
     }
 }
 TEST_F(CRbeamInputTest, UnsignedInputsRejectSignsFractionsJunkAndOverflow) {
@@ -141,7 +149,7 @@ TEST_F(CRbeamInputTest, PhotodisintegrationModeIsValidated) {
     Parse({"--particle", "nucleus", "--A", "56", "--photodisintegration", "PSB"});
     EXPECT_EQ(program->PhotodisintegrationMode(), "PSB");
     ExpectError([&] { Parse({"--photodisintegration", "unknown"}); }, "must be TALYS, PSB or Off");
-    ExpectError([&] { Parse({"--particle", "nucleus", "--A", "56", "--photodisintegration", "TALYS"}); }, "requires --talys-data");
+    Parse({"--particle", "nucleus", "--A", "56", "--photodisintegration", "TALYS"});
 }
 TEST_F(CRbeamInputTest, NuclearOffAndPsbRunsProduceIsotopeFiles) {
     omp_set_num_threads(1);
@@ -195,7 +203,7 @@ TEST_F(CRbeamInputTest, OffPropagatesExplicitLightAndHeavyIsotopesWithMassOnlyDa
 TEST_F(CRbeamInputTest, NuclearDecayRequiresExplicitCompatibleInput) {
     ExpectError([&] { Parse({"--nuclear-decay","unknown"}); }, "must be On or Off");
     ExpectError([&] { Parse({"--nuclear-decay","On"}); }, "requires a nuclear primary");
-    ExpectError([&] { Parse({"--particle","nucleus","--A","56","--nuclear-decay","On"}); }, "--talys-data");
+    Parse({"--particle","nucleus","--A","56","--nuclear-decay","On"});
     ExpectError([&] { Parse({"--particle","nucleus","--A","56","--photodisintegration","PSB","--nuclear-decay","On","--talys-data","unused"}); }, "photodisintegration TALYS or Off");
     Parse({"--particle","nucleus","--A","56","--nuclear-decay","On","--talys-data","unused"});
 }
@@ -206,7 +214,7 @@ TEST_F(CRbeamInputTest, NuclearPppControlsValidateMassesCascadeAndDefaults) {
     Parse({}); EXPECT_EQ(program->NuclearPPPMode(),"Off");
     ExpectError([&]{Parse({"--nuclear-ppp","On"});},"must be Off, Losses or Full");
     ExpectError([&]{Parse({"--nuclear-ppp","Losses"});},"requires a nuclear primary");
-    ExpectError([&]{Parse({"--particle","nucleus","--A","56","--nuclear-ppp","Losses"});},"--talys-data");
+    Parse({"--particle","nucleus","--A","56","--nuclear-ppp","Losses"});
     ExpectError([&]{Parse({"--particle","nucleus","--A","56","--talys-data","unused","--photodisintegration","PSB","--nuclear-ppp","Losses"});},"photodisintegration TALYS or Off");
     ExpectError([&]{Parse({"--particle","nucleus","--A","56","--talys-data","unused","--nuclear-ppp","Full","--noEMcascade"});},"requires EM cascade");
     ExpectError([&]{Parse({"--particle","nucleus","--A","238","--Z","92","--talys-data","unused","--nuclear-ppp","Losses"});},"A<=56");
@@ -225,7 +233,7 @@ TEST_F(CRbeamInputTest, NuclearGzkPolicyDefaultsAndValidation) {
     ExpectError([&]{Parse({"--nuclear-gzk","Full"});},"must be On or Off");
     ExpectError([&]{Parse({"--nuclear-gzk-residuals","1"});},"must be Strict or CRPropa");
     ExpectError([&]{Parse({"--nuclear-gzk","On"});},"requires a nuclear primary");
-    ExpectError([&]{Parse({"--particle","nucleus","--A","56","--nuclear-gzk","On"});},"--talys-data");
+    Parse({"--particle","nucleus","--A","56","--nuclear-gzk","On"});
     ExpectError([&]{Parse({"--particle","nucleus","--A","56","--talys-data","unused","--nuclear-gzk","On","--nuclear-gzk-residuals","CRPropa"});},"--nuclear-decay On");
     ExpectError([&]{Parse({"--nuclear-gzk-residuals","CRPropa"});},"--nuclear-gzk On");
     for (const auto policy:{"Strict","CRPropa"}) {

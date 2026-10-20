@@ -1,6 +1,8 @@
 **
 !src/
 !src/**
+!examples/
+!examples/**
 !tests/
 !tests/**
 !bin/

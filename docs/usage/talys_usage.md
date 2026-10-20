@@ -22,8 +22,10 @@ numeric --primary remain available; do not supply both selectors.
 PSB preserves weighted branching and approximate nuclear masses. TALYS samples
 one exclusive channel per event and uses pinned tabulated nuclear masses.
 Off disables photodisintegration. With nuclear decays Off, PSB-chain isotopes
-retain their approximate source masses; other isotopes require --talys-data
-with a tabulated mass, without approximate substitution. With nuclear decays
+retain their approximate source masses; other isotopes require installed
+tabulated masses, without approximate substitution. Nuclear data default to
+the standard `tables/nuclear` directory; `--talys-data` remains a legacy CLI
+override. See [YAML configuration](yaml_configuration.md). With nuclear decays
 On, every source uses a tabulated mass. PSB accepts only its representative
 isotope at each A<=56 and rejects other Z values without projection.
 The mode does not disable redshift losses or existing electromagnetic,
@@ -43,7 +45,7 @@ isotope columns after the light-particle columns and writes their column
 header when nuclei are present. Trajectory logs append A,Z,mass/MeV. Type
 filters use Nucleus to select every bound nucleus; TotalEnergyOutput(Nucleus)
 is intentionally the energy summed over all nuclear isotopes.
-The params file records resolved source identity, mass model, selected mode,
+The `config.yaml` and `run.yaml` records contain resolved source identity, mass model, selected mode,
 data provenance, checksums and terminal-state assumptions for TALYS runs.
 
 ## Preparing the external TALYS data
@@ -195,8 +197,25 @@ states, listed as (A,Z): (5,2),(5,3),(6,2),(8,4),(9,5),(12,5),(16,9),(20,11),
 this whitelist. These are terminal states of the present PD-only network,
 not assertions of physical stability. CRPropa handles nuclear decays separately.
 
-Other missing required masses/cross sections, invalid channels and invalid
-rates are errors. CRbeam checks network closure before creating output.
+`--pd-missing-data Strict|CRPropa` selects a separate missing-cross-section
+policy and defaults to Strict. Strict rejects other missing reachable PD
+tables. CRPropa skips only photodisintegration for a nucleus with no total
+or exclusive table, matching the pinned CRPropa module's empty-rate behavior.
+Decays, GZK, pair losses and other enabled processes remain active. This is
+not evidence of a physically zero cross section. Partial tables, malformed
+data, absent masses and missing required decay/photon records remain errors.
+CRPropa mode requires a nuclear TALYS primary; it cannot treat cross sections
+that were deliberately not loaded as absent data.
+
+The effective `config.yaml` records the selected missing-data policy.
+`run.yaml` records the structured `nuclear.skipped_missing_pd` list and
+detailed nuclear provenance. Explicit PD terminals remain separately identified. This switch
+is independent of `--pd-photon-yields` (line probabilities) and
+`--nuclear-gzk-residuals` (masses/decays of GZK residuals). For an expanded
+GZK network both CRPropa policies may be necessary.
+
+Invalid channels and invalid rates are errors. CRbeam checks network closure
+before creating output.
 Propagation failures are counted across worker clones; a nuclear run returns
 an error if a cascade was discarded. Partial output from a failed run is
 invalid. Failed-cascade secondary queues are cleared before another history.
@@ -287,6 +306,7 @@ artifacts remain outside Git in the sibling validation directory.
 
 For reproducible CRbeam controls, `--seed UINT` selects an explicit unsigned
 32-bit random seed, including zero. Omitting it preserves automatic seeding.
-The effective seed and its source are written to `params`. Thread count,
+The effective seed is written to `config.yaml`; its explicit/automatic origin
+is recorded in `run.yaml`. Thread count,
 batching and other run settings must also be fixed; an explicit seed alone
 does not guarantee identical multithread scheduling.

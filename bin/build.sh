@@ -45,6 +45,7 @@ then
     export PATH="$brew_prefix/bin:/usr/bin:/bin:$PATH"
     gcc_prefix="$(brew --prefix gcc)"
     cmake_options+=(
+        "-DOPENSSL_ROOT_DIR=$(brew --prefix openssl@3)"
         "-DCMAKE_C_FLAGS=-I$brew_prefix/include"
         "-DCMAKE_CXX_FLAGS=-I$brew_prefix/include"
         "-DCMAKE_EXE_LINKER_FLAGS=-L$brew_prefix/lib -L$llvm_prefix/lib -L$gcc_prefix/lib/gcc/current"
@@ -70,7 +71,11 @@ echo "  C:       $c_compiler"
 echo "  C++:     $cxx_compiler"
 echo "  Fortran: $fortran_compiler"
 
-cmake --fresh \
+# Match CMake --fresh on versions before 3.24, including Ubuntu 22.04's 3.22.
+# Remove only generated configuration state; preserve sources and build outputs.
+rm -f "$build_dir/CMakeCache.txt"
+rm -rf "$build_dir/CMakeFiles"
+cmake \
     -S "$source_dir" \
     -B "$build_dir" \
     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \

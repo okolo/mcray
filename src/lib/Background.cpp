@@ -162,7 +162,7 @@ MatrixBackground::MatrixBackground(std::string aName, std::string aTableFile, bo
 	const size_t bufSize = 1048576;//1M
 	fBuffer = new char[bufSize];
 	std::istream_iterator<double> eos;
-	aTableFile = tables_dir + aTableFile;
+	if(!boost::filesystem::path(aTableFile).is_absolute()) aTableFile = tables_dir + aTableFile;
 	std::ifstream file(aTableFile.c_str());
 
 	if(!file.good())

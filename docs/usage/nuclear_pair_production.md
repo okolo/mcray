@@ -12,7 +12,8 @@ CRbeam --particle nucleus --A 56 --Z 26 --talys-data /path/to/data \
 `--nuclear-ppp Off|Losses|Full` defaults to Off. Losses enables only nuclear
 continuous energy loss; Full additionally samples e-/e+ products and requires
 EM cascade transport. Full with `--noEMcascade` is rejected. Both active modes
-require `--talys-data`, even for PSB-chain source isotopes, and reject PSB
+require tabulated data in the standard `tables/nuclear` directory (or the
+legacy CLI `--talys-data` override), even for PSB-chain source isotopes, and reject PSB
 photodisintegration. TALYS and nuclear decays can be selected independently
 with complete reachable data. Heavy nuclear PPP is outside the current scope.
 
@@ -34,7 +35,8 @@ moments need independent checks before physical acceptance.
 The module consists of NuclearPPPcel and NuclearPPP, using cloned background
 integrals and unchanged proton kernels. Particle ancestry and production time
 are inherited through a proton surrogate; the engine assigns child identities.
-Effective mode and scaling/energy ownership appear in the params file.
+The effective mode is recorded in `config.yaml`; `run.yaml` records execution
+and data provenance. The scaling and energy ownership are defined above.
 
 ## Isolated diagnostics
 

@@ -27,6 +27,7 @@
  */
 
 #include <cstdlib>
+#include <filesystem>
 #include "ParticleStack.h"
 #include "Utils.h"
 #include "Cosmology.h"
@@ -83,7 +84,7 @@ enum ClineParams
 {
 	PHelp = 1,PLog,PLogFilterThread,PLogLevel,PTrajectoryLog,
     PNparticles,PBatchSize,PSeed,
-    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PNoEMcascade,PSourceEvolM,
+    PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PPDMissingData,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
 	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix
 };
@@ -124,13 +125,14 @@ static CmdInfo commands[] = {
         { PZ, CmdInfo::FLAG_ARGUMENT, "-Z", "--Z", "0", "Unsigned nuclear charge number (0=choose from the PSB chain; unused unless nucleus)" },
         { PPhotodisintegration, CmdInfo::FLAG_ARGUMENT, "-pd", "--photodisintegration", "Off", "Nuclear photodisintegration: TALYS, PSB or Off (default Off)" },
         { PNuclearDecay, CmdInfo::FLAG_ARGUMENT, "-nd", "--nuclear-decay", "Off", "Nuclear decays: On or Off (default Off); requires tabulated TALYS masses and decay data" },
+        { PPDMissingData, CmdInfo::FLAG_ARGUMENT, "-pd-missing-data", "--pd-missing-data", "Strict", "Missing PD tables: Strict (error) or CRPropa (skip only PD; requires TALYS)" },
         { PPDPhotonYields, CmdInfo::FLAG_ARGUMENT, "-pd-photon-yields", "--pd-photon-yields", "CRPropa", "PD photon yields: CRPropa (saturate above one) or Strict (diagnose inconsistent ratios)" },
         { PPDPhotons, CmdInfo::FLAG_ARGUMENT, "-pd-photons", "--photodisintegration-photons", "Off", "TALYS de-excitation photons: On or Off; requires photon data" },
         { PDecayPhotons, CmdInfo::FLAG_ARGUMENT, "-decay-photons", "--decay-photons", "Off", "Nuclear decay photons: On or Off; requires nuclear decays On and photon data" },
         { PNuclearGZK, CmdInfo::FLAG_ARGUMENT, "-ngzk", "--nuclear-gzk", "Off", "Bound-nucleon GZK: On or Off; requires a nuclear primary and nuclear data" },
         { PGzkResiduals, CmdInfo::FLAG_ARGUMENT, "-ngzk-residuals", "--nuclear-gzk-residuals", "Strict", "Nuclear residual policy: Strict or CRPropa; CRPropa enables tagged approximate masses and artificial dripping and requires nuclear decays On" },
         { PNuclearPPP, CmdInfo::FLAG_ARGUMENT, "-nppp", "--nuclear-ppp", "Off", "Nuclear pair production: Off, Losses or Full; requires tabulated masses and TALYS or Off; Full requires EM cascade" },
-        { PTalysData, CmdInfo::FLAG_ARGUMENT, "-talys-data", "--talys-data", "", "Pinned data directory: cross sections for TALYS, decay tables for decays, or masses for Off outside the PSB chain" },
+        { PTalysData, CmdInfo::FLAG_ARGUMENT, "-talys-data", "--talys-data", "", "Legacy nuclear data override (default: tables/nuclear): TALYS cross sections, decays, photons and masses" },
 		{ PNoEMcascade,    CmdInfo::FLAG_NULL,     "-nEM",   "--noEMcascade",   NULL,   "don't calculate spectra of electrons and photons" },
 		{ PSourceEvolM, CmdInfo::FLAG_ARGUMENT, "-m",   "--m_z",   xstr(M_POINT_SOURCE),    "if parameter is set (!=" xstr(M_POINT_SOURCE) "), use continuous source distribution ~(1+z)^m" },
 		{ PBackground,    CmdInfo::FLAG_ARGUMENT, "-b",   "--background",   "3",    "EBL used:\n"
@@ -257,12 +259,15 @@ CRbeam::CRbeam(int argc, char** argv):
 		fLogLevel(WarningLL),
 		fEBLMaxE(100.),
         fTauPrint(false),
-		cmd(argc,argv,commands)
+		fConfiguration(argc,argv,commands),
+        cmd(fConfiguration.Argc(),fConfiguration.Argv(),commands)
 {
     std::cout << "sizeof(coord_type) = " << sizeof(coord_type) << std::endl;
 	if( cmd.has_param("-h") )
 	{
-		cmd.printHelp(std::cerr);
+		std::cerr << "Usage: CRbeam FILE.yaml  or  CRbeam [legacy options]\n"
+            << "YAML schema and examples: docs/usage/yaml_configuration.md\n";
+        cmd.printHelp(std::cerr);
 		exit(0);
 	}
 	fLogging = cmd(PLog);
@@ -290,8 +295,8 @@ CRbeam::CRbeam(int argc, char** argv):
 	//fMaxDeflection *= (M_PI/180.);
 
 	fNoParticles = cmd(PNparticles);
-    fExplicitSeed=cmd.has_param("--seed");
-    fSeed=cmd(PSeed);
+    fExplicitSeed=cmd.has_param("--seed") || fConfiguration.HasSeed();
+    fSeed=fConfiguration.HasSeed()?fConfiguration.Seed():static_cast<unsigned int>(cmd(PSeed));
     fBatchSize = cmd(PBatchSize);
 	int primary = cmd(PPrimary);
 	fNoEM = cmd(PNoEMcascade);
@@ -352,10 +357,16 @@ CRbeam::CRbeam(int argc, char** argv):
     }
     fPhotodisintegration = static_cast<const char*>(cmd(PPhotodisintegration));
     fTalysDataPath = static_cast<const char*>(cmd(PTalysData));
+    if (fNuclearPrimary && fTalysDataPath.empty()) fTalysDataPath=Configuration::NuclearTables();
     fNuclearDecay = static_cast<const char*>(cmd(PNuclearDecay));
     fNuclearPPP = static_cast<const char*>(cmd(PNuclearPPP));
     fNuclearGZK = static_cast<const char*>(cmd(PNuclearGZK));
     fGzkResiduals = static_cast<const char*>(cmd(PGzkResiduals));
+    fPDMissingData=static_cast<const char*>(cmd(PPDMissingData));
+    if (fPDMissingData!="Strict" && fPDMissingData!="CRPropa")
+        Exception::Throw("--pd-missing-data must be Strict or CRPropa");
+    if (fPDMissingData=="CRPropa" && (!fNuclearPrimary || fPhotodisintegration!="TALYS"))
+        Exception::Throw("--pd-missing-data CRPropa requires a nuclear TALYS primary");
     fPDPhotonYields=static_cast<const char*>(cmd(PPDPhotonYields));
     if (fPDPhotonYields!="Strict" && fPDPhotonYields!="CRPropa") Exception::Throw("--pd-photon-yields must be Strict or CRPropa");
     fPDPhotons=static_cast<const char*>(cmd(PPDPhotons));
@@ -402,18 +413,43 @@ CRbeam::CRbeam(int argc, char** argv):
 
 }
 
-int CRbeam::run()
+int CRbeam::run() try
 {
+    auto threadSetting=fConfiguration.Effective()["simulation"]["threads"];
+    if(threadSetting.Scalar()!="auto") {omp_set_dynamic(0);omp_set_num_threads(threadSetting.as<int>());}
+    const int effectiveThreads=omp_thread_count();
+    omp_set_dynamic(0);omp_set_num_threads(effectiveThreads);
+    if(fTrajectoryLogging) fBatchSize=fNoParticles;
+    if(fBatchSize==0) fBatchSize=omp_get_max_threads()*10;
+    if(fCustomBackground && *fCustomBackground) {
+        std::filesystem::path file(fCustomBackground);
+        if(!file.is_absolute()) file=std::filesystem::path(tables_dir)/file;
+        fResolvedCustomBackground=std::filesystem::absolute(file).lexically_normal().string();
+        fCustomBackground=fResolvedCustomBackground.c_str();
+        fConfiguration.SetAdditionalTable(fResolvedCustomBackground);
+    }
+    unsigned long seed=0;
+#ifdef _DEBUG
+    seed=2015;
+#else
+    struct timeval seedTime;gettimeofday(&seedTime,nullptr);
+    seed=static_cast<unsigned long>(seedTime.tv_sec)*1000+seedTime.tv_usec/1000;
+#endif
+    if(fExplicitSeed) seed=fSeed;
+
     std::shared_ptr<const TalysData> talys;
     std::shared_ptr<const NuclearDecayData> decay;
+    std::set<TalysData::Identity> nuclearNetwork;
     const bool psbPrimary = fNuclearPrimary && fPrimaryA <= CNucleus::MaxA &&
                             fPrimaryZ == CNucleus::getZ(fPrimaryA);
     if (fNuclearPrimary && (fPhotodisintegration == "TALYS" || fNuclearDecay == "On" || fNuclearPPP != "Off" || fNuclearGZK == "On" || !psbPrimary)) {
-        talys = std::make_shared<TalysData>(fTalysDataPath,fPhotodisintegration == "TALYS",fGzkResiduals == "CRPropa",fPDPhotons=="On");
+        Configuration::VerifyBundle(fTalysDataPath,!cmd.has_param("--talys-data"));
+        talys = std::make_shared<TalysData>(fTalysDataPath,fPhotodisintegration == "TALYS",fGzkResiduals == "CRPropa",fPDPhotons=="On",
+            fPDMissingData=="CRPropa" ? TalysData::MissingPDPolicy::CRPropa : TalysData::MissingPDPolicy::Strict);
         if (fNuclearDecay == "On" || fNuclearGZK == "On") {
             decay = std::make_shared<NuclearDecayData>(fTalysDataPath,talys,fDecayPhotons=="On");
-            decay->ValidateNetwork(fPrimaryA,fPrimaryZ,fPhotodisintegration == "TALYS",fNuclearGZK == "On");
-        } else if (fPhotodisintegration == "TALYS") talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
+            nuclearNetwork = decay->ValidateNetwork(fPrimaryA,fPrimaryZ,fPhotodisintegration == "TALYS",fNuclearGZK == "On");
+        } else if (fPhotodisintegration == "TALYS") nuclearNetwork = talys->ValidateNetwork(fPrimaryA, fPrimaryZ);
         else talys->Get(fPrimaryA, fPrimaryZ);
     }
     // Never silently replace an explicitly selected isotope by a PSB-chain
@@ -421,6 +457,9 @@ int CRbeam::run()
     if (fNuclearPrimary && !talys &&
         (fPrimaryA > CNucleus::MaxA || fPrimaryZ != CNucleus::getZ(fPrimaryA)))
         Exception::Throw("The selected primary requires a tabulated nuclear mass; the PSB mass source cannot represent this A,Z");
+    if (!std::isfinite(fZmax) || fZmax<=0 || fNoParticles<=0 || fBatchSize<0 ||
+        !std::isfinite(fEmin_eV) || fEmin_eV<=0 || !std::isfinite(fEmax_eV) || fEmax_eV<fEmin_eV)
+        Exception::Throw("Invalid source redshift, primary/batch count or energy range");
     auto configurePrimary = [&](Particle& p) {
         if (!fNuclearPrimary) return;
         if (talys) talys->SetParticle(p, fPrimaryA, fPrimaryZ);
@@ -483,6 +522,24 @@ int CRbeam::run()
     std::cout << "output dir: " << outputDir << std::endl;
     bool saveZprod = true;
     SmartPtr<RawOutput3D> pOutput = new RawOutput3D(outputDir, fOverwriteOutput, true, true, fTrajectoryLogging, saveZprod);//this creates folder outputDir, later we will set output to outputDir/z0
+    fConfiguration.ResolveExecution(seed,omp_get_max_threads(),fBatchSize,outputDir,
+        fNuclearPrimary?fPrimaryA:0,fPrimaryZ);
+    fConfiguration.WriteConfig(outputDir);
+    RunRecord runRecord(outputDir,YAML::Node(YAML::NodeType::Map));
+    auto provenance=fConfiguration.Provenance(talys?fTalysDataPath:"");
+    if(fNuclearPrimary) provenance["nuclear"]["mass_model"]=talys?
+        (fGzkResiduals=="CRPropa"?"CRPropa-compatible-bundle":"TALYS-tabulated"):"PSB-approximate";
+    provenance["nuclear"]["skipped_missing_pd"]=YAML::Node(YAML::NodeType::Sequence);
+    if(talys && fPhotodisintegration=="TALYS") for(const auto& key:nuclearNetwork) {
+        if(key.first<=1 || key.second==0 || key.second==key.first) continue;
+        const auto& isotope=talys->Get(key.first,key.second);
+        if(!isotope.terminal && talys->PDInactive(isotope)) {
+            YAML::Node identity;identity["a"]=key.first;identity["z"]=key.second;
+            provenance["nuclear"]["skipped_missing_pd"].push_back(identity);
+        }
+    }
+    runRecord.Update(provenance);
+
 	if(fLogging){
 		debug.SetOutputFile(outputDir + "/log.txt");
 		debug.EnableTimestamp();
@@ -584,17 +641,6 @@ int CRbeam::run()
 		backgrI = new ContinuousBackgroundIntegral(backgr, stepZ, logStepK, fZmax, epsRel);
 	}
 
-	unsigned long int seed = 0;
-#ifdef _DEBUG
-	seed=2015;
-#else
-	{
-	    struct timeval tv;
-	    gettimeofday(&tv, NULL);
-	    seed = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	}
-#endif
-    if(fExplicitSeed) seed=fSeed;
 	Randomizer rand(seed);
 	SmartPtr<IFilter> resultFilter = new EnergyBasedFilter(Emin, M_PI);
 	bool useResultFilterInRuntime = true;
@@ -664,22 +710,6 @@ int CRbeam::run()
 	CosmoTime tEnd;
 	tEnd.setZ(zMin);
 	pOutput->SetOutputDir(outputDir + "/z" + ToString(zMin));
-	fstream paramsOut((outputDir + "/params").c_str(), std::ios_base::out);
-	cmd.printParamValues(paramsOut);
-    paramsOut << "\n# resolved_photodisintegration=" << fPhotodisintegration;
-    if (fNuclearPrimary) paramsOut << " A=" << fPrimaryA << " Z=" << fPrimaryZ
-        << " mass_model=" << (fGzkResiduals == "CRPropa" ? "CRPropa-compatible-bundle" : talys ? "TALYS-tabulated" : "PSB-approximate");
-    paramsOut << '\n';
-    paramsOut << "# resolved_nuclear_decay=" << fNuclearDecay << "\n";
-    paramsOut << "# resolved_nuclear_ppp=" << fNuclearPPP
-        << " model=native-proton-equal-gamma loss=Z2*mp/M secondary_rate=Z2 energy_owner=CEL\n";
-    paramsOut << "# resolved_nuclear_gzk=" << fNuclearGZK << " residual_policy=" << fGzkResiduals
-        << " pure_spectators=prompt-free-nucleons missing_PD=error\n";
-    paramsOut << "# resolved_photodisintegration_photons=" << fPDPhotons << " decay_photons=" << fDecayPhotons
-        << " PD_photon_yields=" << fPDPhotonYields << " boost=CRPropa-isotropic-ultrarelativistic nuclear_energy_debit=Off photon_transport=" << (fNoEM?"filtered":"EM-cascade") << "\n";
-    paramsOut << "random_seed=" << seed << " seed_source=" << (fExplicitSeed?"explicit":"automatic") << "\n";
-    if (decay) paramsOut << decay->Metadata();
-    if (talys) paramsOut << talys->Metadata();
 	result.SetEndTime(tEnd);
 	CosmoTime tStart;
 	tStart.setZ(fZmax);
@@ -780,7 +810,11 @@ int CRbeam::run()
         }
 	}
 	std::cout << "output dir: " << outputDir << std::endl;
-	return 0;
+	runRecord.Finish(result.AbortRequested(),pe.FailureCount());
+    return pe.FailureCount()?1:0;
+} catch(const std::exception& e) {
+    Exception::Throw(std::string("CRbeam: ")+e.what());
+    return 1;
 }
 
 CRbeam::~CRbeam() {

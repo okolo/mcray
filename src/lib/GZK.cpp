@@ -55,8 +55,15 @@ Function* GZK::InitSigma(ParticleType aPrim)
 {
     std::string tablesDir = tables_dir + "sophia2/";
     Utils::TableReader reader(tablesDir+(aPrim==Proton?"p":"n"), 2);
+    if(reader.numberOfColumns()!=2)
+        Utils::Exception::Throw("Missing or incomplete SOPHIA cross-section table: "+
+            tablesDir+(aPrim==Proton?"p":"n"));
     std::vector<double>& s = reader.getColumn(0);
     std::vector<double>& sigma = reader.getColumn(1);
+    // A missing table produces empty columns; diagnose it before indexing.
+    if(s.size()<2 || sigma.size()!=s.size())
+        Utils::Exception::Throw("Missing or incomplete SOPHIA cross-section table: "+
+            tablesDir+(aPrim==Proton?"p":"n"));
     double M = aPrim==Proton?fMpSophia:fMnSophia;
     for(int i=0; i<s.size(); i++)
     {

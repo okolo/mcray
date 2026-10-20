@@ -15,7 +15,8 @@ Framework for Monte Carlo simulation of ultra-high energy cosmic rays and electr
 
 ### Installation
 
-The code requires C++17. Test builds require CMake 3.16 or newer and use
+The code requires C++17. CRbeam additionally requires yaml-cpp >=0.6 and
+OpenSSL Crypto >=1.1.1 for SHA-256. See [YAML configuration and table installation](docs/usage/yaml_configuration.md). Test builds require CMake 3.16 or newer and use
 GoogleTest 1.18.0. See [tests/README.md](tests/README.md).
 
 - Install required libraries to [external](src/external) folder

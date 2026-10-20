@@ -2,7 +2,7 @@
 
 The primary mcray target is Linux x86-64 (Docker: `linux/amd64`).
 Checks use Ubuntu 24.04, system GCC/G++/gfortran, GSL,
-Boost.Filesystem, and Boost.System.
+Boost.Filesystem, Boost.System, yaml-cpp and OpenSSL Crypto (`libssl-dev`).
 The application and dependencies use compatible libstdc++;
 OpenMP uses GNU libgomp.
 
@@ -10,6 +10,16 @@ From the repository root:
 
 ```bash
 bash bin/test-docker.sh
+```
+
+To verify the stock Ubuntu 22.04 packages (Boost 1.74, yaml-cpp 0.7,
+OpenSSL 3 and CMake 3.22), use the same Dockerfile with its version argument:
+
+```bash
+docker build --platform linux/amd64 --build-arg UBUNTU_VERSION=22.04 \
+  -f docker/linux-amd64.Dockerfile -t mcray-test-ubuntu22:local .
+docker run --rm --platform linux/amd64 -e OMP_NUM_THREADS=2 \
+  mcray-test-ubuntu22:local --parallel 2
 ```
 
 The script builds mcray-test-linux-amd64:local and then runs CTest in a
