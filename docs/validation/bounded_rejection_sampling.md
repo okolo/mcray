@@ -220,3 +220,40 @@ ICS/GammaPP cases reproduces all 220000 saved native raw events byte-for-byte.
 This replay reuses the release seeds and supplies no additional independent
 statistical evidence. The full server comparison remains pending; the server
 pilot measures performance of the newly compiled source on the actual CPU.
+
+## Native server gate failure, audited 2026-10-21
+
+The archive em-secondary-20261020T065753-5908.tar.gz records a run of
+2685046ae571484f9763dd5354272f64aeadcbd7, using both controls and the unchanged
+24-hour, 20-GiB plan. Its SHA-256 is
+1bc827bf4bccb450802d19f73c509c0f9fb3a21a12994c6c9336d69c03af30f5.
+All 513 retained manifest entries match; there are no missing retained entries.
+
+The Release build with GCC 11.4 succeeded, but CTest returned 8: 149 of 155
+cases passed, while the six independent proton-PPP sampling cases at rest-frame
+photon energies 2.2, 3, 5, 10, 20 and 50 electron masses each hit their 30-second
+wall-clock limit. All 23 EM secondary/CDF/bounded-rejection tests passed.
+There are no reported assertion failures in the six interrupted tests; their
+numerical outcomes are unknown. The logs do not establish the underlying cause
+of the runtime difference between this server and the local validation hosts.
+The missing-table warning does not establish a missing physical input: these
+PPP tests construct their own fixed-rest-frame photon field.
+
+The runner stopped before reference construction, pilots or main sampling.
+Total elapsed time including compression was 278.98 seconds. There are no
+saved spectral reports, main plan or raw secondary events, so this attempt
+provides no spectrum comparison or evidence for the 1%/10% precision criteria.
+
+The narrow timeout correction already present on talys at 7fc04ae was absent
+from this independent sampling branch. This branch now uses the same discovery split:
+only these six PPP cases receive TIMEOUT=180; the other 149 retain TIMEOUT=30.
+No tests are skipped, and no production sources, sample counts, seeds,
+assertions or statistical criteria are changed. The full server experiment
+must restart at the corrected revision and pass the complete CTest gate.
+
+Verification of this correction on emulated Ubuntu 22.04 Linux amd64:
+all 155 CTest cases passed in 97.77 seconds. The six PPP checks took
+12.92--13.73 seconds each. CTest JSON discovery confirms 155
+unique names, exactly six with TIMEOUT=180 and all other 149 with TIMEOUT=30.
+The production sources, PPP assertions and spectrum inference code have no
+diff from 2685046. A successful native server rerun remains required.

@@ -20,11 +20,22 @@ target_include_directories(em_secondary_accuracy_tests PRIVATE ../src/lib)
 target_link_libraries(em_secondary_accuracy_tests PRIVATE GTest::gtest_main mcray)
 gtest_discover_tests(em_secondary_accuracy_tests TEST_PREFIX "unit.sampling."
     PROPERTIES TIMEOUT 30 LABELS "unit;sampling")
+# The independent PPP quadrature exceeded 30 s per energy on the validation
+# server. Allow headroom only for these six cases, as in talys commit 7fc04ae;
+# keep their sample counts, seeds and numerical assertions unchanged.
+set(ppp_sampling_filter "RestFrameEnergies/ProtonPppSampling.MatchesIndependentRestFrameQuadrature/*")
 gtest_discover_tests(mcray_unit_tests
     TEST_PREFIX "unit."
+    TEST_FILTER "-${ppp_sampling_filter}"
     DISCOVERY_TIMEOUT 30
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
     PROPERTIES TIMEOUT 30 LABELS "unit")
+gtest_discover_tests(mcray_unit_tests
+    TEST_PREFIX "unit."
+    TEST_FILTER "${ppp_sampling_filter}"
+    DISCOVERY_TIMEOUT 30
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
+    PROPERTIES TIMEOUT 180 LABELS "unit")
 
 add_test(NAME crbeam_help COMMAND CRbeam --help)
 add_test(NAME z2t_smoke COMMAND z2t 0.1)
