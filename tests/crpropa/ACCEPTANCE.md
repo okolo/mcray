@@ -1,5 +1,9 @@
 # Frozen initial-point transport/photon acceptance
 
+The completed v1 campaign remains inconclusive. Subsequent
+[v2 preparation tools](ACCEPTANCE_V2.md) use a separate approved budget;
+they do not modify this frozen protocol or combine its samples with new ones.
+
 This executable protocol was frozen on 2026-10-20 after independent pilots
 and the audited I/M/C coupled numerical matrix. It evaluates Fe56 at
 E/A=10^18.6 eV, 1 physical Mpc, frozen z=0 CMB and CMB+Inoue12, with TALYS,
@@ -192,3 +196,28 @@ the original failed archive remains unchanged evidence.
 A local `--plan-only` mode validates inputs and writes the immutable 272-job
 plan without executing transport. It does not reserve the server campaign or
 constitute a clean-source/server-execution check.
+
+
+## Completed campaign and offline audit
+
+Campaign `20261020T153324Z-d619dbcb` completed on source `172f253`.
+Its [audited results](../../docs/validation/transport_photon_acceptance_results.md)
+are physically inconclusive: execution success is not a global acceptance
+claim. Do not start another ensemble using new seeds to resolve this verdict.
+
+The read-only auditor checks the archive/sidecar/payload hashes, frozen job
+inventory, raw history summaries, coefficient controls and statistical
+classifications. Use helpers from the frozen source revision and NumPy
+2.2.6, SciPy 1.15.3 and GitPython 3.2.0 to match the server quantiles:
+
+```bash
+python3 tests/crpropa/audit_transport_photon_acceptance.py \
+  --results /absolute/path/to/extracted/20261020T153324Z-d619dbcb \
+  --summary /absolute/path/to/20261020T153324Z-d619dbcb.json \
+  --archive /absolute/path/to/20261020T153324Z-d619dbcb.tar.gz \
+  --output /absolute/path/to/new-audit-directory
+```
+
+The output directory must not exist. The audit generates no transport
+histories and leaves the archived report unchanged. Keep the input archive,
+sidecar and generated `audit.json` outside Git.

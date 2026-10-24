@@ -266,14 +266,27 @@ bool NuclearDecay::GetSecondaries(Particle& p,std::vector<Particle>& products,Ra
     double u=random.Rand()*sum;
     const auto* selected=&channels.back();
     for (const auto& channel:channels) { u-=channel.restRate; if (u<0.) { selected=&channel; break; } }
-    if (fPhotons) for (const auto& photon:selected->photons)
+    return GenerateSecondaries(p,*selected,products,random);
+}
+bool NuclearDecay::GetChannelSecondaries(const Particle& p,const std::string& code,
+                                         std::vector<Particle>& products,Randomizer& random) const {
+    if (Rate(p)==0.) Exception::Throw("Conditional decay requires an unstable nuclear state");
+    const auto& channels=fData->Get(p.MassNumber(),p.AtomicNumber());
+    const auto selected=std::find_if(channels.begin(),channels.end(),
+        [&](const NuclearDecayData::Channel& channel){return channel.code==code;});
+    if (selected==channels.end()) Exception::Throw("Unknown conditional nuclear decay channel");
+    return GenerateSecondaries(p,*selected,products,random);
+}
+bool NuclearDecay::GenerateSecondaries(const Particle& p,const NuclearDecayData::Channel& selected,
+                                       std::vector<Particle>& products,Randomizer& random) const {
+    if (fPhotons) for (const auto& photon:selected.photons)
         if (random.Rand()<photon.probability) EmitNuclearPhoton(p,photon.energy,products,random);
     Particle residual=p;
-    for (int i=0;i<selected->code[0]-'0';++i) BetaDecay(residual,false,products,random);
-    for (int i=0;i<selected->code[1]-'0';++i) BetaDecay(residual,true,products,random);
+    for (int i=0;i<selected.code[0]-'0';++i) BetaDecay(residual,false,products,random);
+    for (int i=0;i<selected.code[1]-'0';++i) BetaDecay(residual,true,products,random);
     const std::array<TalysData::Identity,3> emitted={{{4,2},{1,1},{1,0}}};
     for (size_t i=0;i<emitted.size();++i)
-        for (int count=0;count<selected->code[i+2]-'0';++count) {
+        for (int count=0;count<selected.code[i+2]-'0';++count) {
             const auto a=residual.MassNumber(),z=residual.AtomicNumber();
             const double energyPerA=residual.Energy/a;
             Particle fragment=residual; fData->Nuclei().SetParticle(fragment,emitted[i].first,emitted[i].second);

@@ -79,6 +79,34 @@ TEST_F(DecayTest, BetaPlusProducesPositronAndElectronNeutrino) {
     ASSERT_EQ(products.size(),3u); EXPECT_EQ(products[0].Type,Positron); EXPECT_EQ(products[1].Type,NeutrinoE);
     EXPECT_EQ(products[2].AtomicNumber(),25u); EXPECT_DOUBLE_EQ(products[2].ElectricCharge()+products[0].ElectricCharge(),26.);
 }
+TEST_F(DecayTest, ConditionalKernelPreservesSeededProductsAndRates) {
+    auto data=Load(); NuclearDecay process(data);
+    Particle p(Nucleus,0.); data->Nuclei().SetParticle(p,56,26); p.Energy=1e8*p.Mass();p.Weight=2.5;
+    const double before=process.Rate(p);
+    Randomizer ordinary(20261024),conditional(20261024);
+    const auto& channels=data->Get(56,26);
+    double sum=0.;for(const auto& c:channels) sum+=c.restRate;
+    for(int i=0;i<100;++i) {
+        // Consume precisely the branch draw used by ordinary production.
+        double u=conditional.Rand()*sum;
+        const auto* selected=&channels.back();
+        for(const auto& c:channels) {u-=c.restRate;if(u<0.) {selected=&c;break;}}
+        std::vector<Particle> a,b;
+        ASSERT_TRUE(process.GetSecondaries(p,a,ordinary));
+        ASSERT_TRUE(process.GetChannelSecondaries(p,selected->code,b,conditional));
+        ASSERT_EQ(a.size(),b.size());
+        for(size_t j=0;j<a.size();++j) {
+            EXPECT_EQ(a[j].Name(),b[j].Name());
+            EXPECT_DOUBLE_EQ(a[j].Energy,b[j].Energy);
+            EXPECT_DOUBLE_EQ(a[j].Weight,b[j].Weight);
+        }
+    }
+    EXPECT_DOUBLE_EQ(before,process.Rate(p));
+    std::vector<Particle> products;
+    ExpectError([&]{process.GetChannelSecondaries(p,"99999",products,conditional);},"Unknown conditional");
+    data->Nuclei().SetParticle(p,56,27);
+    ExpectError([&]{process.GetChannelSecondaries(p,"10000",products,conditional);},"unstable nuclear state");
+}
 TEST_F(DecayTest, AlphaEmissionIncludesBothIdenticalDaughters) {
     auto data=Load(); NuclearDecay process(data);
     Particle p(Nucleus,0.); data->Nuclei().SetParticle(p,8,4); p.Energy=8e19*units.eV;

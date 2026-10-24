@@ -16,6 +16,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Tests and validation tools](../tests/README.md)
 - [CRPropa adapters and external Linux runs](../tests/crpropa/README.md)
 - [Frozen PD/decay/photon acceptance and multicore server commands](../tests/crpropa/ACCEPTANCE.md)
+- [Transport/photon v2 preparation and rare-channel tools](../tests/crpropa/ACCEPTANCE_V2.md)
 - [Docker Linux amd64](../docker/README.md)
 
 ## Validation results
@@ -31,6 +32,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Deterministic photodisintegration reference](validation/deterministic_pd_reference.md)
 - [Deterministic PD+decay energy-state reference](validation/deterministic_coupled_reference.md)
 - [Native Linux full PD+decay numerical matrix](validation/deterministic_coupled_full_matrix.md)
+- [Completed frozen transport/photon acceptance](validation/transport_photon_acceptance_results.md)
 - [Frozen acceptance publication checks](validation/transport_photon_acceptance_preflight.md)
 
 Results distinguish confirmed checks from remaining limitations and pilot

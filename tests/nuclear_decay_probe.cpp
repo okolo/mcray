@@ -107,17 +107,26 @@ int main(int argc,char** argv) {
                     out<<a<<'\t'<<z<<'\t'<<g<<'\t'<<channels[c].code<<'\t'<<rates.exclusive[c]*units.Mpc<<'\n';
               }
             }
-        } else if(mode=="events") {
+        } else if(mode=="events" || mode=="channel-events") {
             const auto& channels=data->Get(a,z);
-            if(channels.size()!=1 || channels[0].code!=channel)
+            if(mode=="events" && (channels.size()!=1 || channels[0].code!=channel))
                 throw std::runtime_error("Conditional events require a separately prepared one-channel dataset");
             Particle p(Nucleus,0.);nuclei->SetParticle(p,a,z);p.Energy=gamma*p.Mass();
             Randomizer random(seed);
             out<<"# primary="<<p.Name()<<" gamma="<<gamma<<" conditional_channel="<<channel<<" seed="<<seed<<'\n';
+            if(mode=="channel-events") {
+                double sum=0.,partial=0.;
+                for(const auto& c:channels) {sum+=c.restRate;if(c.code==channel) partial=c.restRate;}
+                if(!(partial>0.) || !(sum>0.)) throw std::runtime_error("Unknown conditional decay channel");
+                out<<"# conditional_only=1 original_channel_probability="<<partial/sum
+                   <<" original_total_rate_per_Mpc="<<decay.Rate(p)*units.Mpc<<'\n';
+            }
             out<<"# particle_rows=1\n# batch history species yield energy_eV\n";
             for(unsigned history=0;history<n;++history) {
                 std::vector<Particle> products;
-                if(!decay.GetSecondaries(p,products,random)) throw std::runtime_error("Selected state has no decay");
+                const bool generated=mode=="channel-events" ? decay.GetChannelSecondaries(p,channel,products,random)
+                                                           : decay.GetSecondaries(p,products,random);
+                if(!generated) throw std::runtime_error("Selected state has no decay");
                 for(const auto& product:products)
                     out<<0<<'\t'<<history<<'\t'<<product.Name()<<'\t'<<product.Weight<<'\t'<<product.Weight*product.Energy/units.eV<<'\n';
             }

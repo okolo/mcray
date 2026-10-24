@@ -37,8 +37,14 @@ public:
     double Rate(const mcray::Particle& p) const override;
     bool GetSecondaries(mcray::Particle& p, std::vector<mcray::Particle>& products,
                         mcray::Randomizer& random) const override;
+    // Conditional kernel for validation adapters; samples no waiting time or branch.
+    // The caller must supply the original channel probability in weighted transport.
+    bool GetChannelSecondaries(const mcray::Particle& p, const std::string& code,
+                               std::vector<mcray::Particle>& products, mcray::Randomizer& random) const;
     mcray::RandomInteraction* Clone() const override;
 private:
+    bool GenerateSecondaries(const mcray::Particle& p, const NuclearDecayData::Channel& selected,
+                             std::vector<mcray::Particle>& products, mcray::Randomizer& random) const;
     void BetaDecay(mcray::Particle& residual, bool plus,
                    std::vector<mcray::Particle>& products, mcray::Randomizer& random) const;
     std::shared_ptr<const NuclearDecayData> fData;
