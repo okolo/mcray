@@ -21,6 +21,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [Corrected ICS/GammaPP spectra with fast invariant selection](validation/em_secondary_sampling.md)
+
 - [YAML configuration regression checks](validation/yaml_configuration.md)
 - [PSB and nucleon results](validation/psb_validation_results.md)
 - [SOPHIA table generation](validation/sophia_table_generation.md)

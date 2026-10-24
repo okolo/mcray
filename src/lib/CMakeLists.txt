@@ -90,6 +90,8 @@ GammaPP.cpp
 GammaPP.h
 GZK.cpp
 GZK.h
+EMSecondarySampling.cpp
+EMSecondarySampling.h
 ICS.cpp
 ICS.h
 Inoue12IROSpectrum.cpp

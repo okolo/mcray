@@ -12,6 +12,13 @@ target_include_directories(mcray_unit_tests PRIVATE ../src/lib)
 # Resolve main from GoogleTest before searching mcray's legacy main object.
 target_link_libraries(mcray_unit_tests PRIVATE GTest::gtest_main mcray)
 include(GoogleTest)
+
+# Fixed-S secondary spectra: preserve the fast invariant rejection sampler.
+add_executable(em_secondary_accuracy_tests em_secondary_accuracy.cpp)
+target_include_directories(em_secondary_accuracy_tests PRIVATE ../src/lib)
+target_link_libraries(em_secondary_accuracy_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(em_secondary_accuracy_tests TEST_PREFIX "unit.em."
+    PROPERTIES TIMEOUT 30 LABELS "unit;sampling")
 # The independent PPP quadrature takes about 30 s per energy on the native
 # validation server. Give only these six cases additional wall-clock headroom.
 set(ppp_sampling_filter "RestFrameEnergies/ProtonPppSampling.MatchesIndependentRestFrameQuadrature/*")
