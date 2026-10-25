@@ -316,6 +316,16 @@ bool TalysPhotoDisintegration::GetSecondaries(Particle& p, std::vector<Particle>
     }
     if (selected == rates.exclusive.size()) Exception::Throw("Cannot select a positive TALYS channel");
     const auto& channel = isotope.channels[selected];
+    return GenerateSecondaries(p,channel,products,random);
+}
+bool TalysPhotoDisintegration::GetChannelSecondaries(const Particle& p,size_t selected,
+                                                     std::vector<Particle>& products,Randomizer& random) const {
+    const auto& isotope=Validate(p);
+    if (selected>=isotope.channels.size()) Exception::Throw("Unknown conditional TALYS channel");
+    return GenerateSecondaries(p,isotope.channels[selected],products,random);
+}
+bool TalysPhotoDisintegration::GenerateSecondaries(const Particle& p,const TalysData::Channel& channel,
+                                                   std::vector<Particle>& products,Randomizer& random) const {
     // Prepare all products before modifying the caller's output vector.
     std::vector<Particle> event;
     auto emit = [&](const TalysData::Identity& identity) {

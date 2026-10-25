@@ -72,8 +72,13 @@ public:
     Rates ChannelRates(const mcray::Particle& p) const;
     bool GetSecondaries(mcray::Particle& p, std::vector<mcray::Particle>& products,
                         mcray::Randomizer& random) const override;
+    // Conditional kernel only; validation callers supply the original branch law.
+    bool GetChannelSecondaries(const mcray::Particle& p, size_t channel,
+                               std::vector<mcray::Particle>& products, mcray::Randomizer& random) const;
     mcray::RandomInteraction* Clone() const override;
 private:
+    bool GenerateSecondaries(const mcray::Particle& p, const TalysData::Channel& channel,
+                             std::vector<mcray::Particle>& products, mcray::Randomizer& random) const;
     const TalysData::Isotope& Validate(const mcray::Particle& p) const;
     Utils::SmartPtr<mcray::BackgroundIntegral> fBackground;
     std::shared_ptr<const TalysData> fData;

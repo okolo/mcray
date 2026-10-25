@@ -262,3 +262,12 @@ builds/tests it, checks the retained native deterministic coefficients and runs
 272 fixed independent batch jobs. A wrapper `passed` status is execution
 success; physical conclusions are in `acceptance-report.json`. Insufficient
 precision remains inconclusive. The local `--plan-only` path starts no histories.
+
+
+## Independent weighted full-Fe56 method pilots
+
+[RARE_TRANSPORT_PILOTS.md](RARE_TRANSPORT_PILOTS.md) documents the validation-only
+native and pinned-CRPropa weighted adapters, fixed independent pilot matrix,
+preflight controls, persistent history reservation and external Linux commands.
+These pilots determine variance/cost and method applicability; they cannot
+issue final physical acceptance or replace the unchanged production models.

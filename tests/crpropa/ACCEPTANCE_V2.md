@@ -1,7 +1,7 @@
 # Transport/photon v2 preparation tools
 
-Implementation status, 2026-10-24: ordinary batch preparation and rare-channel
-weight/kernel foundations are implemented. **There is no final v2 acceptance
+Implementation status, 2026-10-24: ordinary batch preparation and full-Fe56
+weighted-method pilot adapters are implemented. **There is no final v2 acceptance
 runner or fully frozen rare-method protocol yet.** None of these tools starts
 the planned 20-hour acceptance workload. The immutable
 [v1 protocol](protocols/transport_photons_v1.json) and its
@@ -99,13 +99,15 @@ Do not regenerate or overwrite the retained v1 reference binary.
 
 ## Remaining freeze gates
 
-The full Fe56 weighted adapters still need to connect conditional kernels to
-production-compatible competing-process scheduling, biased branch selection,
-upstream-state splitting, independent RNG continuations and genealogical
-rewards at every numerical setting. Rare-parent production and finite-path
-survival must remain part of the measured unconditional yield. Native PD
-channel-kernel access and CRPropa stepping require explicit implementation
-checks; a correct forced decay alone does not close those gates.
+The full Fe56 adapters now connect production conditional kernels to unchanged
+hazards, competing-process scheduling, biased branch selection, first-PD
+splitting and genealogical rewards. Both programs retain finite-path survival
+and all daughter transport. The standalone relative-guide Python helpers
+remain analytic fixtures; the full adapters use a defensive topology-density
+proposal to resolve very small branches. See
+[the independent server pilot contract](RARE_TRANSPORT_PILOTS.md) for its fixed
+settings, controls, ledgers and /home2/ok launch commands. Runtime and
+weight-tail efficiency still require those external pilots.
 
 Independent method pilots must determine proposal/splitting parameters,
 stable batch uncertainty, rare sample counts and the finite method-check
@@ -132,3 +134,12 @@ Be11 beta-proton events produce the expected products using the original
 8.3e-6 branch, without changing input tables. This is development evidence,
 not rare-yield acceptance. Linux verification and rare-method pilots remain
 pending. No long transport calculation was run locally.
+
+
+A subsequent implementation increment preserves the sampling-fix ancestor
+`54b24e0fa7e6aa55c89804b51afd7611f632945d` and adds PD conditional-kernel
+access, complete weighted native/reference adapters, seeded PD-path identity
+controls and finite-path rare-decay controls. Confirmed development checks
+and their limits are recorded in
+[the weighted transport preflight](../../docs/validation/weighted_transport_preflight.md).
+Final v2 acceptance remains unfrozen until the independent pilots are analyzed.

@@ -75,6 +75,27 @@ TEST_F(TalysTest, MissingPDPolicySkipsOnlyWhollyAbsentTablesAndPreservesClones) 
     ExpectError([&] { process.Rate(p); }, "tabulated nuclear mass");
     ExpectError([&] { compatible->ValidateNetwork(5,2); }, "Missing TALYS isotope");
 }
+TEST_F(TalysTest, ConditionalKernelMatchesOrdinarySeededChannelProducts) {
+    auto data=std::make_shared<TalysData>(dir.string());
+    TalysPhotoDisintegration process(new FixedK,data);
+    Particle p(Nucleus,0.);data->SetParticle(p,56,26);p.Energy=1e20*units.eV;p.Weight=.125;
+    const auto rates=process.ChannelRates(p);
+    Randomizer ordinary(20261025),conditional(20261025);
+    for(unsigned draw=0;draw<100;++draw) {
+        double u=conditional.Rand()*rates.exclusiveSum;size_t chosen=rates.exclusive.size();
+        for(size_t i=0;i<rates.exclusive.size();++i) {
+            if(rates.exclusive[i]<=0.) continue;
+            chosen=i;if(u<rates.exclusive[i]) break;u-=rates.exclusive[i];
+        }
+        std::vector<Particle> a,b;ASSERT_TRUE(process.GetSecondaries(p,a,ordinary));
+        ASSERT_TRUE(process.GetChannelSecondaries(p,chosen,b,conditional));ASSERT_EQ(a.size(),b.size());
+        for(size_t i=0;i<a.size();++i) {
+            EXPECT_EQ(a[i].Name(),b[i].Name());EXPECT_DOUBLE_EQ(a[i].Energy,b[i].Energy);EXPECT_DOUBLE_EQ(a[i].Weight,b[i].Weight);
+        }
+    }
+    std::vector<Particle> invalid;
+    ExpectError([&]{process.GetChannelSecondaries(p,999,invalid,conditional);},"Unknown conditional");
+}
 TEST_F(TalysTest, MissingPDCompatibilityRejectsPartialTablesAndUnloadedCrossSections) {
     for (bool totalOnly : {false,true}) {
         Write("total.tsv",totalOnly ? Row("4 2",1) : "");

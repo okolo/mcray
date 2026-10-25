@@ -16,6 +16,11 @@ target_include_directories(crpropa_decay_probe PRIVATE "${CRPROPA_SOURCE_DIR}/in
     "${CMAKE_CURRENT_BINARY_DIR}/reference/include" ${CRPROPA_EXTRA_INCLUDES})
 target_link_libraries(crpropa_decay_probe PRIVATE crpropa)
 
+add_executable(crpropa_weighted_probe weighted_probe.cpp weighted_common.cpp)
+target_include_directories(crpropa_weighted_probe PRIVATE "${CRPROPA_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_BINARY_DIR}/reference/include" ${CRPROPA_EXTRA_INCLUDES})
+target_link_libraries(crpropa_weighted_probe PRIVATE crpropa)
+
 # Link the new probe to the already-built production mcray library in the base.
 option(BUILD_DOCKER_MCRAY_PROBE "Link the additional mcray probe in the Docker base" ON)
 if(BUILD_DOCKER_MCRAY_PROBE)

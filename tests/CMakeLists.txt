@@ -45,6 +45,13 @@ add_executable(nuclear_scenario nuclear_scenario.cpp)
 target_include_directories(nuclear_scenario PRIVATE ../src/lib)
 target_link_libraries(nuclear_scenario PRIVATE mcray)
 
+add_executable(weighted_nuclear_scenario weighted_nuclear_scenario.cpp crpropa/weighted_common.cpp)
+target_include_directories(weighted_nuclear_scenario PRIVATE ../src/lib)
+target_link_libraries(weighted_nuclear_scenario PRIVATE mcray)
+add_executable(weighted_common_tests weighted_common_test.cpp crpropa/weighted_common.cpp)
+target_link_libraries(weighted_common_tests PRIVATE GTest::gtest_main)
+gtest_discover_tests(weighted_common_tests TEST_PREFIX "unit." PROPERTIES TIMEOUT 30 LABELS "unit;validation")
+
 add_executable(crbeam_input_tests crbeam_input.cpp configuration_input.cpp
     ../src/app/crbeam/CRbeam.cpp ../src/app/crbeam/CmdLine.cpp)
 target_include_directories(crbeam_input_tests PRIVATE ../src/lib ../src/app/crbeam)
