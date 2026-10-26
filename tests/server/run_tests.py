@@ -8,9 +8,11 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
+import time
 import uuid
 
 
@@ -26,10 +28,31 @@ def sha256(path):
     return digest.hexdigest()
 
 
-def execute(command, cwd, logfile, env):
+def execute(command, cwd, logfile, env, timeout=None):
     with logfile.open('wb') as stream:
-        subprocess.run(command, cwd=cwd, env=env, stdout=stream,
-                       stderr=subprocess.STDOUT, check=True)
+        # A workload can spawn worker processes. Terminate its whole process
+        # group on budget expiry so abandoned transport jobs cannot continue.
+        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=stream,
+                                   stderr=subprocess.STDOUT, start_new_session=True)
+        try:
+            code = process.wait(timeout=timeout)
+        except BaseException:
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+                process.wait(timeout=5)
+            except ProcessLookupError:
+                pass
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait()
+            # The leader can exit before a descendant that ignored TERM.
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            raise
+        if code:
+            raise subprocess.CalledProcessError(code, command)
 
 
 def archive_run(run_dir, data_dir, manifest):
@@ -51,6 +74,8 @@ def archive_run(run_dir, data_dir, manifest):
 
 
 def run(args):
+    started = time.monotonic()
+    maximum = getattr(args, 'max_runtime_seconds', None)
     data_dir = args.data_dir.expanduser().resolve()
     data_dir.mkdir(parents=True, exist_ok=True)
     run_id = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:8]
@@ -66,6 +91,8 @@ def run(args):
                 'runner_sha256': sha256(Path(__file__)),
                 'workload': args.workload,
                 'input_sha256': {str(p.resolve()): sha256(p) for p in args.input}}
+    if maximum is not None:
+        manifest['max_runtime_seconds'] = maximum
     code = 0
     try:
         commands = [
@@ -82,7 +109,10 @@ def run(args):
             step = {'name': name, 'command': command, 'started_utc': utc_now()}
             manifest['steps'].append(step)
             print(f'{run_id}: {name}', flush=True)
-            execute(command, cwd, results / (name + '.log'), env)
+            remaining = None if maximum is None else maximum-(time.monotonic()-started)
+            if remaining is not None and remaining <= 0:
+                raise subprocess.TimeoutExpired(command, maximum)
+            execute(command, cwd, results / (name + '.log'), env, timeout=remaining)
             step['exit_code'] = 0
             step['finished_utc'] = utc_now()
             if name == 'checkout':
@@ -91,6 +121,10 @@ def run(args):
                 execute(['git', 'show', '--no-patch', '--format=fuller', 'HEAD'],
                         checkout, results / 'source-revision.txt', env)
         manifest['status'] = 'passed'
+    except subprocess.TimeoutExpired as error:
+        code = 124
+        manifest.update(status='time_budget_exhausted', error=str(error))
+        manifest['steps'][-1]['exit_code'] = code
     except subprocess.CalledProcessError as error:
         code = error.returncode if error.returncode > 0 else 128 - error.returncode
         manifest['status'] = 'failed'
@@ -121,6 +155,8 @@ def main():
     parser.add_argument('--ref', default='talys', help='Remote branch, tag or commit (default talys)')
     parser.add_argument('--data-dir', required=True, type=Path)
     parser.add_argument('--jobs', default=2, type=int)
+    parser.add_argument('--max-runtime-seconds', type=int,
+                        help='Cap clone/build/test/workload time; always archive afterwards')
     parser.add_argument('--input', action='append', type=Path, default=[],
                         help='Input file to hash; repeat for every external input/manifest')
     parser.add_argument('workload', nargs=argparse.REMAINDER,
@@ -130,6 +166,8 @@ def main():
         parser.error('Requires --server and an external native Linux amd64 server')
     if args.jobs < 1 or args.ref.startswith('-'):
         parser.error('Require positive --jobs and a ref that does not start with -')
+    if args.max_runtime_seconds is not None and args.max_runtime_seconds < 1:
+        parser.error('--max-runtime-seconds must be positive')
     if args.workload[:1] == ['--']:
         args.workload = args.workload[1:]
     for path in args.input:

@@ -1,5 +1,11 @@
 # Transport/photon v2 preparation tools
 
+Release decision, 2026-10-26: the user selected one eight-hour ordinary check
+followed by release with documented validation limits. Use
+[RELEASE_CHECK_8H.md](RELEASE_CHECK_8H.md). The full v2 rare-method freeze
+remains incomplete; the historical 20-hour preparation below is not the
+current launch instruction.
+
 Implementation status, 2026-10-24: ordinary batch preparation and full-Fe56
 weighted-method pilot adapters are implemented. **There is no final v2 acceptance
 runner or fully frozen rare-method protocol yet.** None of these tools starts

@@ -18,6 +18,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Frozen PD/decay/photon acceptance and multicore server commands](../tests/crpropa/ACCEPTANCE.md)
 - [Transport/photon v2 preparation and rare-channel tools](../tests/crpropa/ACCEPTANCE_V2.md)
 - [Full weighted Fe56 adapters and independent server pilots](../tests/crpropa/RARE_TRANSPORT_PILOTS.md)
+- [One-shot eight-hour release check](../tests/crpropa/RELEASE_CHECK_8H.md)
+- [Nuclear transport release notes and known limitations](validation/nuclear_release_notes.md)
 - [Docker Linux amd64](../docker/README.md)
 
 ## Validation results
@@ -36,6 +38,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Deterministic PD+decay energy-state reference](validation/deterministic_coupled_reference.md)
 - [Native Linux full PD+decay numerical matrix](validation/deterministic_coupled_full_matrix.md)
 - [Weighted transport adapter preflight](validation/weighted_transport_preflight.md)
+- [Independent weighted transport pilot results, 2026-10-25](validation/rare_transport_pilot_results_20261025.md)
 - [Completed frozen transport/photon acceptance](validation/transport_photon_acceptance_results.md)
 - [Frozen acceptance publication checks](validation/transport_photon_acceptance_preflight.md)
 

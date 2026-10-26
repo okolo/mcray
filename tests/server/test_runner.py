@@ -5,8 +5,10 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import sys
 import tarfile
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -25,7 +27,7 @@ class RunnerTest(unittest.TestCase):
                                       ref='talys', jobs=2, input=[fixture], workload=['approved-job'])
             calls = []
 
-            def execute(command, cwd, logfile, env):
+            def execute(command, cwd, logfile, env, timeout=None):
                 name = logfile.stem
                 calls.append(name)
                 logfile.write_text(name + '\n')
@@ -33,6 +35,8 @@ class RunnerTest(unittest.TestCase):
                     raise subprocess.CalledProcessError(7, command)
                 if failure == 'interrupted' and name == 'ctest':
                     raise KeyboardInterrupt()
+                if failure == 'timeout' and name == 'ctest':
+                    raise subprocess.TimeoutExpired(command, 1)
                 if name == 'clone':
                     (cwd / 'source').mkdir()
                 if name == 'ctest':
@@ -96,6 +100,36 @@ class RunnerTest(unittest.TestCase):
                 runner.main()
             self.assertEqual(result.exception.code, 2)
             execute_run.assert_not_called()
+
+    def test_timeout_is_archived_without_starting_workload(self):
+        code, summary, calls, members = self.simulate('timeout')
+        self.assertEqual(code, 124)
+        self.assertEqual(summary['status'], 'time_budget_exhausted')
+        self.assertNotIn('workload', calls)
+        self.assertIn('ctest.log', members)
+
+    def test_timeout_terminates_descendants_and_keeps_log(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            # The child ignores TERM while its parent exits promptly. Its
+            # heartbeat must stop even when the process leader has exited.
+            child = directory/'child.py'
+            child.write_text('import signal,time\nfrom pathlib import Path\n'
+                'signal.signal(signal.SIGTERM, lambda *_: None)\n'
+                'Path("child-ready").write_text("yes")\n'
+                'while True:\n Path("heartbeat").write_text(str(time.monotonic()))\n time.sleep(.02)\n')
+            parent = directory/'parent.py'
+            parent.write_text('import subprocess,sys,time\nfrom pathlib import Path\n'
+                'p=subprocess.Popen([sys.executable,"child.py"])\n'
+                'while not Path("child-ready").exists(): time.sleep(.01)\n'
+                'Path("child-pid").write_text(str(p.pid))\ntime.sleep(60)\n')
+            with self.assertRaises(subprocess.TimeoutExpired):
+                runner.execute([sys.executable, str(parent)], directory, directory/'timeout.log',
+                               dict(runner.os.environ), timeout=1)
+            self.assertTrue((directory/'child-ready').exists())
+            heartbeat = (directory/'heartbeat').read_text()
+            time.sleep(.15)
+            self.assertEqual((directory/'heartbeat').read_text(), heartbeat)
 
 
 if __name__ == '__main__':
