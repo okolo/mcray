@@ -21,3 +21,8 @@ cd bin
 cmake -S ../src/app/crbeam -B .
 make
 </code></pre>
+
+### Code review
+
+[Independent OpenCode PR review](docs/usage/opencode_review.md) uses GLM-5.3
+through OpenRouter, automatically and on request with `/opencode`.
