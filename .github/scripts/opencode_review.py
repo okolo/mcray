@@ -9,7 +9,6 @@ import sys
 
 
 MARKER = "<!-- opencode-independent-review -->"
-BOT = "github-actions[bot]"
 
 
 def api(endpoint, method="GET", payload=None):
@@ -23,23 +22,19 @@ def api(endpoint, method="GET", payload=None):
     return json.loads(result.stdout)
 
 
-def dismiss(endpoint, review_id, reason):
-    api(f"{endpoint}/reviews/{review_id}/dismissals", "PUT", {"message": reason})
-
-
-def revoke_approvals(endpoint):
-    # Preserve human reviews and approvals from other automation.
-    page = 1
-    while True:
-        reviews = api(f"{endpoint}/reviews?per_page=100&page={page}")
-        for review in reviews:
-            if (review["user"]["login"] == BOT
-                    and review["state"] == "APPROVED"
-                    and MARKER in (review.get("body") or "")):
-                dismiss(endpoint, review["id"], "A new independent OpenCode review is starting.")
-        if len(reviews) < 100:
-            break
-        page += 1
+def dismiss(endpoint, review_id, reason, head_sha):
+    try:
+        api(f"{endpoint}/reviews/{review_id}/dismissals", "PUT", {"message": reason})
+    except subprocess.CalledProcessError as error:
+        # Protected branches can reserve dismissal for administrators even
+        # though this bot has permission to submit its own reviews. Supersede
+        # its approval with a temporary negative verdict in that case.
+        if "HTTP 403" not in (error.stderr or ""):
+            raise
+        api(f"{endpoint}/reviews", "POST", {
+            "commit_id": head_sha, "event": "REQUEST_CHANGES",
+            "body": f"{MARKER}\nApproval withdrawn pending independent re-review.\n\n{reason}",
+        })
 
 
 def prepare(repository, number, context_path, output_path):
@@ -53,9 +48,9 @@ def prepare(repository, number, context_path, output_path):
     if not allowed:
         print("Review skipped: expected an open, non-draft, same-repository PR.")
         return
-    # Withdraw an earlier verdict before the model runs, so failure or
-    # cancellation cannot leave this bot's earlier approval in effect.
-    revoke_approvals(endpoint)
+    # Preparing a rerun must not change any existing review. GitHub dismisses
+    # stale approvals on new changes; a later decisive verdict supersedes the
+    # previous verdict for the same head.
     context_path.write_text(json.dumps({
         "repository": repository, "number": number,
         "head_sha": pr["head"]["sha"], "base_sha": pr["base"]["sha"],
@@ -120,7 +115,8 @@ def publish(context, verdict_path):
                     or current["base"]["sha"] != context["base_sha"]):
                 raise ValueError("PR changed during approval publication")
         except Exception:
-            dismiss(endpoint, review["id"], "Could not confirm the reviewed head/base after publication.")
+            dismiss(endpoint, review["id"], "Could not confirm the reviewed head/base after publication.",
+                    context["head_sha"])
             raise
     print(f"Published {payload['event']}: {review['html_url']}")
 

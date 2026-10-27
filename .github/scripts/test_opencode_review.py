@@ -4,6 +4,7 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -66,15 +67,8 @@ class ReviewTests(unittest.TestCase):
                 review.review_payload(self.context, verdict, self.pr)
 
     @patch.object(review, "api")
-    def test_prepare_revokes_only_this_bots_marked_approvals(self, api):
-        def prior(login, body, state, number):
-            return {"id": number, "user": {"login": login}, "body": body, "state": state}
-        api.side_effect = [self.pr, [
-            prior(review.BOT, review.MARKER, "APPROVED", 1),
-            prior("human", review.MARKER, "APPROVED", 2),
-            prior(review.BOT, "Unrelated automation", "APPROVED", 3),
-            prior(review.BOT, review.MARKER, "CHANGES_REQUESTED", 4),
-        ], {}]
+    def test_prepare_only_reads_metadata_and_preserves_existing_reviews(self, api):
+        api.return_value = self.pr
         with tempfile.TemporaryDirectory() as directory:
             context = Path(directory) / "context.json"
             output = Path(directory) / "output"
@@ -82,9 +76,7 @@ class ReviewTests(unittest.TestCase):
             self.assertEqual(json.loads(context.read_text()), self.context)
             self.assertIn("allowed=true\n", output.read_text())
             self.assertIn(f"head_sha={self.context['head_sha']}\n", output.read_text())
-        self.assertEqual(api.call_args_list[-1].args[:2],
-                         ("repos/owner/repo/pulls/6/reviews/1/dismissals", "PUT"))
-        self.assertEqual(api.call_count, 3)
+        api.assert_called_once_with("repos/owner/repo/pulls/6")
 
     @patch.object(review, "api")
     def test_push_racing_publication_withdraws_approval(self, api):
@@ -119,7 +111,7 @@ class ReviewTests(unittest.TestCase):
                          ("repos/owner/repo/pulls/6/reviews/99/dismissals", "PUT"))
 
     @patch.object(review, "api")
-    def test_fork_prepare_stops_before_revocation_or_context_creation(self, api):
+    def test_fork_prepare_stops_before_context_creation(self, api):
         fork = deepcopy(self.pr)
         fork["head"]["repo"]["full_name"] = "fork/repo"
         api.return_value = fork
@@ -130,6 +122,16 @@ class ReviewTests(unittest.TestCase):
             self.assertFalse(context.exists())
             self.assertEqual(output.read_text(), "allowed=false\n")
         self.assertEqual(api.call_count, 1)
+
+    @patch.object(review, "api")
+    def test_protected_branch_dismissal_denied_supersedes_approval(self, api):
+        api.side_effect = [subprocess.CalledProcessError(
+            1, ["gh", "api"], stderr="gh: Resource not accessible (HTTP 403)"), {}]
+        review.dismiss("repos/owner/repo/pulls/6", 99, "Re-review required", "a" * 40)
+        endpoint, method, payload = api.call_args.args
+        self.assertEqual((endpoint, method), ("repos/owner/repo/pulls/6/reviews", "POST"))
+        self.assertEqual(payload["event"], "REQUEST_CHANGES")
+        self.assertEqual(payload["commit_id"], "a" * 40)
 
 
 if __name__ == "__main__":

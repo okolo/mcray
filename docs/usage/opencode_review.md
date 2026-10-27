@@ -64,12 +64,24 @@ Passing build checks alone never establishes approval. Missing or malformed
 verdicts, failed agent runs, and changed head/base SHAs prevent publication.
 The publisher pins the review to the frozen head SHA and checks again after
 approval, withdrawing it if publication raced a change or the final check fails.
-An earlier marked approval from this bot is withdrawn before a new review
-starts, so a failed/inconclusive rerun cannot retain its previous approval.
-Human reviews and other automation's approvals are preserved. The workflow
+Starting a new review never withdraws an existing approval or submits a
+temporary negative review. If the head is unchanged, a failed/inconclusive
+rerun preserves the previous approval. A new completed `REQUEST_CHANGES`
+verdict supersedes an earlier approval. GitHub's stale-review dismissal rule
+handles new code changes. Human reviews are never modified.
+
+Only a newly published approval that fails the final revision check is
+withdrawn. If GitHub denies that dismissal, the publisher supersedes its own
+invalid approval with `REQUEST_CHANGES`, explaining that the reviewed revision
+could not be confirmed. This is an exceptional publication-race safeguard,
+not a preliminary step before review. The workflow
 never merges PRs or bypasses branch protection, and it does not add a required
 status check. A successful job can also mean `COMMENT` or `REQUEST_CHANGES`;
 inspect the formal verdict rather than treating the job result as approval.
+
+The publisher is copied outside the checkout before the agent starts. This
+preserves the publication code even when OpenCode switches to an older PR
+branch that does not yet contain the integration scripts.
 
 The review must leave the checkout clean. Build directories, caches, logs,
 and test outputs belong outside it. Otherwise the upstream action tries to

@@ -57,13 +57,15 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Freeze PR revision and withdraw earlier OpenCode approvals
+      - name: Freeze PR revision without changing existing reviews
         id: prepared
         if: steps.scope.outputs.allowed != 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_REVIEW_CONTEXT: ${{ runner.temp }}/opencode-review-context.json
-        run: python3 .github/scripts/opencode_review.py prepare
+        run: |
+          cp .github/scripts/opencode_review.py "$RUNNER_TEMP/opencode_review.py"
+          python3 "$RUNNER_TEMP/opencode_review.py" prepare
 
       - name: Check provider credentials
         if: steps.prepared.outputs.allowed == 'true'
@@ -159,4 +161,4 @@ jobs:
           OPENCODE_EXPECTED_HEAD_SHA: ${{ steps.prepared.outputs.head_sha }}
           OPENCODE_EXPECTED_BASE_SHA: ${{ steps.prepared.outputs.base_sha }}
           OPENCODE_REVIEW_RESULT: ${{ runner.temp }}/opencode-review-result.json
-        run: python3 .github/scripts/opencode_review.py publish
+        run: python3 "$RUNNER_TEMP/opencode_review.py" publish
