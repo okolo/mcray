@@ -19,6 +19,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Transport/photon v2 preparation and rare-channel tools](../tests/crpropa/ACCEPTANCE_V2.md)
 - [Full weighted Fe56 adapters and independent server pilots](../tests/crpropa/RARE_TRANSPORT_PILOTS.md)
 - [One-shot eight-hour release check](../tests/crpropa/RELEASE_CHECK_8H.md)
+- [Retained eight-hour release-check results, 2026-10-27](validation/release_check_8h_results_20261027.md)
 - [Nuclear transport release notes and known limitations](validation/nuclear_release_notes.md)
 - [Docker Linux amd64](../docker/README.md)
 

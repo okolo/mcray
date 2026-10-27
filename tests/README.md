@@ -4,8 +4,9 @@ The application and library require C++17. C++ unit and integration tests
 use GoogleTest; CTest is the common test runner for local and Docker builds.
 GoogleTest 1.18.0 is fetched only when BUILD_TESTING is enabled (the default).
 Its release archive and SHA-256 are pinned in CMakeLists.txt.
-CMake 3.16 or newer is required for test configuration; bin/build.sh uses
---fresh and requires CMake 3.24 or newer.
+CMake 3.16 or newer is required for test configuration. `bin/build.sh` uses
+`--fresh` when available and clears the CMake cache on older versions,
+including Ubuntu 22.04's CMake 3.22.
 
 ## Run tests
 
@@ -23,9 +24,10 @@ bash bin/test-docker.sh
 bash bin/test-docker.sh -L unit
 ```
 
-The short suite contains 52 discovered GoogleTest unit cases, five
-background and convolution integration cases, two command-line smoke tests, and a two-step
-no-interaction E2E fixture (61 CTest entries). Unit tests exercise the production library:
+The current short suite contains 155 CTest entries, including nuclear,
+EM-secondary, configuration, background/convolution and no-interaction E2E
+checks. Use `ctest --test-dir build/Release -N` for the exact inventory of
+the selected revision. Unit tests exercise the production library:
 
 - Log interpolation for double and long double: zeros, positive intervals,
   external limits, Clone, legacy behavior, and invalid scale combinations.
