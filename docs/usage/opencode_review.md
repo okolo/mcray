@@ -28,16 +28,20 @@ Automatic session sharing is disabled.
 ## Triggers and scope
 
 Review runs when a non-draft same-repository PR is opened, updated, reopened,
-or marked ready for review. Repository owners, members, and collaborators can
-request another review with `/opencode` or `/oc` in a PR comment or an inline
-review comment. These commands always request a review, including when their
-text asks for implementation. Issue comments outside PRs are ignored.
+or marked ready for review. Repository owners, members, and collaborators
+with write or admin access can request another review in a PR comment or an
+inline review comment. Start the comment with exactly `/opencode` or `/oc`,
+optionally followed by a space and review context. Mentions inside URLs or
+other prose do not trigger review. These commands always request a review,
+including when their text asks for implementation. Issue comments outside
+PRs are ignored. The upstream action verifies the requester's permissions.
 
-Automatic fork-PR runs are skipped because GitHub does not expose repository
-API secrets to them. A trusted participant can request review through a PR
-comment; this runs the workflow from the default branch with repository
-credentials. Only request this for code you trust the agent to inspect with
-those credentials. This workflow does not use `pull_request_target`.
+Fork PRs are excluded from automatic review and from comment-triggered review.
+For comment triggers, a metadata-only step checks the PR's source repository
+before checkout or passing provider credentials to OpenCode. The agent can
+execute checks with credentials in its environment, so same-repository code
+and its instructions must still be trusted. This workflow does not use
+`pull_request_target`.
 
 One review job per PR is retained at a time; a newer eligible trigger cancels
 an older review. Ordinary comments and other skipped events do not cancel it.
@@ -45,6 +49,15 @@ The review reports head/base SHAs, concrete findings, checks actually executed,
 and remaining verification gaps. A successful Actions job means the agent ran,
 not that the PR is correct. The workflow is advisory and does not configure a
 required branch-protection check or approve/merge PRs.
+
+The review must leave the checkout clean. Build directories, caches, logs,
+and test outputs belong outside it. Otherwise the upstream action tries to
+commit/push the generated files and fails with these restricted credentials,
+potentially losing the review. The review prompt forbids approvals, merges,
+and changes to PR state or metadata. This is an instruction to the agent,
+not a token-level restriction: PR write access can submit approving reviews
+when the repository's GitHub Actions approval setting permits it. This
+integration does not change that repository-wide setting.
 
 ## Maintenance and verification
 
