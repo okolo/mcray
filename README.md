@@ -1,7 +1,7 @@
 # mcray
 Framework for Monte Carlo simulation of ultra-high energy cosmic rays and electromagnetic cascade propagation.
 
-For v1.2.0 nuclear transport, YAML configuration, migration notes and known
+For v2.0.0 nuclear transport, YAML configuration, migration notes and known
 validation limits, see the [release notes](docs/validation/nuclear_release_notes.md).
 
 ### Authors:

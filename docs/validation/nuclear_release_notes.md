@@ -1,4 +1,4 @@
-# v1.2.0: nuclear transport, YAML configuration and numerical corrections
+# v2.0.0: nuclear transport, YAML configuration and numerical corrections
 
 The release scope covers nuclei through Fe56, free nucleons and the existing
 electron/photon cascade. Nuclear functionality includes TALYS and PSB
@@ -89,8 +89,8 @@ themselves validate all GZK, PPP, EM-cascade or full-production combinations.
 See [the eight-hour check contract](../../tests/crpropa/RELEASE_CHECK_8H.md)
 for resource limits and interpretation. This is a release with documented
 validation limits, not a claim that every planned physical acceptance gate
-has passed. Release v1.2.0 is published from main, which incorporates the
+has passed. Release v2.0.0 is published from main, which incorporates the
 prepared talys release by fast-forward without changing production sources.
-The exact release commit is identified by the v1.2.0 tag and the attached
+The exact release commit is identified by the v2.0.0 tag and the attached
 validation-summary.json; the tested production-source revision remains
 18b28b51ed24945f3a9638fb55b804897159f1b6.
