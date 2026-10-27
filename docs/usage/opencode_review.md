@@ -39,7 +39,8 @@ comment; this runs the workflow from the default branch with repository
 credentials. Only request this for code you trust the agent to inspect with
 those credentials. This workflow does not use `pull_request_target`.
 
-One run per PR is retained at a time; a newer trigger cancels an older run.
+One review job per PR is retained at a time; a newer eligible trigger cancels
+an older review. Ordinary comments and other skipped events do not cancel it.
 The review reports head/base SHAs, concrete findings, checks actually executed,
 and remaining verification gaps. A successful Actions job means the agent ran,
 not that the PR is correct. The workflow is advisory and does not configure a

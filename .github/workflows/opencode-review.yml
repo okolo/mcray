@@ -11,10 +11,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: opencode-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
-
 jobs:
   review:
     if: >-
@@ -25,6 +21,9 @@ jobs:
        (github.event.issue.pull_request || github.event_name == 'pull_request_review_comment') &&
        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
        (contains(github.event.comment.body, '/opencode') || contains(github.event.comment.body, '/oc')))
+    concurrency:
+      group: opencode-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
