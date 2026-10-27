@@ -40,6 +40,11 @@ bash bin/test-docker.sh
 For the environment, test coverage, and rerun instructions, see
 [docker/README.md](docker/README.md).
 
+### Code review
+
+[Independent OpenCode PR review](docs/usage/opencode_review.md) uses GLM-5.3
+through OpenRouter, automatically and on request with `/opencode`.
+
 ## Documentation
 
 See the [documentation index](docs/README.md) for design, reference, usage and
