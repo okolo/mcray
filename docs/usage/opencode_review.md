@@ -12,11 +12,18 @@ the project's numerical validation or human review.
    [Actions secrets](https://github.com/okolo/mcray/settings/secrets/actions).
    Keep the key out of source files, comments, logs, and chat messages.
    OpenRouter usage is billed to the account owning this key.
-2. Merge the workflow into the default branch, `main`. Comment-triggered
+2. In Actions settings, enable "Allow GitHub Actions to create and approve
+   pull requests". The workflow already grants `pull-requests: write`.
+   For `main`, retain at least one required approval and enable dismissal of
+   stale approving reviews on new changes. An approval by `github-actions[bot]`
+   is distinct from the PR author and counts toward the ordinary required
+   approval count. Separate code-owner requirements still require code owners;
+   a GitHub App bot is not a user or team that can be assigned in CODEOWNERS.
+3. Merge the workflow into the default branch, `main`. Comment-triggered
    workflows must exist there before GitHub will dispatch them.
-3. Open or update a non-draft PR from a branch in this repository. Check
-   [Actions](https://github.com/okolo/mcray/actions) and the resulting PR comment.
-   Confirm the reviewed head SHA matches the PR's current head.
+4. Open or update a non-draft PR from a branch in this repository. Check
+   [Actions](https://github.com/okolo/mcray/actions), the detailed PR comment,
+   and the formal review. Confirm the reviewed head SHA matches the PR's head.
 
 This setup uses the automatic `GITHUB_TOKEN`, not a personal access token or
 the OpenCode GitHub App. The token can read code and write PR comments and
@@ -41,23 +48,37 @@ For comment triggers, a metadata-only step checks the PR's source repository
 before checkout or passing provider credentials to OpenCode. The agent can
 execute checks with credentials in its environment, so same-repository code
 and its instructions must still be trusted. This workflow does not use
-`pull_request_target`.
+`pull_request_target`. Draft and closed PRs are also excluded.
 
 One review job per PR is retained at a time; a newer eligible trigger cancels
 an older review. Ordinary comments and other skipped events do not cancel it.
 The review reports head/base SHAs, concrete findings, checks actually executed,
-and remaining verification gaps. A successful Actions job means the agent ran,
-not that the PR is correct. The workflow is advisory and does not configure a
-required branch-protection check or approve/merge PRs.
+and remaining verification gaps. The model also writes a structured verdict
+outside the checkout. The publisher validates it and submits a formal review:
+
+- `APPROVE`: completed independent review with no blocking findings.
+- `REQUEST_CHANGES`: concrete blocking defects, listed in the review.
+- `COMMENT`: incomplete or inconclusive analysis, without approval.
+
+Passing build checks alone never establishes approval. Missing or malformed
+verdicts, failed agent runs, and changed head/base SHAs prevent publication.
+The publisher pins the review to the frozen head SHA and checks again after
+approval, withdrawing it if publication raced a change or the final check fails.
+An earlier marked approval from this bot is withdrawn before a new review
+starts, so a failed/inconclusive rerun cannot retain its previous approval.
+Human reviews and other automation's approvals are preserved. The workflow
+never merges PRs or bypasses branch protection, and it does not add a required
+status check. A successful job can also mean `COMMENT` or `REQUEST_CHANGES`;
+inspect the formal verdict rather than treating the job result as approval.
 
 The review must leave the checkout clean. Build directories, caches, logs,
 and test outputs belong outside it. Otherwise the upstream action tries to
 commit/push the generated files and fails with these restricted credentials,
-potentially losing the review. The review prompt forbids approvals, merges,
-and changes to PR state or metadata. This is an instruction to the agent,
-not a token-level restriction: PR write access can submit approving reviews
-when the repository's GitHub Actions approval setting permits it. This
-integration does not change that repository-wide setting.
+potentially losing the review. The agent writes its JSON verdict only to
+`OPENCODE_REVIEW_RESULT`; it must not submit formal reviews itself. Only the
+publisher should do that after validation. The prompt also forbids merges
+and changes to PR state or metadata. These are instructions to the agent,
+not restrictions on the token, which needs PR write access for the integration.
 
 ## Maintenance and verification
 
@@ -72,5 +93,12 @@ GitHub comment permissions, or review quality. Verify those with an actual
 PR after publication and secret setup; do not describe the integration as
 operational until that run completes and its comment is checked.
 
+Run the publication guard tests without creating checkout artifacts:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
+```
+
 References: [OpenCode GitHub integration](https://opencode.ai/docs/github/),
-[OpenRouter models](https://openrouter.ai/models?q=z-ai).
+[OpenRouter models](https://openrouter.ai/models?q=z-ai),
+[GitHub review API](https://docs.github.com/en/rest/pulls/reviews#create-a-review-for-a-pull-request).

@@ -29,6 +29,9 @@ jobs:
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+      PYTHONDONTWRITEBYTECODE: '1'
     permissions:
       contents: read
       pull-requests: write
@@ -47,8 +50,23 @@ jobs:
             echo '::notice::OpenCode review is limited to same-repository PRs.'
           fi
 
-      - name: Check provider credentials
+      - name: Checkout repository
         if: steps.scope.outputs.allowed != 'false'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Freeze PR revision and withdraw earlier OpenCode approvals
+        id: prepared
+        if: steps.scope.outputs.allowed != 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENCODE_REVIEW_CONTEXT: ${{ runner.temp }}/opencode-review-context.json
+        run: python3 .github/scripts/opencode_review.py prepare
+
+      - name: Check provider credentials
+        if: steps.prepared.outputs.allowed == 'true'
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
@@ -57,19 +75,18 @@ jobs:
             exit 1
           fi
 
-      - name: Checkout repository
-        if: steps.scope.outputs.allowed != 'false'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          fetch-depth: 1
-          persist-credentials: false
+      - name: Verify review publication guards
+        if: steps.prepared.outputs.allowed == 'true'
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
 
       - name: Review with GLM-5.3 through OpenRouter
-        if: steps.scope.outputs.allowed != 'false'
+        if: steps.prepared.outputs.allowed == 'true'
         uses: anomalyco/opencode/github@2c14fc5586fe0b88e5c04732d2e846769cc35671
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENCODE_REVIEW_CONTEXT: ${{ runner.temp }}/opencode-review-context.json
+          OPENCODE_REVIEW_RESULT: ${{ runner.temp }}/opencode-review-result.json
         with:
           model: openrouter/z-ai/glm-5.3
           use_github_token: true
@@ -93,6 +110,9 @@ jobs:
             must not require access to the private development repository.
 
             Inspect the current PR head and base and state their exact SHAs.
+            Read the frozen PR metadata from the file named by the environment
+            variable OPENCODE_REVIEW_CONTEXT. Review exactly those head/base
+            revisions; do not substitute a newer branch tip.
             Use targeted short checks only when useful; report what actually
             ran and its result. Never start large ensembles, long calculations,
             or checks requiring unavailable external reference data.
@@ -101,10 +121,42 @@ jobs:
             Put all scratch work and build artifacts outside the checkout.
             A dirty checkout makes the upstream action attempt a commit/push
             and fail before publishing the review; never rely on that path.
-            Do not edit files, commit, push, create branches, open other PRs,
-            approve PRs, merge PRs, or change PR state or metadata.
+            Do not edit repository files, commit, push, create branches, open
+            other PRs, submit formal GitHub reviews, merge PRs, or change PR
+            state or metadata. A separate publisher submits the formal verdict.
             Publish the review as a comment on this PR, in English. For each
             finding give severity, path and line, concrete failure conditions,
             and supporting evidence. Separate confirmed defects from questions
             and unverified risks. If no actionable defects are found, say so
             and identify material verification gaps without inventing findings.
+
+            After completing the independent review, write one JSON object to
+            the absolute path in the environment variable OPENCODE_REVIEW_RESULT.
+            This output file is outside the checkout and is explicitly allowed.
+            Use exactly these keys:
+            - head_sha: the frozen head SHA from OPENCODE_REVIEW_CONTEXT
+            - base_sha: the frozen base SHA from OPENCODE_REVIEW_CONTEXT
+            - review_complete: a JSON boolean, true only after completing review
+            - verdict: APPROVE, REQUEST_CHANGES, or COMMENT
+            - blocking_findings: an array of concrete blocking-finding strings
+            - summary: the review in English, including findings, checks actually
+              performed, and material verification limits
+
+            Choose APPROVE only after completing the review with no blocking
+            findings. Low-priority suggestions and accepted documented limits
+            do not by themselves block approval. Use REQUEST_CHANGES for
+            confirmed blocking defects and list them in blocking_findings.
+            Use COMMENT if the analysis is incomplete or cannot establish a
+            reliable verdict; never approve by default or because checks passed.
+            Missing essential evidence must prevent APPROVE. Do not manufacture
+            blockers from unrelated missing external data or approved physics.
+
+      - name: Publish formal independent review
+        if: steps.prepared.outputs.allowed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          OPENCODE_EXPECTED_HEAD_SHA: ${{ steps.prepared.outputs.head_sha }}
+          OPENCODE_EXPECTED_BASE_SHA: ${{ steps.prepared.outputs.base_sha }}
+          OPENCODE_REVIEW_RESULT: ${{ runner.temp }}/opencode-review-result.json
+        run: python3 .github/scripts/opencode_review.py publish

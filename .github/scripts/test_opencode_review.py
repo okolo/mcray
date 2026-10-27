@@ -1,0 +1,136 @@
+"""Safety checks for formal approval publication; no live GitHub writes."""
+
+from copy import deepcopy
+import json
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import opencode_review as review
+
+
+class ReviewTests(unittest.TestCase):
+    def setUp(self):
+        self.context = {"repository": "owner/repo", "number": 6,
+                        "head_sha": "a" * 40, "base_sha": "b" * 40}
+        self.pr = {"state": "open", "draft": False,
+                   "head": {"sha": "a" * 40, "repo": {"full_name": "owner/repo"}},
+                   "base": {"sha": "b" * 40}}
+        self.verdict = {"head_sha": "a" * 40, "base_sha": "b" * 40,
+                        "review_complete": True, "verdict": "APPROVE",
+                        "blocking_findings": [], "summary": "Reviewed the diff; no blocking findings."}
+
+    def test_completed_review_approves_exact_commit(self):
+        payload = review.review_payload(self.context, self.verdict, self.pr)
+        self.assertEqual(payload["event"], "APPROVE")
+        self.assertEqual(payload["commit_id"], "a" * 40)
+        self.assertIn(review.MARKER, payload["body"])
+
+    def test_incomplete_or_blocking_review_cannot_approve(self):
+        for changes in ({"review_complete": False}, {"review_complete": "true"},
+                        {"blocking_findings": ["Confirmed data corruption"]},
+                        {"summary": ""}, {"verdict": "approve"}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                review.review_payload(self.context, self.verdict | changes, self.pr)
+
+    def test_stale_or_wrong_revision_cannot_approve(self):
+        for part in ("head", "base"):
+            changed = deepcopy(self.pr)
+            changed[part]["sha"] = "c" * 40
+            with self.subTest(part=part), self.assertRaises(ValueError):
+                review.review_payload(self.context, self.verdict, changed)
+        with self.assertRaises(ValueError):
+            review.review_payload(self.context, self.verdict | {"head_sha": "c" * 40}, self.pr)
+
+    def test_draft_closed_or_fork_pr_cannot_approve(self):
+        for changes in ({"draft": True}, {"state": "closed"},
+                        {"head": {"sha": "a" * 40, "repo": None}},
+                        {"head": {"sha": "a" * 40, "repo": {"full_name": "fork/repo"}}}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                review.review_payload(self.context, self.verdict, self.pr | changes)
+
+    def test_blockers_request_changes_and_uncertainty_comments(self):
+        blocked = self.verdict | {"verdict": "REQUEST_CHANGES", "blocking_findings": ["Crash on empty input"]}
+        self.assertEqual(review.review_payload(self.context, blocked, self.pr)["event"], "REQUEST_CHANGES")
+        incomplete = self.verdict | {"verdict": "COMMENT", "review_complete": False}
+        self.assertEqual(review.review_payload(self.context, incomplete, self.pr)["event"], "COMMENT")
+        with self.assertRaises(ValueError):
+            review.review_payload(self.context, blocked | {"verdict": "COMMENT"}, self.pr)
+
+    def test_missing_or_unknown_fields_fail_closed(self):
+        missing = self.verdict.copy()
+        del missing["review_complete"]
+        for verdict in (None, [], missing, self.verdict | {"unexpected": True}):
+            with self.subTest(verdict=verdict), self.assertRaises(ValueError):
+                review.review_payload(self.context, verdict, self.pr)
+
+    @patch.object(review, "api")
+    def test_prepare_revokes_only_this_bots_marked_approvals(self, api):
+        def prior(login, body, state, number):
+            return {"id": number, "user": {"login": login}, "body": body, "state": state}
+        api.side_effect = [self.pr, [
+            prior(review.BOT, review.MARKER, "APPROVED", 1),
+            prior("human", review.MARKER, "APPROVED", 2),
+            prior(review.BOT, "Unrelated automation", "APPROVED", 3),
+            prior(review.BOT, review.MARKER, "CHANGES_REQUESTED", 4),
+        ], {}]
+        with tempfile.TemporaryDirectory() as directory:
+            context = Path(directory) / "context.json"
+            output = Path(directory) / "output"
+            review.prepare("owner/repo", 6, context, output)
+            self.assertEqual(json.loads(context.read_text()), self.context)
+            self.assertIn("allowed=true\n", output.read_text())
+            self.assertIn(f"head_sha={self.context['head_sha']}\n", output.read_text())
+        self.assertEqual(api.call_args_list[-1].args[:2],
+                         ("repos/owner/repo/pulls/6/reviews/1/dismissals", "PUT"))
+        self.assertEqual(api.call_count, 3)
+
+    @patch.object(review, "api")
+    def test_push_racing_publication_withdraws_approval(self, api):
+        changed = deepcopy(self.pr)
+        changed["head"]["sha"] = "c" * 40
+        api.side_effect = [self.pr, {"id": 99, "html_url": "https://example/review"}, changed, {}]
+        with tempfile.TemporaryDirectory() as directory:
+            verdict = Path(directory) / "verdict.json"
+            verdict.write_text(json.dumps(self.verdict))
+            with self.assertRaises(ValueError):
+                review.publish(self.context, verdict)
+        self.assertEqual(api.call_args_list[-1].args[:2],
+                         ("repos/owner/repo/pulls/6/reviews/99/dismissals", "PUT"))
+
+    @patch.object(review, "api")
+    def test_missing_result_never_calls_github(self, api):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(FileNotFoundError):
+                review.publish(self.context, Path(directory) / "missing.json")
+        api.assert_not_called()
+
+    @patch.object(review, "api")
+    def test_failed_final_revision_check_withdraws_approval(self, api):
+        api.side_effect = [self.pr, {"id": 99, "html_url": "https://example/review"},
+                           RuntimeError("GitHub unavailable"), {}]
+        with tempfile.TemporaryDirectory() as directory:
+            verdict = Path(directory) / "verdict.json"
+            verdict.write_text(json.dumps(self.verdict))
+            with self.assertRaises(RuntimeError):
+                review.publish(self.context, verdict)
+        self.assertEqual(api.call_args_list[-1].args[:2],
+                         ("repos/owner/repo/pulls/6/reviews/99/dismissals", "PUT"))
+
+    @patch.object(review, "api")
+    def test_fork_prepare_stops_before_revocation_or_context_creation(self, api):
+        fork = deepcopy(self.pr)
+        fork["head"]["repo"]["full_name"] = "fork/repo"
+        api.return_value = fork
+        with tempfile.TemporaryDirectory() as directory:
+            context = Path(directory) / "context.json"
+            output = Path(directory) / "output"
+            review.prepare("owner/repo", 6, context, output)
+            self.assertFalse(context.exists())
+            self.assertEqual(output.read_text(), "allowed=false\n")
+        self.assertEqual(api.call_count, 1)
+
+
+if __name__ == "__main__":
+    unittest.main()
