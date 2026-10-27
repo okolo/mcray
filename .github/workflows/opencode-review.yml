@@ -29,7 +29,7 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
       issues: write
     steps:
       - name: Check provider credentials
@@ -78,7 +78,8 @@ jobs:
             Use targeted short checks only when useful; report what actually
             ran and its result. Never start large ensembles, long calculations,
             or checks requiring unavailable external reference data.
-            Do not edit files, commit, push, create branches, or open other PRs.
+            Do not edit files, commit, push, create branches, open other PRs,
+            approve PRs, merge PRs, or change PR state or metadata.
             Publish the review as a comment on this PR, in English. For each
             finding give severity, path and line, concrete failure conditions,
             and supporting evidence. Separate confirmed defects from questions

@@ -19,8 +19,10 @@ the project's numerical validation or human review.
    Confirm the reviewed head SHA matches the PR's current head.
 
 This setup uses the automatic `GITHUB_TOKEN`, not a personal access token or
-the OpenCode GitHub App. The token can read code and PRs and write PR issue
-comments; it has no code-write permission. No OIDC permission is requested.
+the OpenCode GitHub App. The token can read code and write PR comments and
+reactions, including inline review comments. GitHub requires the PR write
+permission for these operations; the token has no code-write permission.
+No OIDC permission is requested.
 Automatic session sharing is disabled.
 
 ## Triggers and scope
