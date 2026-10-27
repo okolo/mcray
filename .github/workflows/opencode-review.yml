@@ -89,6 +89,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_REVIEW_CONTEXT: ${{ runner.temp }}/opencode-review-context.json
           OPENCODE_REVIEW_RESULT: ${{ runner.temp }}/opencode-review-result.json
+          OPENCODE_CONFIG_CONTENT: >-
+            {"permission":{"external_directory":{"*":"deny","${{ runner.temp }}/**":"allow","/tmp/**":"allow"},"question":"deny","doom_loop":"deny"}}
         with:
           model: openrouter/z-ai/glm-5.3
           use_github_token: true

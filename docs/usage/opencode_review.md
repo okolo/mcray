@@ -82,6 +82,10 @@ inspect the formal verdict rather than treating the job result as approval.
 The publisher is copied outside the checkout before the agent starts. This
 preserves the publication code even when OpenCode switches to an older PR
 branch that does not yet contain the integration scripts.
+Runtime permissions explicitly allow the runner's temporary directory and
+`/tmp` for context, verdicts, and scratch work. Other external directories
+and interactive question/loop prompts are denied so CI cannot hang waiting
+for approval to read the frozen context or write its verdict.
 
 The review must leave the checkout clean. Build directories, caches, logs,
 and test outputs belong outside it. Otherwise the upstream action tries to
