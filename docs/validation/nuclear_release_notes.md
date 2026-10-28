@@ -45,6 +45,13 @@ All ten production coefficient controls matched. The archive SHA-256 is
 `6d892bd176de81d8e0c367050c76aa0bbf9ecc15235039e1b3f36e54c7e6a892`;
 all 4123 payload hashes and completed raw-history statistics were verified.
 
+A subsequent offline audit verified all 1024 ensemble logs and found no
+exception-driven retries or recovery failures. The exact tested constant-rate
+path logs every retry directly to captured stderr; this mechanism can be
+excluded as a cause of the retained mcray statistics (505 complete jobs,
+3892433 primary histories). This does not remove the other acceptance limits
+or establish the same diagnostic coverage for variable-rate production runs.
+
 For the 24 ordinary quantities, 108 comparisons in complete groups meet the
 existing agreement rule, 132 remain inconclusive and none meets its
 disagreement rule. The 48 ordinary comparisons from incomplete groups remain

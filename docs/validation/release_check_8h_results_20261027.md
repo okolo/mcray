@@ -64,6 +64,35 @@ python3 tests/crpropa/audit_release_check.py \
 The output is a separately identified `release-check-audit.json`, not a
 replacement file inserted into the original archive. No transport is run.
 
+## Exception-retry log audit, 2026-10-28
+
+An offline audit checked all 1024 ensemble job logs against the retained
+payload manifest: none is missing and all hashes match. All 512 mcray logs
+have identical contents, SHA-256
+`51fced5b1e05b5c0fb403433d2fdcc70f6d5f630cefe1dc86bd586700221a0d5`.
+They contain only startup table-location and approved TALYS terminal warnings.
+There are zero `attempting to recover` or `recovery failed` messages and no
+runtime errors in the ensemble logs or outer workload log. The 512 CRPropa
+ensemble logs are empty.
+
+This absence is meaningful for the exact tested execution path. The
+`nuclear_scenario` adapter invokes `engine.Run(0)` for `talys-decay`, selecting
+`RunParticle`. Every exception-driven retry in that path writes directly to
+`std::cerr` with `std::endl`, independently of Debug logging. The runner
+redirects both stdout and stderr into each job log. These engine, adapter
+and runner files are unchanged from the tested revision. Completed outputs
+also require a zero engine failure count and the requested number of primary
+histories.
+
+The 505 completed mcray jobs retain 3892433 primary histories across both
+backgrounds and all three resolutions. No exception-driven resampling was
+observed; the reviewed retry mechanism can therefore be excluded as a cause
+of their retained statistics. The seven deadline-interrupted jobs likewise
+contain no retry messages, but supply no completed ensembles. This conclusion
+does not resolve deadline censoring, rare-output precision or other numerical
+limits, and does not generalize to variable-rate production runs whose retry
+messages depend on Debug logging. No transport was rerun for this audit.
+
 ## Ordinary comparisons
 
 The original 32 outputs comprise 24 ordinary and eight rare quantities. With
