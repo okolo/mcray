@@ -187,7 +187,8 @@ LinearFunc with logarithmic axes and its existing zero-handling parameter
 implements interpolation. Positive intervals use log(sigma) versus log(K);
 intervals containing zero use sigma versus log(K). No epsilon replacement or
 extrapolation is applied. Cross sections vanish outside the padded grid.
-A future task assesses the high-energy tail: https://github.com/okolo/mcray_dev/blob/main/docs/tasks/T1/README.md.
+The omitted high-energy tail remains a documented limitation; see
+[the release notes](../validation/nuclear_release_notes.md).
 
 ## Explicit terminal states and errors
 

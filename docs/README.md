@@ -45,14 +45,3 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 Results distinguish confirmed checks from remaining limitations and pilot
 observations. Read their version and configuration scope before reuse.
-
-## Private development workspace
-
-Design proposals, research, decision history, validation plans and the future
-task list are maintained in the private
-[mcray_dev workspace](https://github.com/okolo/mcray_dev). Authorized users
-can read its [documentation index](https://github.com/okolo/mcray_dev/blob/main/docs/README.md)
-and [future tasks](https://github.com/okolo/mcray_dev/blob/main/docs/tasks/FUTURE_TASKS.md).
-These links provide development context; public builds, tests and usage do
-not require access to that repository. Do not duplicate its maintained plans
-here. Keep README.md and AGENTS.md as the standard repository entry points.

@@ -118,8 +118,8 @@ bash /path/to/launcher/tests/deterministic/run_external_pd_reference.sh \
 
 The runner resolves/fetches that revision, records the exact commit, builds and
 runs CTest, then executes the workload from its fresh public checkout. The
-launcher and input paths must exist on the server; no private repository is
-needed. Results and failures are compressed in TEST_DATA_DIR. Each coefficient
+launcher and input paths must exist on the server. Results and failures are
+compressed in TEST_DATA_DIR. Each coefficient
 run additionally verifies frozen payloads and hashes its tools and outputs.
 
 See [confirmed initial results](../../docs/validation/deterministic_pd_reference.md)

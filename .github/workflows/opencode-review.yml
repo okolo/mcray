@@ -110,8 +110,9 @@ jobs:
             RNG/thread safety, and discrepancies between code and tests.
             Distinguish approved physical approximations and documented limits
             from implementation defects. Do not invent new acceptance criteria
-            or claim physical validation from smoke tests. Public workflows
-            must not require access to the private development repository.
+            or claim physical validation from smoke tests. Build, test and
+            user workflows must document their dependencies and remain usable
+            from a standalone checkout of this repository.
 
             Inspect the current PR head and base and state their exact SHAs.
             Read the frozen PR metadata from the file named by the environment

@@ -64,7 +64,7 @@ estimate for the complete pilot is claimed.
 Reuse the original `rate-inputs` bundle: `nuclei/`, `cmb/`, `cmb-inoue/` and
 `inputs-manifest.json`. Its hashes are verified before use. New tools come
 from the requested fresh mcray checkout, not the older adapter files in that
-bundle. The private workspace is never needed on the server.
+bundle.
 
 Use the existing system build dependencies (Git, CMake >=3.24, make,
 GCC/G++/gfortran, GSL and Boost filesystem/system), Python >=3.10 with
