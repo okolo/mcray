@@ -94,8 +94,7 @@ Reuse the existing input bundle, original prepared pilot references and
 Python environment. NumPy 2.2.6, SciPy 1.15.3 and GitPython 3.2.0 are supported;
 the build uses the existing C/C++/Fortran, Boost/GSL, yaml-cpp/OpenSSL and
 CRPropa FFTW dependencies. Ubuntu 22.04 and CMake 3.22 remain supported.
-No private repository, new generated nuclear data or deterministic-cache
-transfer is required.
+No new generated nuclear data or deterministic-cache transfer is required.
 
 The tools must first be committed and pushed to public mcray. Replace
 `PUBLISHED_COMMIT` by the exact new commit containing these adapters. The

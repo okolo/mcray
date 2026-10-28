@@ -139,7 +139,7 @@ elapsed times with concurrent background cases, not performance benchmarks.
 Manifests, coefficient slices, kernels, grids, sparse matrices, populations,
 refinements, pilot comparisons and logs are retained in the ignored
 coupled-reference artifact directory. Public workflows do not require its
-local path or private documentation.
+local path or additional documentation.
 
 The external initial/full matrices separate energy-grid, independent
 quadrature, native-background and stiff-path refinements. Wider injection/path

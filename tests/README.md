@@ -116,7 +116,8 @@ library also contains a main object that delegates to user_main.
 
 ## PSB propagation against TransportCR
 
-See https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_validation_plan.md and ../docs/validation/psb_validation_results.md.
+See [the PSB validation results](../docs/validation/psb_validation_results.md)
+for the tested scope, comparison method and remaining limits.
 The real production PropagationEngine is used by nuclear_scenario; no
 transport algorithm is duplicated in the tests.
 
@@ -169,7 +170,8 @@ check, not a proof of absolute error or of spectral-shape convergence.
 
 ## Approved GZK spectral comparison
 
-See https://github.com/okolo/mcray_dev/blob/main/docs/validation/gzk_spectral_validation_plan.md. Seven secondary species in four
+See [the GZK method and pilot results](../docs/validation/psb_validation_results.md#approved-gzk-spectral-method-and-first-pilot).
+Seven secondary species in four
 fixed energy intervals form a family of 28 observables. The approved method
 uses 99% simultaneous Bonferroni Student intervals and a 5% spectral budget;
 existing integrated moment checks remain unchanged.
