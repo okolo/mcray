@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.13)
 project (mcray)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # uncomment the line below for verbose output
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 enable_language (Fortran)
@@ -42,11 +44,13 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG -O0 -pg")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O2")
 set(CMAKE_PREFIX_PATH "../external")
 # For executable targets
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
-# For shared library targets
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
-# For module targets
-set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--as-needed")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
+    # For shared library targets
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
+    # For module targets
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--as-needed")
+endif()
 
 # -rdynamic flux is only supported on systems with ELF executable format
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -86,6 +90,8 @@ GammaPP.cpp
 GammaPP.h
 GZK.cpp
 GZK.h
+EMSecondarySampling.cpp
+EMSecondarySampling.h
 ICS.cpp
 ICS.h
 Inoue12IROSpectrum.cpp
@@ -96,6 +102,8 @@ MathUtils.cpp
 MathUtils.h
 NeutronDecay.cpp
 NeutronDecay.h
+NuclearDecay.cpp
+NuclearDecay.h
 Nucleus.cpp
 Nucleus.h
 Output.cpp
@@ -129,6 +137,8 @@ Utils.h
 main.cpp
 PhotoDisintegration.cpp
 PhotoDisintegration.h
+TalysPhotoDisintegration.cpp
+TalysPhotoDisintegration.h
 SteckerEBL.cpp
 SteckerEBL.h
 Stecker16Background.cpp

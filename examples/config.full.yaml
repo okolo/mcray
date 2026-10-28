@@ -1,0 +1,337 @@
+# COMPLETE COMMENTED CRbeam CONFIGURATION, schema version 1.
+# Invocation: CRbeam config.full.yaml
+# Alternative invocation: existing CLI options, without a YAML argument.
+#
+# Values below form an explicit Fe56 example, NOT the legacy/default settings.
+# Install verified nuclear/PD/photon tables under the standard application
+# tables root, alongside the other tabulated data. No YAML data-path key exists.
+# Every current simulation CLI option has a mapping or explanation below.
+# --help is an informational action, not a simulation parameter.
+#
+# Format rules:
+# - Enum strings are case-sensitive; all choices are listed at their fields.
+# - Boolean choices are always true | false, never On/Off or Yes/No.
+# - Use finite numeric values and explicit unit suffixes; no unit expressions.
+# - Relative file/directory paths are relative to this YAML file.
+# - Unknown keys, duplicate keys and unsupported schema versions are errors.
+# - Inactive fields are documented below; their presence is not an activation.
+# - Includes, environment substitutions, custom tags and YAML merge/alias
+#   mechanisms are outside this first schema.
+# - YAML and simulation CLI overrides cannot be mixed in this first schema.
+
+# Supported schema versions: 1.
+schema_version: 1
+
+source:
+  # Choices: point | continuous. CLI: --m_z selects the legacy source mode.
+  # point: all primary histories start at the specified redshift.
+  # continuous: sample uniformly in cosmic time between z=0 and redshift,
+  # then weight each history by (1+z)^evolution_index. This preserves the
+  # existing importance-sampling prescription; it is not uniform in volume.
+  distribution: "point"
+
+  # Source redshift for point; maximum source redshift for continuous.
+  # Dimensionless, >0. CLI: --z. Observer redshift remains zero.
+  redshift: 0.01
+
+  # Finite source-evolution exponent; applies only to continuous.
+  # CLI: --m_z. Legacy value 1000 is a point-source sentinel, not an
+  # additional distribution model; YAML uses distribution explicitly.
+  evolution_index: 0.0
+
+  particle:
+    # Choices (all current named particle types):
+    # nucleus | proton | neutron | electron | positron | photon |
+    # neutrinoE | neutrinoM | neutrinoT | neutrinoAE | neutrinoAM | neutrinoAT.
+    # E/M/T denote electron/muon/tau flavor; A denotes the antiparticle.
+    # CLI: --particle. Legacy numeric --primary is normalized to these names.
+    type: "nucleus"
+
+    # Nuclear mass number, integer >=2; use proton/neutron for A=1.
+    # The full nuclear-process Release scope is A=2..56, subject to data.
+    # CLI: --A. Remove a and z for a non-nuclear primary.
+    a: 56
+
+    # Nuclear charge number, integer 0<z<=a, explicitly specified in YAML.
+    # CLI: --Z. The CLI-only Z=0 PSB-chain shortcut is resolved before export;
+    # an effective YAML config always contains the actual charge number.
+    z: 26
+
+  spectrum:
+    # Choices: monoenergetic | power_law. CLI: --power selects the mode.
+    type: "monoenergetic"
+
+    # Total energy of ONE injected particle in eV, not energy per nucleon.
+    # For a nucleus: total energy = A * energy per nucleon.
+    # CLI: --emax when --power<=0.
+    energy_eV: 2.229400155099592e+20
+
+    # To choose power_law, replace this spectrum mapping with:
+    # type: "power_law"
+    # minimum_energy_eV: 1.0e+18  # CLI: --emin_source; total particle energy.
+    # maximum_energy_eV: 1.0e+21  # CLI: --emax; total particle energy.
+    # index: 2.0                 # CLI: --power; finite and >0; dN/dE ~ E^-index.
+    # Require 0 < minimum_energy_eV < maximum_energy_eV, and minimum >= the
+    # propagation cutoff below. Legacy CLI raises a smaller --emin_source
+    # to --emin; effective output must record that actual minimum.
+    # The existing sampler draws log-uniform energies and applies importance
+    # weights. Selecting power_law does not change that sampling prescription.
+    # energy_eV is only for monoenergetic; the three fields above are only
+    # for power_law. Do not combine both sets of spectral parameters.
+
+simulation:
+  # Number of independent injected primaries, positive integer.
+  # CLI: --nparticles. Descendants do not increase this count.
+  primaries: 10000
+
+  # Choices: a nonnegative integer | "auto".
+  # CLI: --seed; omission corresponds to auto, but explicit zero is a seed.
+  # Effective output writes the actual integer, even when input was auto.
+  seed: 2036102000
+
+  # Choices: positive integer | "auto". Current CLI uses the OpenMP runtime,
+  # normally controlled by OMP_NUM_THREADS; it has no separate --threads flag.
+  # YAML integer selection must configure that same execution mechanism.
+  # Effective output records the actual thread count. A seed alone does not
+  # promise identical trajectories across different thread/batch settings.
+  threads: 8
+
+  # Choices: positive integer | "auto". CLI: --batch; legacy 0 means auto.
+  # Existing automatic size is 10 * maximum OpenMP threads.
+  # Trajectory logging overrides this to primaries to keep particle IDs unique;
+  # effective output must record that resolved value rather than this request.
+  batch_size: 1000
+
+  # Propagation/output cutoff in eV, finite and >0. CLI: --emin.
+  # Applies to propagated particles and secondaries, not just source injection.
+  minimum_energy_eV: 1.0e+11
+
+propagation:
+  # Filament filter redshift, >=0. CLI: --z-filament; 0 disables the filter.
+  # Preserve the existing charged-particle filtering semantics; this is not
+  # a generic distance cutoff or a change of observer redshift.
+  filament_stop_redshift: 0.0
+  # Cosmological redshift losses remain enabled as in the production CLI.
+  # This schema does not invent a production switch to disable them.
+
+backgrounds:
+  cmb:
+    # Choices: blackbody | monochromatic. CLI: --monocmb selects monochromatic.
+    # blackbody retains the existing CMB model/constants (currently T0=2.73 K).
+    # monochromatic uses the existing 6.3e-4 eV, 413 cm^-3 approximation.
+    # IMPORTANT: the legacy monochromatic integral replaces the ENTIRE
+    # interaction background, so EBL and additional tables do not contribute
+    # to interaction rates in that mode. It is not mono-CMB plus ordinary EBL.
+    model: "blackbody"
+
+    # Boolean: true | false. CLI: --fixedcmb; meaningful for blackbody.
+    # true retains the existing fixed-at-source CMB treatment, with
+    # temperature (1+source.redshift)*T0; it does not fix the EBL or cosmology.
+    fixed_temperature: false
+
+  ebl:
+    # Choices, with existing --background numeric values:
+    # none                   = 0  (disable EBL; ordinary CMB remains)
+    # kneiske_elmag_best_fit  = 1
+    # kneiske_elmag_minimal   = 2
+    # inoue12_baseline        = 3
+    # inoue12_lower           = 4  (existing low-PopIII implementation)
+    # inoue12_upper           = 5  (existing upper-PopIII implementation)
+    # franceschini08         = 6
+    # kneiske0309             = 7  (existing Kneiske0309 tables)
+    # kneiske1001             = 8  (existing Kneiske1001 tables)
+    # stecker05               = 9
+    # stecker16_lower         = 10
+    # stecker16_upper         = 11
+    # franceschini17          = 12
+    model: "inoue12_baseline"
+
+    # EBL density multiplier, finite and >=0. CLI: --backgr-mult.
+    # Does not multiply CMB or the additional background below.
+    normalization: 1.0
+
+    # Upper EBL photon-energy cutoff in eV, finite and >0.
+    # CLI: --backgr-cut. Does not cut CMB or the additional background.
+    maximum_photon_energy_eV: 100.0
+
+    high_redshift_extension:
+      # Boolean: true | false. Applies above the EBL table's maximum redshift.
+      # CLI: --eblDeltaZconst<0 disables this extension.
+      enabled: false
+
+      # Nonnegative plateau width in redshift. CLI: --eblDeltaZconst when enabled.
+      constant_delta_z: 0.0
+
+      # Finite power-law exponent after the plateau. CLI: --eblPowerLow.
+      power_law_index: 0.0
+
+      # Redshift scale of exp((z_plateau-z)/scale). CLI: --eblDeltaZexp.
+      # Positive values enable that decay; <=0 retains the legacy no-decay case.
+      exponential_delta_z: 1.0
+
+  additional:
+    # Choices: file path | null. null disables this single additional component.
+    # CLI: --add-backgr; preserve the existing matrix table's units/layout.
+    # YAML paths resolve relative to this file; legacy CLI paths retain their
+    # existing resolution relative to the application's tables directory.
+    file: null
+
+    # Choices: comoving | physical. CLI: --add-backgr-phys selects physical.
+    # Describes the table density convention, not a change to source evolution.
+    density: "comoving"
+
+nuclear:
+  # Nuclear masses/decays, PD cross sections and secondary-photon tables are
+  # installed under the same standard tables root as the other application data.
+  # Resolve that root using the application's common table-location mechanism,
+  # independently of the YAML file's location. Internal nuclear table filenames
+  # and subdirectories belong to the data installation contract, not this config.
+  # There is no data_directory or separate PD/photon path parameter in YAML.
+  # Runtime default: <standard tables root>/nuclear. The old --talys-data
+  # option remains a CLI-only compatibility override and is recorded in run.yaml.
+  # The installed data for this example must include GZK compatibility,
+  # corrected decays and both photon datasets with all ten approved exceptions.
+  # Missing required masses, malformed tables or unsupported channels are errors.
+
+  photodisintegration:
+    # Choices: off | psb | talys. CLI: --photodisintegration Off|PSB|TALYS.
+    # psb requires the exact PSB representative isotope and cannot be combined
+    # with the nuclear decay/PPP/GZK/photon extensions enabled in this example.
+    model: "talys"
+
+    # Choices: strict | crpropa. CLI: --pd-missing-data Strict|CRPropa.
+    # strict: fail for missing required reachable PD tables.
+    # crpropa: skip ONLY PD for wholly absent tables; other processes continue.
+    # Partial tables remain errors. Effective run metadata lists skipped states.
+    # crpropa requires TALYS; no mass or decay fallback is implied by this key.
+    missing_data: "crpropa"
+
+    photons:
+      # Boolean: true | false. CLI: --photodisintegration-photons On|Off.
+      # Requires TALYS and its photon tables. Controls creation, not transport.
+      enabled: true
+
+      # Choices: strict | crpropa. CLI: --pd-photon-yields Strict|CRPropa.
+      # strict: error for line/transition rate >1 or positive line rate at zero
+      # transition rate. crpropa: at most one photon per line, saturating those
+      # cases to probability 1. This does not complete missing PD tables.
+      yield_policy: "crpropa"
+
+  decay:
+    # Boolean: true | false. CLI: --nuclear-decay On|Off.
+    # Requires complete reachable corrected nuclear decay data; separate from
+    # free-neutron decay. Nuclear photons retain the approved no-energy-debit
+    # approximation; this format does not change decay kinematics.
+    enabled: true
+
+    # Boolean: true | false. CLI: --decay-photons On|Off.
+    # Requires decay.enabled=true and reviewed decay-photon channel coverage.
+    photons: true
+
+  pair_production:
+    # Choices: off | losses | full. CLI: --nuclear-ppp Off|Losses|Full.
+    # off: no nuclear pair process. losses: nuclear continuous losses only.
+    # full: losses plus sampled e-/e+; requires electromagnetic.cascade=true.
+    # Active modes require tabulated masses and PD model talys or off, not psb.
+    mode: "full"
+
+  photopion:
+    # Boolean: true | false. CLI: --nuclear-gzk On|Off.
+    # Uses the agreed bound-nucleon approximation and existing free-p/n kernels.
+    enabled: true
+
+    # Choices: strict | crpropa. CLI: --nuclear-gzk-residuals Strict|CRPropa.
+    # strict: require verified residual masses/decays, except prompt pure-p/n
+    # spectator breakup. crpropa: allow tagged approximate masses and artificial
+    # dripping from a prepared compatibility bundle; requires photopion and
+    # nuclear decay enabled. Does not by itself relax missing-PD errors.
+    residual_policy: "crpropa"
+
+# Existing free-nucleon GZK, neutron decay and proton pair-loss setup remains
+# unchanged for the applicable primary types. No new independent process
+# switches or models for those established processes are introduced here.
+electromagnetic:
+  # Boolean: true | false. CLI: false corresponds to --noEMcascade.
+  # true transports the existing electron/positron/photon cascade processes.
+  # false filters e-/e+/photons from propagation, including nuclear photons;
+  # it does not turn off the two nuclear photon-creation switches above.
+  cascade: true
+
+magnetic_field:
+  # Choices: monochromatic | kolmogorov. CLI: --turbulentEGMF selects kolmogorov.
+  # Existing field constructions are preserved; no uniform-field option is added.
+  model: "kolmogorov"
+
+  # Field strength in Gauss; 0 disables magnetic deflection, finite and >=0.
+  # CLI: --EGMF. Other field settings are inactive when strength_G is zero.
+  strength_G: 0.0
+
+  # Minimum spatial scale in Mpc at z=0, >0; used for kolmogorov.
+  # CLI: --lminEGMF. Require minimum_scale_Mpc < maximum_scale_Mpc.
+  minimum_scale_Mpc: 0.05
+
+  # Maximum scale in Mpc at z=0, >0. CLI: --lmaxEGMF.
+  # For monochromatic this is its wavelength; minimum scale/modes are inactive.
+  maximum_scale_Mpc: 5.0
+
+  # Positive integer number of turbulent modes. CLI: --nmodesEGMF.
+  modes: 300
+
+  # Choices: shared | per_primary. CLI: --randomEGMF selects per_primary.
+  # shared retains the existing shared field construction/orientation.
+  # per_primary generates a separate random field for each injected history.
+  realization: "shared"
+
+  # Positive integer deflection accuracy factor. CLI: --accEGMF.
+  deflection_accuracy: 10
+
+sampling:
+  thinning:
+    # Finite 0<=alpha<=1. CLI: --thinning; 0 disables energy-based thinning.
+    # Applies to e-/e+/photons; weights compensate the sampling.
+    alpha: 0.9
+
+  # Finite positive PPP secondary sampling/rescaling factor. CLI: --ppp-thinning.
+  # Divides the sampled secondary event rate and multiplies secondary weights;
+  # it is not a multiplier of the physical continuous energy loss.
+  pair_production_resampling: 10.0
+
+output:
+  # Choices: directory path | null. CLI: --output.
+  # null retains automatic output naming; effective config records the actual
+  # directory. Replaying it requires a new directory unless overwrite is chosen.
+  directory: "./results/fe56"
+
+  # Boolean: true | false. CLI: --overwrite. Default policy is false.
+  overwrite: false
+
+  # String suffix used only for automatic naming. CLI: --output-suffix.
+  name_suffix: ""
+
+  # Boolean: true | false. CLI: --tlog; writes particle trajectories.
+  # Also forces the effective batch size to the full primary count.
+  trajectory_log: false
+
+  # Both input forms write config.yaml instead of the legacy params file.
+  # config.yaml contains resolved defaults, actual seed/threads/batch size and
+  # resolved paths, and must itself remain a valid simulation input.
+  # Source revision, hashes, input origin, skipped-data identities and execution
+  # status belong in the separate generated run.yaml, not input-only fields.
+
+logging:
+  # Boolean: true | false. CLI: --log; writes the existing log.txt output.
+  enabled: false
+
+  # Choices: error | warning | message | verbose.
+  # CLI: --log-level 0|1|2|3, respectively. There is no separate debug level.
+  level: "warning"
+
+  # Choices: nonnegative worker index | null. CLI: --log-thread; -1 means all.
+  # null applies no thread filter; only relevant when logging is enabled.
+  thread: null
+
+diagnostics:
+  # Boolean: true | false. CLI: --print-tau.
+  # Write the existing interaction optical-depth diagnostic in addition to
+  # running propagation; this does not select a different transport model.
+  optical_depth: false

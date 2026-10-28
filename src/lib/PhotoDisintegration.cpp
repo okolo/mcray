@@ -31,6 +31,17 @@
 #include "TableBackgrounds.h"
 #include "PropagationEngine.h"
 
+namespace {
+void ValidatePsb(const mcray::Particle& p) {
+    p.ValidateIdentity();
+    if (p.Type != mcray::Nucleus || p.MassNumber() > Interactions::CNucleus::MaxA ||
+        p.AtomicNumber() != static_cast<unsigned>(Interactions::CNucleus::getZ(p.MassNumber())) ||
+        p.MassModel() != mcray::Particle::NuclearMassModel::PSB ||
+        p.Mass() != p.MassNumber() * 0.5 * (mcray::Particle::Mass(mcray::Proton) + mcray::Particle::Mass(mcray::Neutron)))
+        Utils::Exception::Throw("PSB requires its representative isotope and approximate mass");
+}
+}
+
 Interactions::PhotoDisintegration::PhotoDisintegration(mcray::BackgroundIntegral *aBackground, bool aSampleK):
         fBackground(aBackground),
         fSampleK(aSampleK)
@@ -38,7 +49,7 @@ Interactions::PhotoDisintegration::PhotoDisintegration(mcray::BackgroundIntegral
 }
 
 mcray::RandomInteraction *Interactions::PhotoDisintegration::Clone() const {
-    return new PhotoDisintegration(fBackground);
+    return new PhotoDisintegration(fBackground->Clone(), fSampleK);
 }
 
 Interactions::PhotoDisintegration::~PhotoDisintegration() {
@@ -46,9 +57,10 @@ Interactions::PhotoDisintegration::~PhotoDisintegration() {
 }
 
 double Interactions::PhotoDisintegration::Rate(const mcray::Particle &aParticle) const {
-    if(aParticle.Type<A02 || aParticle.Type>=EndNuclei)
+    if(aParticle.Type != Nucleus)
         return 0.;
-    const CPDMLine* canals = fMap.getOutcome(CNucleus::getA(aParticle.Type));
+    ValidatePsb(aParticle);
+    const CPDMLine* canals = fMap.getOutcome(aParticle.MassNumber());
     int noOfCanals = canals?canals->size():0;
     if(!noOfCanals)
         return 0.;
@@ -63,18 +75,18 @@ double Interactions::PhotoDisintegration::Rate(const mcray::Particle &aParticle)
 
 int Interactions::PhotoDisintegration::UnitTest()
 {
-    UnitTest(A04, true, true, false, 5e18*units.eV, 1e20*units.eV, 1, 10000);
+    UnitTest(4u, true, true, false, 5e18*units.eV, 1e20*units.eV, 1, 10000);
     return 0;
 }
 
-void Interactions::PhotoDisintegration::UnitTest(ParticleType aPrimary, bool aPrintRates, bool aPropagate, bool aSplit, double Emin, double Emax, double Zmax, int nParticles)
+void Interactions::PhotoDisintegration::UnitTest(unsigned int aPrimary, bool aPrintRates, bool aPropagate, bool aSplit, double Emin, double Emax, double Zmax, int nParticles)
 {
     //double alphaThinning = 0;//alpha = 1 conserves number of particles on the average; alpha = 0 disables thinning
     ParticleStack particles;
-    Result result(Emin/CNucleus::getA(aPrimary));
+    Result result(Emin/aPrimary);
     if(aPropagate)
     {
-        std::string out = Particle::Name(aPrimary);
+        std::string out = Particle(aPrimary, 0.).Name();
         out += aSplit?"_split" : "";
         out += "_Emin";
         out += ToString(Emin);
@@ -120,7 +132,7 @@ void Interactions::PhotoDisintegration::UnitTest(ParticleType aPrimary, bool aPr
     if(aPrintRates)
     {
         std::ofstream ratesOut;
-        std::string ratesFile = ToString(Particle::Name(aPrimary)) + "_rates";
+        std::string ratesFile = ToString(Particle(aPrimary, 0.).Name()) + "_rates";
         ratesFile += aSplit ? "_split" : "";
         ratesOut.open(ratesFile.c_str(),std::ios::out);
 
@@ -169,8 +181,8 @@ void Interactions::PhotoDisintegration::UnitTest(ParticleType aPrimary, bool aPr
 
 bool Interactions::PhotoDisintegration::SampleS(const mcray::Particle &aParticle, double &aS,
                                                 mcray::Randomizer &aRandomizer) const {
-    ASSERT(aParticle.Type>=A02 && aParticle.Type<EndNuclei);
-    const CPDMLine* canals = fMap.getOutcome(CNucleus::getA(aParticle.Type));
+    ValidatePsb(aParticle);
+    const CPDMLine* canals = fMap.getOutcome(aParticle.MassNumber());
     int noOfCanals = canals?canals->size():0;
     ASSERT(noOfCanals>0);
     SigmaS sigma(canals);
@@ -179,8 +191,8 @@ bool Interactions::PhotoDisintegration::SampleS(const mcray::Particle &aParticle
 
 bool Interactions::PhotoDisintegration::SampleK(const mcray::Particle &aParticle, double &aK,
                                                 mcray::Randomizer &aRandomizer) const {
-    ASSERT(aParticle.Type>=A02 && aParticle.Type<EndNuclei);
-    const CPDMLine* canals = fMap.getOutcome(CNucleus::getA(aParticle.Type));
+    ValidatePsb(aParticle);
+    const CPDMLine* canals = fMap.getOutcome(aParticle.MassNumber());
     int noOfCanals = canals?canals->size():0;
     ASSERT(noOfCanals>0);
     SigmaK sigma(canals);
@@ -189,6 +201,8 @@ bool Interactions::PhotoDisintegration::SampleK(const mcray::Particle &aParticle
 
 bool Interactions::PhotoDisintegration::GetSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, Randomizer& aRandomizer) const
 {
+    if(aParticle.Type != Nucleus)
+        return false;
     if(fSampleK){
         double k = 0.;
         if(!SampleK(aParticle, k, aRandomizer))
@@ -207,7 +221,7 @@ bool Interactions::PhotoDisintegration::GetSecondaries(Particle& aParticle, std:
 void Interactions::PhotoDisintegration::SampleSecondariesWithS(mcray::Particle &aParticle,
                                                                std::vector<mcray::Particle> &aSecondaries, double aS,
                                                                mcray::Randomizer &aRandomizer) const {
-    ASSERT(aParticle.Type>=A02 && aParticle.Type<EndNuclei);
+    ValidatePsb(aParticle);
     double m=aParticle.Mass();
     double k = 0.5*(aS/m-m);
     SampleSecondariesWithK(aParticle, aSecondaries, k, aRandomizer);
@@ -216,8 +230,8 @@ void Interactions::PhotoDisintegration::SampleSecondariesWithS(mcray::Particle &
 void Interactions::PhotoDisintegration::SampleSecondariesWithK(mcray::Particle &aParticle,
                                                                std::vector<mcray::Particle> &aSecondaries, double k,
                                                                mcray::Randomizer &aRandomizer) const {
-    ASSERT(aParticle.Type>=A02 && aParticle.Type<EndNuclei);
-    const CPDMLine* canals = fMap.getOutcome(CNucleus::getA(aParticle.Type));
+    ValidatePsb(aParticle);
+    const CPDMLine* canals = fMap.getOutcome(aParticle.MassNumber());
     int noOfCanals = canals?canals->size():0;
     ASSERT(noOfCanals>0);
 
@@ -230,16 +244,18 @@ void Interactions::PhotoDisintegration::SampleSecondariesWithK(mcray::Particle &
     {
         Function* curSigma = (*it)->Sigma();
         double kMinCur = curSigma->Xmin();
-        if (kMinCur < k)
+        if (kMinCur <= k && k <= curSigma->Xmax())
             totSigma += curSigma->f(k);
         sigma[iCanal]=totSigma;
         iCanal++;
     }
+    if(totSigma<=0.)
+        Utils::Exception::Throw("PSB sampling requested outside the supported cross-section range");
     double randSigma = aRandomizer.Rand()*totSigma;
     CPhotoDisintegrationCanal* selectedCanal=0;
     for (iCanal=0; iCanal<canals->size(); iCanal++)
     {
-        if(sigma[iCanal]>=randSigma) {
+        if(sigma[iCanal]>randSigma) {
             selectedCanal = canals->at(iCanal);
             break;
         }
@@ -250,14 +266,14 @@ void Interactions::PhotoDisintegration::SampleSecondariesWithK(mcray::Particle &
     const TIsotope &isotope = selectedCanal->isotope();
     int maxDeltaA = selectedCanal->getMaxDeltaA();
     int A = isotope.A;
-    ASSERT(CNucleus::getA(aParticle.Type)==A);
+    ASSERT(aParticle.MassNumber()==A);
     ASSERT(maxDeltaA < A);
     double autoN = 0.;
     double autoP = 0.;
     for (int deltaA = 1; deltaA <= maxDeltaA; deltaA++) {
         double rate = selectedCanal->getRate(deltaA);
-        ParticleType prodType=(ParticleType)(aParticle.Type-deltaA);//in case A=2,3 secondary canal for proton (H1) may be duplicated, but it is ok, since summary rate is correct
-        int deltaZ = isotope.Z - CNucleus::getZ(prodType);
+        const unsigned int productA = A - deltaA; // PSB combines duplicate proton channels through their weights.
+        int deltaZ = isotope.Z - CNucleus::getZ(productA);
         if (deltaZ < 0) {//processes with neutron emission followed by beta decay
             deltaZ = 0;
         }
@@ -266,7 +282,8 @@ void Interactions::PhotoDisintegration::SampleSecondariesWithK(mcray::Particle &
         autoP += deltaZ * rate;
         if (rate > 0.) {
             Particle product = aParticle;
-            product.Type = prodType;
+            if (productA == 1) product.SetType(Proton);
+            else product.SetPsbNucleus(productA);
             product.Weight *= rate;
             product.Energy *= (product.Mass()/aParticle.Mass());//same gamma factor
             aSecondaries.push_back(product);
@@ -283,7 +300,7 @@ void Interactions::PhotoDisintegration::SampleSecondariesWithK(mcray::Particle &
     };
     if (rateN > 0.) {
         Particle product = aParticle;
-        product.Type = Neutron;
+        product.SetType(Neutron);
         product.Weight *= rateN;
         product.Energy *= (product.Mass()/aParticle.Mass());//same gamma factor
         aSecondaries.push_back(product);
@@ -291,7 +308,7 @@ void Interactions::PhotoDisintegration::SampleSecondariesWithK(mcray::Particle &
     }
     if (rateP > 0.) {
         Particle product = aParticle;
-        product.Type = Proton;
+        product.SetType(Proton);
         product.Weight *= rateP;
         product.Energy *= (product.Mass()/aParticle.Mass());//same gamma factor
         aSecondaries.push_back(product);
@@ -310,7 +327,7 @@ fM(-1.)
     if(fCanals->size()) {
         double kMin = 1e300;
         double kMax = 0;
-        fM = Particle::Mass(fCanals->at(0)->getParticle());
+        fM = fCanals->at(0)->massNumber() * 0.5 * (Particle::Mass(Proton) + Particle::Mass(Neutron));
         for (std::vector<CPhotoDisintegrationCanal *>::const_iterator it = fCanals->begin();
              it != fCanals->end(); it++)
         {

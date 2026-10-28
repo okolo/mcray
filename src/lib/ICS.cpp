@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 #include "ICS.h"
+#include "EMSecondarySampling.h"
 #include <math.h>
 #include "MathUtils.h"
 #include "Output.h"
@@ -46,19 +47,15 @@ ICS::ICS(BackgroundIntegral* aBackground, double aGammaEmin):
 ICS::~ICS() {
 }
 
-double ICS::SampleSecondaryGammaFracE(double aS, double rMin, double rand) const
+double ICS::SampleSecondaryLogRecoilFracE(double aS, double rMin, double uniform) const
 {
-	double mass = Particle::Mass(Electron);
-	double s = aS/(mass*mass);
-	SecondaryEnergySamplingEquationPars pars;
-	pars.s = s;
-	pars.Integral = rand*PartialSigma(rMin, s);
-    double x_lo = rMin;
-    double x_hi = 1.-1./s;
-    const double relError = 1e-3;
-    const int max_iter = 100;
-    double r = MathUtils::SolveEquation(&SecondaryEnergySamplingEquation, x_lo, x_hi, &pars, relError, max_iter, gsl_root_fsolver_bisection);
-    return r;
+    const long double mass=Particle::Mass(Electron);
+    const long double ymin=mass*mass/aS, ymax=1-static_cast<long double>(rMin);
+    const long double norm=detail::ComptonIntegral(ymin,ymax);
+    if(!(norm>0))throw new Utils::Exception("Empty ICS secondary distribution",false);
+    return detail::InvertSecondaryCDF([&](long double logy) {
+        return detail::ComptonIntegral(ymin,std::exp(logy))/norm;
+    },std::log(ymin),std::log(ymax),uniform);
 }
 
 bool ICS::SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer) const
@@ -73,12 +70,12 @@ bool ICS::SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer
 void ICS::SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const
 {
 	double rMin = fGammaEmin/aParticle.Energy;
-	double r = SampleSecondaryGammaFracE(aS, rMin, aRandomizer.Rand());
+	double logy = SampleSecondaryLogRecoilFracE(aS, rMin, aRandomizer.Rand());
 	Particle secLepton = aParticle;
 	Particle secPhoton = aParticle;
-	secPhoton.Type = Photon;
-    secPhoton.Energy = aParticle.Energy*r;
-    secLepton.Energy = aParticle.Energy - secPhoton.Energy;
+	secPhoton.SetType(Photon);
+    secPhoton.Energy = aParticle.Energy*(-std::expm1(logy));
+    secLepton.Energy = aParticle.Energy*std::exp(logy);
 	aSecondaries.push_back(secPhoton);
 	if(!fDeleteElectron)
 		aSecondaries.push_back(secLepton);
@@ -115,57 +112,8 @@ double ICS::SecondaryEnergySamplingEquation(double r, void* aParams)
 
 double ICS::PartialSigma(double rMin, double s)
 {
-/*
-Formula for partial cross section was taken from http://lanl.arxiv.org/abs/1106.5508v1 eq. (9)
-*/
-	double m=Particle::Mass(Electron);
-
-	//return SigmaCoef/m/m*Test::PrecisionTests::PartialSigmaAccurate(rMin,s);
-
-
-	double yMin=1./s;//s here is in units of m^2
-	double yMax = 1-rMin;
-	if(yMin>=yMax)
-	{
-		ASSERT((yMax-yMin)/(yMax+yMin)<1e-10);
-		return 0.;
-	}
-
-	double y_1 = 1.-yMin;
-	double y_1_2 = y_1*y_1;
-	double a=yMax-yMin;
-	double result = 0;
-	if(a>1e-3)
-	{
-		result = yMin*(yMax-yMin)/y_1*(log(yMax/yMin)/(yMax-yMin)*(1.-4.*yMin*(1.+yMin)/y_1_2)+4.*(yMin/yMax+yMin)/y_1_2+0.5*(yMax+yMin));
-		ASSERT_VALID_NO(result);
-	}
-	else
-	{
-		double x=yMin;
-		double x2=x*x;
-		double x3=x2*x;
-		double x4=x3*x;
-		double x_1=x-1.;//negative
-		double x_1_2=x_1*x_1;
-		double x_1_3=x_1_2*x_1;
-		double a2=a*a;
-		double a3=a2*a;
-		double a4=a3*a;
-		double a5=a4*a;
-
-		//result = a/x_1*(-1.-x2+a/x/x_1*(-1.-3.*x+x2-x3+a/x/x_1*(-1./3.-2.*x+x2+a/x*(0.25+2.5*x-0.75*x2+0.2*a/x*(-1.-14.*x+3*x2)))));
-
-		result = (a4*(1 + 10*x - 3*x2))/(4.*x_1_3*x3) +
-		   (a*(1 + x2))/(1 - x) +
-		   (a5*(-1 - 14*x + 3*x2))/(5.*x_1_3*x4) +
-		   (a3*(-1 - 6*x + 3*x2))/(3.*x_1_3*x2) +
-		   (a2*(-1 - 3*x + x2 - x3))/(2.*x_1_2*x);
-
-		ASSERT_VALID_NO(result);
-	}
-
-	return SigmaCoef/m/m*result;
+    const long double mass=Particle::Mass(Electron);
+    return SigmaCoef/(mass*mass)*detail::ComptonIntegral(1.L/s,1-static_cast<long double>(rMin));
 }
 
 double PartialSigmaSeries(double rMin, double s)
@@ -333,7 +281,7 @@ void ICS::UnitTestSampling(double aEmin, double aE, double aZ)
 			ASSERT(secondaries[0].Type == Photon);
 			secICSoutVarS << secondaries[0].Energy/aE << "\n";
 		}
-		double r = ics.SampleSecondaryGammaFracE(S, aEmin/aE, rnd.Rand());
+		double r = -std::expm1(ics.SampleSecondaryLogRecoilFracE(S, aEmin/aE, rnd.Rand()));
 		secICSout << r << "\n";
 	}
 	secICSout.close();

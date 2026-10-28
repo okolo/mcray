@@ -68,7 +68,7 @@ private:
 
 class FermiTests {
 	class IntegralSpectrumOutput : public TSmartReferencedObj<IOutput> {
-	    struct More : public std::binary_function<Particle, Particle, bool>
+	    struct More
 	        {
 	          bool
 	          operator()(const Particle& __x, const Particle& __y) const

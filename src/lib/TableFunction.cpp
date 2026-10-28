@@ -187,6 +187,21 @@ template<typename X> void TableFunctionX<X>::Print(std::ostream& aOut, X aXcoef,
 template class TableFunctionX<double>;
 template class TableFunctionX<long double>;
 
+template<typename X> X LinearFuncX<X>::f(X _x) const
+{
+	if(fHandleLogZeros && this->InTableRange(_x)) {
+		X scaledX = this->fXscale->ToScale(_x);
+		int i = this->FindLeftX(scaledX);
+		if(i >= 0 && (fOriginalY[i] == 0 || fOriginalY[i+1] == 0)) {
+			// Return physical Y directly: log(0) cannot represent the zero endpoint
+			// or the linear transition agreed for intervals containing zeros.
+			X t = (scaledX - this->m_x[i]) / (this->m_x[i+1] - this->m_x[i]);
+			return (1 - t) * fOriginalY[i] + t * fOriginalY[i+1];
+		}
+	}
+	return TableFunctionX<X>::f(_x);
+}
+
 template<typename X> X LinearFuncX<X>::f_scaled(X _x) const
 {
 	int i = TableFunctionX<X>::FindLeftX(_x);

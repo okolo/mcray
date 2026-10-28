@@ -1,0 +1,27 @@
+{
+  "base_commit": "e7ffd18e49fdec72246106dc8319dbdc092a9d33",
+  "correction_source": "1cc28f381e961f3d4947d08f0149ac72d63c3635",
+  "fast_S_and_table_sources_byte_unchanged": {
+    "src/lib/Background.cpp": "80f32bea42f66b1d3154104d3c14445c2ffc1835206b38d6e758ed50307efdb3",
+    "src/lib/Background.h": "b4bf5e6fc24da647f13527bf1aa0e3ab8448dbe315376c908cbd8bc469390887",
+    "src/lib/MathUtils.cpp": "b2142ac079167f81825d1ed527af48494f7bef8d66565c2e2d5bbd53ad4ae542",
+    "src/lib/MathUtils.h": "d5d70b84ac108b9ecd207341e6b040b188a5fe3429003e9a894c7b6e0f36d34a",
+    "src/lib/TableFunction.cpp": "af0b8118eee6e9f283314d2c52b40b0c4156bb8b0ff8a73dbe18c5903f1e1b80",
+    "src/lib/TableFunction.h": "4f4d56e81b5299417069dfa7ecb1d12ead15214304dd57c9ca898823bacd33a6"
+  },
+  "no_invariant_CDF_or_new_envelope": true,
+  "audited_on": "2026-10-24",
+  "tests": {
+    "native_macos_arm64": {
+      "passed": 151,
+      "failed": 0,
+      "seconds": 31.03
+    },
+    "emulated_linux_amd64": {
+      "passed": 151,
+      "failed": 0,
+      "seconds": 103.7
+    }
+  },
+  "dedicated_secondary_cases": 6
+}

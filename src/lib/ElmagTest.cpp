@@ -153,11 +153,11 @@ bool ElmagProxy::GetSecondaries(const Particle& aParticle, std::vector<Particle>
 	{
 		double r = zpair_(&sgam);
 		Particle electron = aParticle;
-		electron.Type = Electron;
+		electron.SetType(Electron);
 		electron.Energy = aParticle.Energy*r;
 		aSecondaries.push_back(electron);
 		Particle positron = aParticle;
-		positron.Type = Positron;
+		positron.SetType(Positron);
 		positron.Energy = aParticle.Energy*(1.-r);
 		aSecondaries.push_back(positron);
 	}
@@ -194,7 +194,7 @@ bool ElmagProxy::GetSecondaries(const Particle& aParticle, std::vector<Particle>
 		lepton.Energy = aParticle.Energy*r;
 		aSecondaries.push_back(lepton);
 		Particle photon = aParticle;
-		photon.Type = Photon;
+		photon.SetType(Photon);
 		photon.Energy = aParticle.Energy*(1.-r);
 		aSecondaries.push_back(photon);
 	}
@@ -334,11 +334,11 @@ void ElmagTests::RatesTest()
 	for(double E=Emin; E<Emax; E*=logStepK)
 	{
 		particle.Energy = E/units.Eunit;//MeV
-		particle.Type = Electron;
+		particle.SetType(Electron);
 		double celRate = icsCel.Rate(particle);
 		double icsRate = ics.Rate(particle);
 		double redshiftRate = rs.Rate(particle);
-		particle.Type = Photon;
+		particle.SetType(Photon);
 		double ppRate = pp.Rate(particle);
 
 		double mult = 1./units.Mpc;

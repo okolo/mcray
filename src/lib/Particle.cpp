@@ -28,6 +28,7 @@
 
 #include "Particle.h"
 #include "Nucleus.h"
+#include <iomanip>
 
 namespace mcray
 {
@@ -81,61 +82,7 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
 	    "neutrinoAT",
 	    "neutron",
 	    "proton",
-        "A2",
-        "A3",
-        "A4",
-        "A5",
-        "A6",
-        "A7",
-        "A8",
-        "A9",
-        "A10",
-        "A11",
-        "A12",
-        "A13",
-        "A14",
-        "A15",
-        "A16",
-        "A17",
-        "A18",
-        "A19",
-        "A20",
-        "A21",
-        "A22",
-        "A23",
-        "A24",
-        "A25",
-        "A26",
-        "A27",
-        "A28",
-        "A29",
-        "A30",
-        "A31",
-        "A32",
-        "A33",
-        "A34",
-        "A35",
-        "A36",
-        "A37",
-        "A38",
-        "A39",
-        "A40",
-        "A41",
-        "A42",
-        "A43",
-        "A44",
-        "A45",
-        "A46",
-        "A47",
-        "A48",
-        "A49",
-        "A50",
-        "A51",
-        "A52",
-        "A53",
-        "A54",
-        "A55",
-        "A56"
+        "nucleus"
 };
 
     int Particle::fNextCustomDataIndex = 0;
@@ -168,27 +115,72 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
 
     std::string Particle::ToString(){
         std::ostringstream logStr;
-        logStr << ParticleNames[Type] << "(E=" << Energy/units.eV << "eV, " << Time.ToString() << ")";
+        logStr << Name() << "(E=" << Energy/units.eV << "eV, " << Time.ToString() << ")";
         return logStr.str();
     }
 
+    void Particle::ValidateIdentity() const {
+        if (Type < Electron || Type >= ParticleTypeEOF)
+            Exception::Throw("Invalid particle type");
+        if (Type == Nucleus) {
+            if (fA < 2 || !fZ || fZ > fA || !std::isfinite(fNuclearMass) ||
+                fNuclearMass <= 0. || fMassModel == NuclearMassModel::Unset)
+                Exception::Throw("Invalid or unset nuclear A,Z");
+        } else if (fA || fZ || fNuclearMass || fMassModel != NuclearMassModel::Unset) Exception::Throw("Particle type changed without clearing nuclear identity; use SetType");
+    }
+    void Particle::SetType(ParticleType type) {
+        if (type < Electron || type >= Nucleus)
+            Exception::Throw("Use a nucleus setter to establish A,Z");
+        Type = type; fA = fZ = 0; fNuclearMass = 0.; fMassModel = NuclearMassModel::Unset;
+    }
+    void Particle::SetPsbNucleus(unsigned int a) {
+        if (a < 2 || a > Interactions::CNucleus::MaxA)
+            Exception::Throw("Unsupported PSB mass number");
+        SetNucleus(a, Interactions::CNucleus::getZ(a),
+                   a * 0.5 * (Mass(Proton) + Mass(Neutron)), NuclearMassModel::PSB);
+    }
+    void Particle::SetNucleus(unsigned int a, unsigned int z, double mass, NuclearMassModel model) {
+        if (a < 2 || !z || z > a || !std::isfinite(mass) || mass <= 0. ||
+            (model != NuclearMassModel::PSB && model != NuclearMassModel::TALYS))
+            Exception::Throw("Invalid nuclear identity or mass");
+        Type = Nucleus; fA = a; fZ = z; fNuclearMass = mass; fMassModel = model;
+    }
+    unsigned int Particle::MassNumber() const {
+        ValidateIdentity();
+        return Type == Nucleus ? fA : (Type == Proton || Type == Neutron ? 1 : 0);
+    }
+    unsigned int Particle::AtomicNumber() const {
+        ValidateIdentity();
+        return Type == Nucleus ? fZ : (Type == Proton ? 1 : 0);
+    }
+    double Particle::Mass() const {
+        ValidateIdentity();
+        return Type == Nucleus ? fNuclearMass : Mass(Type);
+    }
+    int Particle::ElectricCharge() const {
+        ValidateIdentity();
+        return Type == Nucleus ? fZ : ElectricCharge(Type);
+    }
+    std::string Particle::Name() const {
+        ValidateIdentity();
+        if (Type != Nucleus) return Name(Type);
+        std::ostringstream name;
+        name << 'A' << std::setfill('0') << std::setw(2) << fA
+             << 'Z' << std::setw(2) << fZ;
+        return name.str();
+    }
+
     double Particle::Mass(ParticleType aType){
-        if(aType<EndLightParticle)
+        if(aType>=Electron && aType<EndLightParticle)
             return MassesMeV[aType]/units.Eunit;
-        if(aType<EndNuclei){
-            double meanNucleonMassMeV = 0.5*(Particle::Mass(Proton)+Particle::Mass(Neutron));
-            return meanNucleonMassMeV*Interactions::CNucleus::getA(aType);
-        }
-        NOT_IMPLEMENTED // treat other particles when added
+        Exception::Throw("Nuclear mass/charge requires a Particle instance with A,Z");
         return 0.;
     }
 
     double Particle::ElectricCharge(ParticleType aType){
-        if(aType<EndLightParticle)
+        if(aType>=Electron && aType<EndLightParticle)
             return ElectricCharges[aType];
-        if(aType<EndNuclei)
-            return ElectricCharges[Proton]*Interactions::CNucleus::getZ(aType);
-        NOT_IMPLEMENTED // treat other particles when added
+        Exception::Throw("Nuclear mass/charge requires a Particle instance with A,Z");
         return 0.;
     }
 

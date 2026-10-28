@@ -111,8 +111,8 @@ void ProtonPP::SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSe
 	Particle secProton = aParticle;
 	Particle secElectron = aParticle;
 	Particle secPositron = aParticle;
-	secElectron.Type = Electron;
-	secPositron.Type = Positron;
+	secElectron.SetType(Electron);
+	secPositron.SetType(Positron);
 	double E = aParticle.Energy;
 	double Mp = Particle::Mass(Proton);
 	double k = 0.5*(aS/Mp-Mp);

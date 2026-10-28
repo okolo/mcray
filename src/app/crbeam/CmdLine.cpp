@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iosfwd>
+#include <charconv>
+#include "Utils.h"
 
 #include "CmdLine.h"
 
@@ -98,6 +100,21 @@ CmdParam::operator bool( void )
 	return value!=NULL;
 }
 
+CmdParam::operator unsigned int( void )
+{
+    if (value && !*value)
+        Utils::Exception::Throw(std::string("Invalid unsigned integer for ") + key() + ": empty value");
+    const char* text = static_cast<ASCII_TYPE>(*this);
+    unsigned int result = 0;
+    if (!text || !*text)
+        Utils::Exception::Throw(std::string("Missing unsigned integer for ") + key());
+    const char* end = text + strlen(text);
+    const auto parsed = std::from_chars(text, end, result);
+    if (parsed.ec != std::errc() || parsed.ptr != end)
+        Utils::Exception::Throw(std::string("Invalid unsigned integer for ") + key() + ": " + text);
+    return result;
+}
+
 CmdParam::operator CmdParam::CmdInfoPtr( void )
 {
 	return info;
@@ -117,7 +134,15 @@ int CmdParam::code( void )
 // Command Line ---
 
 CmdLine::CmdLine( int argc, char** argv, CmdInfo* commands )
-		: _argc(argc), _argv(argv), _commands(commands) {}
+		: _argc(argc), _argv(argv), _commands(commands) {
+    for (int i = 1; i < argc; ++i) {
+        const auto* info = get_command(argv[i]);
+        if (!info || !(info->flags & CmdInfo::FLAG_ARGUMENT)) continue;
+        if (i + 1 == argc || get_command(argv[i + 1]))
+            Utils::Exception::Throw(std::string("Missing argument for ") + argv[i]);
+        ++i;
+    }
+}
 
 CmdInfo* CmdLine::get_command( const char* name )
 {

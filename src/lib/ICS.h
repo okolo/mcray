@@ -62,7 +62,7 @@ public:
 	void SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const;
 
 private:
-	double SampleSecondaryGammaFracE(double aS, double rMin, double aRand) const;
+	double SampleSecondaryLogRecoilFracE(double aS, double rMin, double aRand) const;
 	struct SecondaryEnergySamplingEquationPars
 	{
 		double s;

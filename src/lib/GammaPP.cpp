@@ -26,6 +26,7 @@
  */
 
 #include "GammaPP.h"
+#include "EMSecondarySampling.h"
 #include <math.h>
 #include "MathUtils.h"
 #include "Output.h"
@@ -52,33 +53,15 @@ RandomInteraction* GammaPP::Clone() const
 GammaPP::~GammaPP() {
 }
 
-double GammaPP::SampleSecondaryFracE(double aS, double aRand) const
+double GammaPP::SampleSecondaryFracE(double aS, double uniform) const
 {
-	double mass = Particle::Mass(Electron);
-	double s = aS/(mass*mass);
-	SecondaryEnergySamplingEquationPars pars = {s, aRand*DifSigmaIntegral(0.5, s) };
-    double x_lo = 0.5*(1. - sqrt(1. - 4./s));
-    double x_hi = 0.5;
-    const double relError = 1e-3;
-    const int max_iter = 100;
-    double r = 0;
-    try{
-    	//TODO: use MathUtils::SampleLogDistribution sampling method
-    	r = MathUtils::SolveEquation(&SecondaryEnergySamplingEquation, x_lo, x_hi, &pars, relError, max_iter, gsl_root_fsolver_bisection);
-    }catch(Exception* ex)
-    {
-#ifdef _DEBUG
-    	fDebugOutput = true;
-    	double dx = 0.01*(x_hi-x_lo);
-    	for(double x=x_lo; x<=x_hi; x+=dx)
-    	{
-    		SecondaryEnergySamplingEquation(x, &pars);
-    	}
-    	ASSERT(0);
-#endif
-    	throw ex;
-    }
-    return r;
+    const long double mass=Particle::Mass(Electron), s=aS/(mass*mass);
+    const long double rmin=detail::PairMinimum(s), norm=detail::PairIntegral(.5L,s);
+    if(!(norm>0))throw new Utils::Exception("Empty pair secondary distribution",false);
+    const long double logr=detail::InvertSecondaryCDF([&](long double value) {
+        return detail::PairIntegral(std::exp(value),s)/norm;
+    },std::log(rmin),std::log(.5L),uniform);
+    return std::exp(logr);
 }
 
 bool GammaPP::SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer) const
@@ -94,8 +77,8 @@ void GammaPP::SampleSecondaries(Particle& aParticle, std::vector<Particle>& aSec
 	Particle sec = aParticle;
 	Particle sec2 = aParticle;
 	double rand = aRandomizer.Rand();
-	sec.Type = rand>0.5 ? Electron : Positron;
-	sec2.Type = rand>0.5 ? Positron : Electron;
+	sec.SetType(rand>0.5 ? Electron : Positron);
+	sec2.SetType(rand>0.5 ? Positron : Electron);
 	double r = SampleSecondaryFracE(aS, aRandomizer.Rand());
 	sec.Energy = aParticle.Energy*r;
 	sec2.Energy = aParticle.Energy - sec.Energy;
@@ -373,7 +356,7 @@ void GammaPP::UnitTestSampling(double aE, double aZ)
 	Particle photon(Photon, aZ);
 	photon.Energy = aE;//MeV
 	photon.Time.setZ(aZ);
-	photon.Type = Photon;
+	photon.SetType(Photon);
 	Randomizer rnd;
 	double S=2.;
 	for(int i=0; i<10000; i++)

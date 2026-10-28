@@ -46,6 +46,7 @@ ParticleStack::~ParticleStack() {
 
 void ParticleStack::AddSecondaries(const std::vector<Particle> &aParticles)
 {
+    for (const auto& p : aParticles) p.ValidateIdentity();
 #pragma omp critical (ParticleStack)
 	{
 	for(std::vector<Particle>::const_iterator  it = aParticles.begin(); it != aParticles.end(); it++)
@@ -63,6 +64,7 @@ void ParticleStack::AddSecondaries(const std::vector<Particle> &aParticles)
 
 void ParticleStack::AddPrimary(const Particle &aParticle)
 {
+    aParticle.ValidateIdentity();
 #pragma omp critical (ParticleStack)
 	{
 		Particle* primary = new Particle(aParticle);
@@ -107,6 +109,7 @@ bool ParticleStack::Pop(Particle& aParticle)
 
 void Result::Add(std::vector<Particle> aParticles)
 {
+    for (const auto& p : aParticles) p.ValidateIdentity();
 	if(fFilter)///! filtering outside critical section
 		for(int i=aParticles.size()-1; i>=0; i--)
 			if (aParticles[i].Time < fT || (fFilter && !fFilter->Pass(aParticles[i])))
@@ -130,6 +133,7 @@ void Result::Add(std::vector<Particle> aParticles)
 
 void Result::Add(const Particle& aParticle)
 {
+    aParticle.ValidateIdentity();
 	if(aParticle.Time < fT || (fFilter && !fFilter->Pass(aParticle)))///! filtering outside critical section
 		return;
 #pragma omp critical (Result_Add)

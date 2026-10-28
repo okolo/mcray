@@ -40,6 +40,7 @@
 #include "ICS.h"
 #include "GammaPP.h"
 #include "CmdLine.h"
+#include "Configuration.h"
 
 using namespace std;
 using namespace mcray;
@@ -64,6 +65,20 @@ public:
 	virtual ~CRbeam();
 	void Test();
 	int run();
+    bool IsNuclearPrimary() const { return fNuclearPrimary; }
+    unsigned int PrimaryA() const { return fPrimaryA; }
+    unsigned int PrimaryZ() const { return fPrimaryZ; }
+    bool HasExplicitSeed() const { return fExplicitSeed; }
+    unsigned long ConfiguredSeed() const { return fSeed; }
+    const YAML::Node& EffectiveConfiguration() const { return fConfiguration.Effective(); }
+    const std::string& PDMissingDataPolicy() const { return fPDMissingData; }
+    const std::string& PDPhotonMode() const { return fPDPhotons; }
+    const std::string& DecayPhotonMode() const { return fDecayPhotons; }
+    const std::string& PDPhotonYieldPolicy() const { return fPDPhotonYields; }
+    const std::string& NuclearGZKMode() const { return fNuclearGZK; }
+    const std::string& GZKResidualPolicy() const { return fGzkResiduals; }
+    const std::string& NuclearPPPMode() const { return fNuclearPPP; }
+    const std::string& PhotodisintegrationMode() const { return fPhotodisintegration; }
 private:
 	double			fEmin_eV;
 	double			fEmax_eV;
@@ -76,6 +91,11 @@ private:
 	int				fNoParticles;
 	int				fBatchSize;
 	ParticleType 	fPrimary;
+    bool fNuclearPrimary;
+    unsigned int fPrimaryA, fPrimaryZ;
+    bool fExplicitSeed;
+    unsigned long fSeed;
+    std::string fPhotodisintegration, fTalysDataPath, fNuclearDecay, fNuclearPPP, fNuclearGZK, fGzkResiduals, fPDPhotons, fDecayPhotons, fPDPhotonYields, fPDMissingData;
 	bool 			fNoEM;
 	double			fMz;
 	int				fBackgroundModel;
@@ -103,6 +123,8 @@ private:
 	double			fEBLMaxE;
     bool            fTauPrint;
 	//double			fMaxDeflection;
+    std::string fResolvedCustomBackground;
+    Configuration fConfiguration;
 	cors::cmdline::CmdLine 		cmd;
 };
 

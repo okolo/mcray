@@ -33,6 +33,8 @@
 #include <string>
 #include "Utils.h"
 #include <fstream>
+#include <map>
+#include <set>
 
 namespace mcray {
 
@@ -49,7 +51,9 @@ public:
 	void AddParticle(const Particle& aParticle);
 	void Flush(bool aFinal);
 private:
-	Vector			fSpectra[ParticleTypeEOF];
+	std::map<std::string, Vector> fNuclearSpectra;
+    std::map<std::string, std::vector<int>> fNuclearNumbers;
+    Vector			fSpectra[ParticleTypeEOF];
 	std::vector<int> fNumberOfParticles[ParticleTypeEOF];
 	double			fEmin;
 	double			fLogStep;
@@ -71,7 +75,7 @@ public:
 private:
 	void LookForRepetitions(std::vector<Particle>* aParticles);
 	std::vector<Particle>*	fParticles;
-    std::vector<bool> 	    fHeaderWritten;
+    std::set<std::string> fHeaderWritten;
 	std::string				fDir;
 	bool					fCheckRepetitions;
     bool                    fFlushInProgress;

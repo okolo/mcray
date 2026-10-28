@@ -1,0 +1,260 @@
+#include "PhotoDisintegration.h"
+#include "GZK.h"
+#include "frozen_inoue.h"
+#include <gtest/gtest.h>
+#include <cmath>
+
+namespace {
+using namespace mcray;
+using namespace Interactions;
+
+TEST(BackgroundConvolution, MonochromaticKUsesTheUpperCrossSectionBound) {
+    class BoundedSigma : public Utils::Function {
+    public:
+        double f(double) const override { return 2.; }
+        double Xmin() const override { return units.MeV; }
+        double Xmax() const override { return 3*units.MeV; }
+    } sigma;
+    Utils::ConstFunction density(3.), energy(units.MeV);
+    MonochromaticBackgroundIntegral background(density,energy,1.1,1e-6);
+    Particle p(Proton,0.); p.Energy=10*p.Mass();
+    // Integral K*sigma dK = sigma*(Kmax^2-Kmin^2)/2.
+    const double expected=0.5*2.*(9.-1.)/2.*3./(100.*p.beta());
+    EXPECT_NEAR(background.GetRateK(sigma,p)/expected,1.,1e-12);
+    Randomizer random(20261008); double k=0.;
+    EXPECT_NEAR(background.GetRateAndSampleK(sigma,p,random,k)/expected,1.,1e-5);
+    EXPECT_GE(k,units.MeV); EXPECT_LE(k,3*units.MeV);
+}
+
+TEST(PsbConvolution, ProductionInoueExtendsToZeroInsideCompoundBackground) {
+    Backgrounds::Inoue12BaselineIROSpectrum direct;
+    ASSERT_DOUBLE_EQ(direct.MinZ(), 0.);
+    CompoundBackground compound;
+    compound.AddComponent(new Backgrounds::Inoue12BaselineIROSpectrum);
+    for (double energy : {0.01, 0.1, 1.}) {
+        const double e = energy * units.eV;
+        const double firstPlane = direct.n(e, 0.01);
+        ASSERT_GT(firstPlane, 0.);
+        for (double z : {0., 0.005, 0.01}) {
+            EXPECT_DOUBLE_EQ(direct.n(e, z), firstPlane);
+            EXPECT_DOUBLE_EQ(compound.n(e, z), firstPlane);
+        }
+    }
+}
+
+TEST(PsbConvolution, FrozenInoueRatesDoNotEvolveAlongThePath) {
+    if (!cosmology.IsInitialized()) cosmology.Init(0.1);
+    FrozenInoueBaseline frozen;
+    Backgrounds::Inoue12BaselineIROSpectrum evolving;
+    for (double energy : {0.01, 0.1, 1.}) {
+        const double e = energy * units.eV;
+        ASSERT_GT(frozen.n(e, 0.), 0.);
+        EXPECT_DOUBLE_EQ(frozen.n(e, 0.01), evolving.n(e, 0.));
+        // The table's first redshift plane can cover the entire short path;
+        // probe later evolution as well to detect accidental use of z.
+        EXPECT_NE(frozen.n(e, 1.), evolving.n(e, 1.));
+    }
+    CompoundBackground photons;
+    photons.AddComponent(new FrozenInoueBaseline);
+    const double t = 2.7255 * units.K;
+    photons.AddComponent(new PlankBackground(t, t * 1e-3, t * 1e3, 0., 0.02, true));
+    for (double z : {0., 0.005, 0.01})
+        EXPECT_DOUBLE_EQ(photons.n(1. * units.eV, z), frozen.n(1. * units.eV, 0.));
+    PhotoDisintegration interaction(new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.01), 0.02, 1e-4));
+    Particle p(56u, 0.);
+    p.Energy = 56 * 2.238721138568347e18 * units.eV;
+    const double rate = interaction.Rate(p);
+    ASSERT_GT(rate, 0.);
+    for (double z : {0.005, 0.01}) {
+        p.Time.setZ(z);
+        EXPECT_NEAR(interaction.Rate(p) / rate, 1., 1e-12);
+    }
+}
+
+TEST(PsbConvolution, FrozenCmbAndKSAreConsistent) {
+    if (!cosmology.IsInitialized()) cosmology.Init(0.1);
+    const double t = 2.7255 * units.K;
+    PlankBackground cmb(t, t * 1e-3, t * 1e3, 0., 0.02, true);
+    PBackgroundIntegral integral = new ContinuousBackgroundIntegral(
+        cmb, 0.02, std::pow(10., 0.01), 0.02, 1e-5);
+    PhotoDisintegration byK(integral, true), byS(integral, false);
+    for (double gamma : {1e9, 1e10}) {
+        Particle p(56u, 0.);
+        p.Energy = p.Mass() * gamma;
+        const double rate = byK.Rate(p);
+        ASSERT_GT(rate, 0.);
+        EXPECT_NEAR(byS.Rate(p) / rate, 1., 1e-4);
+        p.Time.setZ(0.01);
+        EXPECT_NEAR(byK.Rate(p) / rate, 1., 1e-12);
+        // Planck I(q)=-(T/pi^2) log(1-exp(-q/T)); beta=1 at these gamma.
+        // Integrate independently in K, channel by channel.
+        CPhotoDisintegrationMap map;
+        double expected = 0.;
+        for (auto* channel : *map.getOutcome(56)) {
+            const auto* sigma = channel->Sigma();
+            constexpr int steps = 20000;
+            const double dx = (sigma->Xmax() - sigma->Xmin()) / steps;
+            long double sum = 0.;
+            for (int i = 0; i <= steps; ++i) {
+                const double k = sigma->Xmin() + i * dx;
+                const double kernel = -std::log(-std::expm1(-k / (2 * gamma * t)));
+                sum += (i == 0 || i == steps ? 1 : i % 2 ? 4 : 2) * k * sigma->f(k) * kernel;
+            }
+            expected += static_cast<double>(sum * dx / 3.) * t / (2 * M_PI * M_PI * gamma * gamma);
+        }
+        EXPECT_NEAR(rate / expected, 1., 1e-3);
+    }
+}
+
+TEST(PsbConvolution, DaughterSamplingCompletesWithoutDiscardingHistories) {
+    if (!cosmology.IsInitialized()) cosmology.Init(0.1);
+    const double t = 2.7255 * units.K;
+    PlankBackground cmb(t, t * 1e-3, t * 1e3, 0., 0.02, true);
+    PhotoDisintegration interaction(new ContinuousBackgroundIntegral(
+        cmb, 0.02, std::pow(10., 0.01), 0.02, 1e-4));
+    Particle p(55u, 0.);
+    p.Energy = 55 * 2.238721138568347e18 * units.eV;
+    p.Time.setZ(0.0044801);
+    Randomizer random(1);
+    std::vector<Particle> products;
+    try {
+        ASSERT_TRUE(interaction.GetSecondaries(p, products, random));
+    } catch (Utils::Exception* error) {
+        const std::string message = error->Message();
+        delete error;
+        FAIL() << message;
+    }
+}
+
+TEST(PsbConvolution, InoueDaughterRatesConvergeAndAgreeInKAndS) {
+    if (!cosmology.IsInitialized()) cosmology.Init(0.1);
+    const double t = 2.7255 * units.K;
+    CompoundBackground photons;
+    photons.AddComponent(new PlankBackground(t, t * 1e-3, t * 1e3, 0., 0.02, true));
+    photons.AddComponent(new FrozenInoueBaseline);
+    PBackgroundIntegral integral = new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.01), 0.02, 1e-4);
+    PhotoDisintegration byK(integral, true), byS(integral, false);
+    PhotoDisintegration refined(new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.005), 0.02, 1e-4));
+    PhotoDisintegration stricter(new ContinuousBackgroundIntegral(
+        photons, 0.02, std::pow(10., 0.01), 0.02, 1e-5));
+    // Include the A30 daughter that previously raised GSL_EROUND and lost
+    // complete Fe56 histories, as well as every other PSB daughter mass.
+    for (double energy : {1e18, std::pow(10., 18.5)}) {
+        for (int a = 2; a <= 56; ++a) {
+            SCOPED_TRACE(::testing::Message() << "A=" << a << " E/A=" << energy);
+            Particle p(static_cast<unsigned int>(a), 0.01);
+            p.Energy = a * energy * units.eV;
+            try {
+                const double rate = byK.Rate(p);
+                ASSERT_TRUE(std::isfinite(rate));
+                ASSERT_GT(rate, 0.);
+                EXPECT_NEAR(byS.Rate(p) / rate, 1., 5e-4);
+                EXPECT_NEAR(refined.Rate(p) / rate, 1., 5e-4);
+                if (a == 30 || a == 56)
+                    EXPECT_NEAR(stricter.Rate(p) / rate, 1., 5e-4);
+            } catch (Utils::Exception* error) {
+                const std::string message = error->Message();
+                delete error;
+                FAIL() << message;
+            }
+        }
+    }
+}
+
+TEST(NucleonConvolution, GzkRateConvergesOnFrozenCmb) {
+    if (!cosmology.IsInitialized()) cosmology.Init(0.1);
+    const double t = 2.7255 * units.K;
+    PlankBackground cmb(t, t * 1e-3, t * 1e3, 0., 0.02, true);
+    Interactions::GZK precise(new ContinuousBackgroundIntegral(
+        cmb, 0.02, std::pow(10., 0.01), 0.02, 1e-4));
+    Interactions::GZK coarse(new ContinuousBackgroundIntegral(
+        cmb, 0.02, std::pow(10., 0.01), 0.02, 1e-3));
+    Particle p(Proton, 0.);
+    p.Energy = 1e20 * units.eV;
+    try {
+        const double rate = precise.Rate(p);
+        ASSERT_GT(rate, 0.);
+        EXPECT_NEAR(coarse.Rate(p) / rate, 1., 2e-3);
+    } catch (Utils::Exception* error) {
+        const std::string message = error->Message();
+        delete error;
+        FAIL() << message;
+    }
+}
+
+} // namespace
+
+namespace {
+TEST(BackgroundConvolution, TabulatedNarrowChannelIsNotMissedByQuadrature) {
+    class FlatIntegralBackground : public IBackground {
+    public:
+        double n(double e,double z) const override {return (1.+100*z)*std::pow(e/units.eV,3);}
+        double MinE() const override {return units.eV;}
+        double MaxE() const override {return 2*units.eV;}
+        double MinZ() const override {return 0.;}
+        double MaxZ() const override {return .02;}
+        std::string Name() const override {return "SyntheticFlatIntegral";}
+    } photons;
+    // The entire cross section samples below MinE, so the photon integral is
+    // exactly constant. A very narrow triangular channel can be invisible to
+    // an unsplit quadrature over the full zero-padded cross-section support.
+    std::vector<double> x{1.,49.999,50.,50.001,100.},y{0.,0.,1.,0.,0.};
+    for(double& k:x) k*=units.MeV;
+    class CountedSigma : public Utils::LinearFunc {
+    public:
+        CountedSigma(const std::vector<double>& x,const std::vector<double>& y):Utils::LinearFunc(x,y) {}
+        double f(double k) const override {++calls;return Utils::LinearFunc::f(k);}
+        mutable unsigned calls=0;
+    } sigma(x,y);
+    ContinuousBackgroundIntegral integral(photons,.02,std::pow(10.,.01),.02,1e-6);
+    Particle p(Proton,0.);p.Energy=1e12*p.Mass();
+    const double area=.001*units.MeV;
+    const double expected=50*units.MeV*area/(units.eV*units.eV)/(2e24*p.beta());
+    try {
+        EXPECT_NEAR(integral.GetRateK(sigma,p)/expected,1.,1e-9);
+        const auto nodeCalls=sigma.calls;sigma.calls=0;
+        p.Time.setZ(.01);
+        EXPECT_NEAR(integral.GetRateK(sigma,p)/expected,2.,1e-9);
+        EXPECT_EQ(sigma.calls,nodeCalls);sigma.calls=0;
+        p.Time.setZ(.005);
+        EXPECT_NEAR(integral.GetRateK(sigma,p)/expected,1.5,1e-9);
+        EXPECT_EQ(sigma.calls,2*nodeCalls);
+        auto clone=std::unique_ptr<BackgroundIntegral>(integral.Clone());
+        EXPECT_NEAR(clone->GetRateK(sigma,p)/expected,1.5,1e-9);
+    } catch(Utils::Exception* error) {
+        const std::string message=error->Message();delete error;FAIL()<<message;
+    }
+}
+
+TEST(BackgroundConvolution, TableKnotsRetainPhysicalCoordinatesOnClone) {
+    const std::vector<double> x{1.,3.,7.},y{0.,2.,0.};
+    Utils::LinearFunc sigma(x,y,new Utils::LogScale,new Utils::LogScale,0.,0.,true);
+    std::unique_ptr<Utils::Function> clone(sigma.Clone());
+    const auto* copied=dynamic_cast<const Utils::TableFunction*>(clone.get());
+    ASSERT_NE(copied,nullptr);
+    for(const auto* table:{static_cast<const Utils::TableFunction*>(&sigma),copied}) {
+        const auto knots=table->Knots();ASSERT_EQ(knots.size(),x.size());
+        for(size_t i=0;i<x.size();++i) EXPECT_NEAR(knots[i],x[i],1e-14);
+    }
+}
+}
+
+namespace {
+TEST(BackgroundConvolution, ZeroCertificateNeverSkipsAPositiveOrNarrowSegment) {
+    std::vector<double> x{1.,2.,3.,3.00001,3.00002,4.,5.,6.},y{0.,0.,0.,1.,0.,0.,0.,0.};
+    Utils::LinearFunc sigma(x,y,new Utils::LogScale,new Utils::LogScale,0.,0.,true);
+    EXPECT_TRUE(sigma.IsZeroOnInterval(1.1,2.9));
+    EXPECT_TRUE(sigma.IsZeroOnInterval(4.1,5.9));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(2.9,3.000015));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(3.000005,3.000015));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(.5,2.));
+    EXPECT_FALSE(sigma.IsZeroOnInterval(5.,7.));
+    std::unique_ptr<Utils::Function> clone(sigma.Clone());
+    EXPECT_TRUE(dynamic_cast<Utils::LinearFunc*>(clone.get())->IsZeroOnInterval(1.1,2.9));
+    Utils::LinearFunc legacy(x,y);
+    EXPECT_FALSE(legacy.IsZeroOnInterval(1.1,2.9));
+}
+}

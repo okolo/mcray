@@ -54,7 +54,7 @@ double TypeChange::Rate(const Particle& aParticle) const{
 }
 bool TypeChange::GetSecondaries(Particle& aParticle, std::vector<Particle>& aSecondaries, Randomizer& aRandomizer) const{
 	Particle sec = aParticle;
-	sec.Type = fSecondary;
+	sec.SetType(fSecondary);
 	sec.fCascadeProductionTime = aParticle.Time;
     aSecondaries.push_back(sec);
     return true;

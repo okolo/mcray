@@ -268,7 +268,14 @@ bool PPP::SampleS(const Particle& aParticle, double& aS, Randomizer& aRandomizer
 {
 	ASSERT(aParticle.Type == Proton);
 	aS = 0.;
-	return (fBackground->GetRateAndSampleS(fSigma, aParticle, aRandomizer, aS)!=0);
+	if (fBackground->GetRateAndSampleS(fSigma, aParticle, aRandomizer, aS)==0)
+		return false;
+	const double m = fMp/fMe;
+	const double k = 0.5*(aS/fMp-fMp)/fMe;
+	// The approximate cross section becomes positive before the recoil bounds
+	// in DifSigma_r::SetS have a real, nonempty domain. Use the existing null-
+	// interaction contract near threshold; retain the cross section and CEL.
+	return k*(m-1.)-2.*m > 0.;
 }
 
 void PPP::SampleSecondariesMean(Particle& aParticle, std::vector<Particle>& aSecondaries, double aS, Randomizer& aRandomizer) const
@@ -278,7 +285,7 @@ void PPP::SampleSecondariesMean(Particle& aParticle, std::vector<Particle>& aSec
     MathUtils mutils;
 
 	Particle sec = aParticle;
-	sec.Type = aRandomizer.Rand()>0.5 ? Electron : Positron;
+	sec.SetType(aRandomizer.Rand()>0.5 ? Electron : Positron);
 	DifSigma_r difSigma;
 	double r = difSigma.SampleR(aS, s_epsRel, mutils, aRandomizer);
 	sec.Energy *= r;
@@ -337,10 +344,10 @@ void PPP::SampleSecondariesExact(Particle& aParticle, std::vector<Particle>& aSe
 	CosThetaSamplingEq cosProb(Eprime, k);
 	((MathUtils&)math).SampleDistribution(cosProb, aRandomizer, cosTheta, sigmaTot, cosProb.Xmin(), cosProb.Xmax(), s_epsRel);
 	Particle electron = aParticle;
-	electron.Type = Electron;
+	electron.SetType(Electron);
 	electron.Energy *= ((Eprime-cosTheta*sqrt(Eprime-1.))*fMe/m);
 	Particle positron = aParticle;
-	positron.Type = Positron;
+	positron.SetType(Positron);
 	Eprime = k-Eprime;//we neglect proton kinetic energy
 	positron.Energy *= ((Eprime+cosTheta*sqrt(Eprime-1.))*fMe/m);//we assume that positron is directed against electron??? TODO: this is probably wrong
 	aParticle.Energy -= (electron.Energy + positron.Energy);
@@ -431,7 +438,7 @@ void PPP::UnitTestSampling(double aE, double aZ)
 	Particle proton(Proton, aZ);
 	proton.Energy = aE;//MeV
 	proton.Time.setZ(aZ);
-	proton.Type = Proton;
+	proton.SetType(Proton);
 	Randomizer rnd;
 	/*
 	double S=2.;

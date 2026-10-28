@@ -49,64 +49,8 @@ namespace mcray
     	Neutron,
     	Proton,
         EndLightParticle,
-        StartNuclei = EndLightParticle,
-        A02 = StartNuclei,
-        A03,
-        A04,
-        A05,
-        A06,
-        A07,
-        A08,
-        A09,
-        A10,
-        A11,
-        A12,
-        A13,
-        A14,
-        A15,
-        A16,
-        A17,
-        A18,
-        A19,
-        A20,
-        A21,
-        A22,
-        A23,
-        A24,
-        A25,
-        A26,
-        A27,
-        A28,
-        A29,
-        A30,
-        A31,
-        A32,
-        A33,
-        A34,
-        A35,
-        A36,
-        A37,
-        A38,
-        A39,
-        A40,
-        A41,
-        A42,
-        A43,
-        A44,
-        A45,
-        A46,
-        A47,
-        A48,
-        A49,
-        A50,
-        A51,
-        A52,
-        A53,
-        A54,
-        A55,
-        A56,
-        EndNuclei,
-        ParticleTypeEOF = EndNuclei //must be the last
+        Nucleus = EndLightParticle,
+        ParticleTypeEOF = Nucleus + 1 //must be the last
     };
 
     typedef cosmo_time coord_type;
@@ -115,26 +59,36 @@ namespace mcray
     class Particle
     {
     private:
-    	inline void Reset() {
-            memset(this,0,sizeof(Particle));Weight=1.; LastB = -1.; Pdir[2]=1.;
-        }
+        unsigned int fA = 0, fZ = 0;
+        double fNuclearMass = 0.;
+    public:
+        enum class NuclearMassModel { Unset, PSB, TALYS };
+    private:
+        NuclearMassModel fMassModel = NuclearMassModel::Unset;
         void GenerateId();
     public:
-    	inline double Mass() const {
-            return Mass(Type);
-        }
-    	inline int ElectricCharge() const {
-            return ElectricCharge(Type);
-        }
-        //Construct primary particle
-    	inline Particle(ParticleType aType, cosmo_time aZsource){
-            Reset(); Type=aType; fProductionTime.setZ(aZsource) ; Time.setZ(aZsource); SourceParticle = this;
+        double Mass() const;
+        int ElectricCharge() const;
+        unsigned int MassNumber() const;
+        unsigned int AtomicNumber() const;
+        void ValidateIdentity() const;
+        void SetType(ParticleType type);
+        void SetPsbNucleus(unsigned int a);
+        void SetNucleus(unsigned int a, unsigned int z, double mass, NuclearMassModel model);
+        NuclearMassModel MassModel() const { return fMassModel; }
+        std::string Name() const;
+        // Copies retain identity, IDs, ancestry and non-owning custom pointers.
+        Particle(const Particle&) = default;
+        Particle& operator=(const Particle&) = default;
+        inline Particle(ParticleType aType, cosmo_time aZsource) : Type(aType) {
+            Pdir[2] = 1.;
+            fProductionTime.setZ(aZsource);
+            Time.setZ(aZsource);
+            SourceParticle = this;
             GenerateId();
         }
+        Particle(unsigned int a, cosmo_time z) : Particle(Nucleus, z) { SetPsbNucleus(a); }
 
-    	inline Particle& operator=(const Particle& aParticle) {
-            memcpy(this, &aParticle, sizeof(Particle)); return *this;
-        }
     	inline coord_type beta() const {
             coord_type m=Mass();
             coord_type gamma_1 = m/Energy;
@@ -154,28 +108,28 @@ namespace mcray
     	static double ElectricCharge(ParticleType aType);
         void PropagateFreely(cosmo_time dt);
         ParticleType Type;
-        double Weight;
+        double Weight = 1.;
         CosmoTime Time;
-        double Energy;
-        long Ninteractions;//number of interactions in the interaction chain
-        coord_type X[3];//comoving coordinates, source location: (0,0,0)
-        coord_type Pdir[3];//momentum direction, initial value: (0,0,1)
-        unsigned long long id;
-        unsigned long long fPrevId;
+        double Energy = 0.;
+        long Ninteractions = 0;//number of interactions in the interaction chain
+        coord_type X[3]{};//comoving coordinates, source location: (0,0,0)
+        coord_type Pdir[3]{};//momentum direction, initial value: (0,0,1)
+        unsigned long long id = 0;
+        unsigned long long fPrevId = 0;
 
     // TODO: interaction specific attributes should be stored separately in custom structures which can
     // be accessed via pointers stored in interactionData field
-        void* interactionData[ParticleCustomDataSize];//used to store interaction specific attributes as pointers
+        void* interactionData[ParticleCustomDataSize]{};//used to store interaction specific attributes as pointers
         static int ReserveInteractionDataSlot();//returns index to access and store interaction data or -1 if no space left
 
-        const Particle* SourceParticle;
-        double Deflection2;//uncorrelated deflection angle squared
-        double CorrelatedDeflection;//current value of correlated deflection
-        mutable double CorrelatedBpath;// travel distance within B-field coherence length
+        const Particle* SourceParticle = nullptr;
+        double Deflection2 = 0.;//uncorrelated deflection angle squared
+        double CorrelatedDeflection = 0.;//current value of correlated deflection
+        mutable double CorrelatedBpath = 0.;// travel distance within B-field coherence length
         CosmoTime fProductionTime; // time when the particle was produced either in source or on the way as secondary from interaction;
         CosmoTime fCascadeProductionTime; // time when primary EM cascade particle was produced by hadron
-        double dt; // particle time delay;
-        mutable double LastB; //last transverce magnetic field within B-field coherence length
+        double dt = 0.; // particle time delay;
+        mutable double LastB = -1.; //last transverce magnetic field within B-field coherence length
 
         inline double JetOpenningAngle() const
         {

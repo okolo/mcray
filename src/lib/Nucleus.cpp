@@ -143,28 +143,20 @@ namespace Interactions {
 		return result;
 	}
 
-	int CNucleus::getZ(ParticleType aNucleus) {
-		ASSERT(aNucleus >= StartNuclei - 2 && aNucleus < EndNuclei);
-		int no = 2 + (int) aNucleus - StartNuclei;
-		return stableIsotopes[no].Z;
-	}
-
-	int CNucleus::getA(ParticleType aNucleus) {
-		ASSERT(aNucleus >= StartNuclei - 2 && aNucleus < EndNuclei);
-		int no = 2 + (int) aNucleus - StartNuclei;
-		return stableIsotopes[no].A;
-	}
+    int CNucleus::getZ(unsigned int a) {
+        if (a > MaxA) Exception::Throw("No PSB-chain representative for A=" + ToString(a));
+        return stableIsotopes[a].Z;
+    }
 
 	CPhotoDisintegrationMap::CPhotoDisintegrationMap() {
 		int i;
 		fCanals.setIndexShift(-2);//
-		const int NucleiCount = EndNuclei - StartNuclei;
+		const int NucleiCount = CNucleus::MaxA - 1;
 
 		for (i = 0; i < NucleiCount + 2; i++) {
 			fSecondaryCanals.add(new CPDMSecLine());
 		}
-		int curParticle = StartNuclei;
-		for (i = 2; i < NucleiCount + 2; i++, curParticle++) {
+		for (i = 2; i < NucleiCount + 2; i++) {
 
 			const TIsotope &isotope = stableIsotopes[i];
 			CPDMLine *line = new CPDMLine;
@@ -229,7 +221,7 @@ namespace Interactions {
 //reset all entries
 //used to recalculate R when background changes
 	void CPhotoDisintegrationMap::recalculate(const CBackgroundIntegral *aBackground) {
-		const int NucleiCount = EndNuclei - StartNuclei;
+		const int NucleiCount = CNucleus::MaxA - 1;
 		for (int i = 2; i < NucleiCount + 2; i++) {
 			CPDMLine &line = *(fCanals[i]);
 			int jMax = line.size();
@@ -241,7 +233,7 @@ namespace Interactions {
 
 	void CPhotoDisintegrationMap::approximate(CPhotoDisintegrationMap &aMap1, CPhotoDisintegrationMap &aMap2,
 											  double aPart) {
-		const int NucleiCount = EndNuclei - StartNuclei;
+		const int NucleiCount = CNucleus::MaxA - 1;
 		for (int i = 2; i < NucleiCount + 2; i++) {
 			CPDMLine &line = *(fCanals[i]);
 			CPDMLine &line1 = *(aMap1.fCanals[i]);
@@ -330,7 +322,7 @@ namespace Interactions {
 			case EDouble:
 				return (aDeltaA == 2) ? 1. : 0.;
 			case EMultiple:
-				return (aDeltaA > 0 || aDeltaA <= iIsotope.branching->noOfModes) ? iIsotope.branching->nucleiRates[
+				return (aDeltaA > 0 && aDeltaA <= iIsotope.branching->noOfModes) ? iIsotope.branching->nucleiRates[
 						aDeltaA - 1] : 0.;
 		}
 		return 0.;//never goes here

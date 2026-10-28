@@ -30,13 +30,18 @@
 
 #include "Interaction.h"
 #include "Background.h"
+#include "NuclearDecay.h"
 
 namespace Interactions {
     using namespace mcray;
 
     class GZK : public RandomInteractionS {
     public:
-        GZK(BackgroundIntegral* aBackground, int aRandSeed=0);
+        GZK(BackgroundIntegral* aBackground, int aRandSeed=0,
+            std::shared_ptr<const NuclearDecayData> nuclearData = nullptr);
+        static double NuclearModifier(unsigned int a, unsigned int count);
+        std::array<double,2> NuclearTargetRates(const Particle& p) const;
+        bool GetSecondaries(Particle& p, std::vector<Particle>& products, Randomizer& random) const override;
 
         virtual double Rate(const Particle &aParticle) const;
 
@@ -55,6 +60,7 @@ namespace Interactions {
         SafePtr<Function>               fSigmaP;
         double                          fMpSophia;
         double                          fMnSophia;
+        std::shared_ptr<const NuclearDecayData> fNuclearData;
     };
 }
 
