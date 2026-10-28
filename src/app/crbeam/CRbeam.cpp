@@ -36,6 +36,7 @@
 #include <Inoue12IROSpectrum.h>
 #include "PPP.h"
 #include "ProtonPP.h"
+#include "PD.h"
 #include "TableBackgrounds.h"
 #include "ICS.h"
 #include "CRbeam.h"
@@ -289,7 +290,7 @@ CRbeam::CRbeam(int argc, char** argv):
 	if(fOutputDir[0]=='\0')
 		fOutputDir = 0;
 
-	if(primary<Electron || primary>Proton)
+	if((primary<Electron || primary>Proton) & (primary<H2 || primary>(EndRealNuclei-1)))
 		Exception::Throw("invalid primary particle type");
 	fPrimary = (ParticleType)primary;
 }
@@ -483,17 +484,20 @@ int CRbeam::run()
 		ParticleType discardedParticles[] = {Electron, Positron, Photon, ParticleTypeEOF};
 		pe.SetPropagationFilter(new ParticleTypeFilter(discardedParticles));
 	}
-	else
-	{
-		pe.AddInteraction(new Interactions::ICS(backgrI, Emin));
-		pe.AddInteraction(new Interactions::IcsCEL(backgrI, Emin));
-		pe.AddInteraction(new Interactions::GammaPP(backgrI));
-		pe.AddInteraction(new PPP(backgrI, fPPPrescaleCoef));//secondaries only
-	}
-	if (fPrimary >= Neutron) {
-        pe.AddInteraction(new GZK(backgrI));
-        pe.AddInteraction(new NeutronDecay());
-        pe.AddInteraction(new ProtonPPcel(backgrI));
+	//else
+	//{
+	//	pe.AddInteraction(new Interactions::ICS(backgrI, Emin));
+	//	pe.AddInteraction(new Interactions::IcsCEL(backgrI, Emin));
+	//	pe.AddInteraction(new Interactions::GammaPP(backgrI));
+	//	pe.AddInteraction(new PPP(backgrI, fPPPrescaleCoef));//secondaries only
+	//}
+	//if (fPrimary >= Neutron) {
+    //    pe.AddInteraction(new GZK(backgrI));
+    //    pe.AddInteraction(new NeutronDecay());
+    //    pe.AddInteraction(new ProtonPPcel(backgrI));
+    //}
+	if (fPrimary >= Li6) {
+        pe.AddInteraction(new PD(backgrI));
     }
 
 	double Beta = 0.1;

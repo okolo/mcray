@@ -346,6 +346,7 @@ namespace mcray
     	static double Mass(ParticleType aType);
     	static double ElectricCharge(ParticleType aType);
         static double AtomicMass(ParticleType aType);
+        static ParticleType FindNucleus(int aZ, int aN);
         void PropagateFreely(cosmo_time dt);
         ParticleType Type;
         double Weight;

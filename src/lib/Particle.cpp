@@ -585,4 +585,14 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
         return 0.;
     }
 
+    ParticleType Particle::FindNucleus(int aZ, int aN){
+        if(aZ == 1 && aN == 0) return Proton;
+        if(aZ == 0 && aN == 1) return Neutron;
+        for(int i = StartRealNuclei; i < EndRealNuclei; ++i)
+            if(NucleonStructure[i-StartRealNuclei][0] == aZ &&
+               NucleonStructure[i-StartRealNuclei][1] == aN)
+                return ParticleType(i);
+        return ParticleTypeEOF;
+    }
+
 }

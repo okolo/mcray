@@ -124,7 +124,7 @@ bool GZK::SampleS(const mcray::Particle &aParticle, double &aS,
     else if (aParticle.Type >= H2 && aParticle.Type < ParticleTypeEOF)
     {
         int aPrimZ = Particle::ElectricCharge(aParticle.Type);
-        double Proportion = aPrimZ/Particle::AtomicMass(aParticle.Type)
+        double Proportion = aPrimZ/Particle::AtomicMass(aParticle.Type);
 
         double aRand = aRandomizer.Rand();
         aType = aRand<Proportion?Proton:Neutron;
@@ -275,7 +275,7 @@ void GZK::SampleSecondaries(mcray::Particle &aParticle,
                 }
             }
         }
-        ASSERT(mainSecType.Type<StartRealNuclei || mainSecType.Type>EndRealNuclei);
+        ASSERT(mainSecType.Type>=StartRealNuclei && mainSecType.Type<EndRealNuclei);
 
         if (!hasMainSec)
         {

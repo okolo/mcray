@@ -28,7 +28,7 @@ namespace Interactions {
         Function* InitSigma(int aPrimZ, int aPrimN, double aPrimM);
         int Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &aRandomizer) const;
         
-        std::vector<SafePtr<Function> > NuclSigma;
+        //std::vector<SafePtr<Function> > NuclSigma;
 
         ParticleType                    fParticleType;
         SmartPtr<BackgroundIntegral>	fBackground;

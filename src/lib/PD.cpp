@@ -14,6 +14,9 @@ using namespace mcray;
 using namespace Utils; 
 namespace Interactions {
 
+std::vector<SafePtr<Function> > NuclSigma;
+bool first_init = 1;
+
 PD::PD(mcray::BackgroundIntegral *aBackground):
         fBackground(aBackground)
 {
@@ -24,13 +27,17 @@ PD::PD(mcray::BackgroundIntegral *aBackground):
 
     NuclSigma.resize(EndRealNuclei-StartRealNuclei);
 
-    for (int i=StartRealNuclei; ParticleType(i)<EndRealNuclei; i++)
+    if (first_init)
     {
-        int Z = Particle::ElectricCharge(ParticleType(i));
-        int N = Particle::AtomicMass(ParticleType(i))-Z;
-        double M = Particle::Mass(ParticleType(i));
+        for (int i=StartRealNuclei; ParticleType(i)<EndRealNuclei; i++)
+        {
+            int Z = Particle::ElectricCharge(ParticleType(i));
+            int N = Particle::AtomicMass(ParticleType(i))-Z;
+            double M = Particle::Mass(ParticleType(i));
 
-        NuclSigma[i-StartRealNuclei] = InitSigma(Z, N, M);
+            NuclSigma[i-StartRealNuclei] = InitSigma(Z, N, M);
+        }
+        first_init = 0;
     }
 }
 
@@ -140,7 +147,8 @@ int PD::Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &
         const Function* bsigma = new LinearFunc(s, sigma, new LogScale(), new LogScale(), 0., 0.);
         branchSigma[counter] = bsigma->f(aS);
         TotalSigma += branchSigma[counter];
-
+        delete bsigma;
+        bsigma = nullptr;
         counter++;
 	}
 
@@ -171,9 +179,9 @@ double PD::Rate(const mcray::Particle &aParticle) const {
         return 0.;                                                                  //UNTILL proper crossections are added
 
 
-    const Function* sigma = NuclSigma[aParticle.Type-StartRealNuclei];
+    //const Function* sigma = NuclSigma[aParticle.Type-StartRealNuclei];
     //std::cout<<fBackground->GetRateS(*sigma, aParticle)<<std::endl;
-    return fBackground->GetRateS(*sigma, aParticle);
+    return fBackground->GetRateS(*NuclSigma[aParticle.Type-StartRealNuclei], aParticle);
 }
 
 RandomInteraction *PD::Clone() const {
@@ -184,16 +192,16 @@ bool PD::SampleS(const mcray::Particle &aParticle, double &aS,
                                 mcray::Randomizer &aRandomizer) const {
     if(aParticle.Type<StartRealNuclei || aParticle.Type>EndRealNuclei)
         return false;
-    const Function* sigma = NuclSigma[aParticle.Type-StartRealNuclei];;
-    double Rate = (fBackground->GetRateAndSampleS(*sigma, aParticle, aRandomizer, aS)!=0);
+    //const Function* sigma = NuclSigma[aParticle.Type-StartRealNuclei];
+    double Rate = (fBackground->GetRateAndSampleS(*NuclSigma[aParticle.Type-StartRealNuclei], aParticle, aRandomizer, aS)!=0);
     return Rate;
 }
 
 void PD::SampleSecondaries(mcray::Particle &aParticle,
                                           std::vector<mcray::Particle> &aSecondaries, double aS,
                                           mcray::Randomizer &aRandomizer) const {
-    ASSERT(aParticle.Type<StartRealNuclei || aParticle.Type>EndRealNuclei);
-    ASSERT(aParticle.Type<Li6 || aParticle.Type>EndRealNuclei);                         //UNTILL proper crossections are added
+    ASSERT(aParticle.Type>=StartRealNuclei && aParticle.Type<EndRealNuclei);
+    //ASSERT(aParticle.Type>=Li6 && aParticle.Type<EndRealNuclei);                         //UNTILL proper crossections are added
 
     int aPrimZ = Particle::ElectricCharge(aParticle.Type);
     int aPrimN = Particle::AtomicMass(aParticle.Type)-aPrimZ;
@@ -247,7 +255,7 @@ void PD::SampleSecondaries(mcray::Particle &aParticle,
             }
         }
     }
-    ASSERT(mainSecType.Type<StartRealNuclei || mainSecType.Type>EndRealNuclei);
+    ASSERT(mainSecType.Type>=StartRealNuclei && mainSecType.Type<EndRealNuclei);
 
     if (hasMainSec)
     {
@@ -261,9 +269,9 @@ void PD::SampleSecondaries(mcray::Particle &aParticle,
     {
         if(mainSecZ>0 || mainSecN>0)
         {
-            std::cout<<std::endl<<"PD:\tinvalid channel "<<Branch<<" for "<<aParticle.ToString()<<std::endl;
-            std::cout<<"\tMay be secondary particle is an unstable short-living nuclei?"<<std::endl;
-            std::cout<<"\tPhotoDesintegration cancelled"<<std::endl<<std::endl;
+            //std::cout<<std::endl<<"PD:\tinvalid channel "<<Branch<<" for "<<aParticle.ToString()<<std::endl;
+            //std::cout<<"\tMay be secondary particle is an unstable short-living nuclei?"<<std::endl;
+            //std::cout<<"\tPhotoDesintegration cancelled"<<std::endl<<std::endl;
             Particle survivedPrim = aParticle;
             survivedPrim.Ninteractions -= 1;
             survivedPrim.Weight *= 0;                               //allows to exclude all future secondaries, but not previous
