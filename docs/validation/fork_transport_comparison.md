@@ -3,7 +3,9 @@
 On 2026-10-31, the approved deterministic transport-first stage compared the
 actual historical deflection functions against modern code. This is a
 numerical diagnostic, not Monte Carlo or physical-equivalence acceptance.
-No production physics or integration algorithm was changed.
+The initial baseline below changed no production physics or integration
+algorithm. The subsequently approved scale-rounding correction and its
+unchanged-matrix results are recorded at the end of this document.
 
 ## Protocol and provenance
 
@@ -127,10 +129,62 @@ rounding and the documented outside-zero-field shortcut. Modern true-minimum
 scale selection also retains the previously documented correction for tied
 axis scales; this unequal-spacing grid does not exercise that defect.
 
-There is no blanket 100% trajectory-reproducibility claim. A future compatibility
-change could reproduce the old per-axis double internal-coordinate scale
-arithmetic while retaining the corrected true minimum and validation, but it
-should be an explicit, separately reviewed production change. These results
-also motivate retaining independent outer-step refinement in later transport
+There is no blanket 100% trajectory-reproducibility claim. This baseline
+motivated the explicitly approved production scale-arithmetic correction
+recorded below, retaining the corrected true minimum and validation.
+The results also motivate retaining independent outer-step refinement in later transport
 or cascade comparisons. Source/observer distributions, interacting cascades,
 statistical margins and whole-engine acceptance remain subsequent stages.
+
+## Approved scale-rounding correction
+
+After inspecting the baseline, the user approved matching the fork's scale
+arithmetic. Production commit `5ee4527` computes each scale from the existing
+double internal-coordinate box: convert both bounds, subtract, then divide
+by node count. It retains a true minimum across all three axes, including
+ties, and the finite-positive scale, regular-grid, coordinate and boundary
+validation. It does not restore the historical zero-scale shortcut, alter
+the integrator, or locate exact face crossings.
+
+The new self-contained C++ regression
+`GridFields.HistoricalScaleKeepsLegacyStepPartition` checks exact scale
+identity and counts 75 field queries over a zero-field propagation interval.
+The unchanged test was compiled against the previous implementation too:
+it failed with 76 queries. It passes after the correction. The existing
+true-minimum tie regression is retained unchanged.
+
+All 756 cases were repeated with identical input hashes, reference hashes,
+adapter hashes and numerical controls. The executions recorded clean source
+revision `5ee4527`. [Post-fix evidence](fork_transport_scale_rounding.json)
+preserves the original baseline hash, complete Linux convergence matrix,
+raw-trajectory/executable hashes and the original worst case in each environment.
+The generated post-fix files remain under ignored
+`build/checks/scale-rounding-transport-*`; the baseline artifacts are retained.
+
+| Environment | Completed cases | Maximum old/new position difference, Mpc | Maximum direction-vector difference |
+| --- | ---: | ---: | ---: |
+| macOS arm64 Release | 756 | 3.77490e-15 | 4.02456e-16 |
+| Emulated Linux amd64 Release | 756 | 1.47720e-17 | 1.17769e-16 |
+| Emulated Linux amd64 ASan+UBSan, leak detection | 756 | 1.47720e-17 | 1.17769e-16 |
+
+All reported global scales now agree exactly with the fork in this matrix.
+The original worst-case trajectory now takes 75 internal steps in both
+implementations (76 field queries each including the initial Rate call).
+The 0.183 kpc difference is removed; remaining endpoint differences are at
+roundoff level for these controls. Sanitizer execution completed without
+diagnostics. The input family, counts and settings were not tuned after
+the baseline. No statistical or whole-cascade equivalence is inferred.
+
+The complete rebuilt short CTest suites also passed after the production
+change, including the new exact-partition regression and unchanged tie test:
+
+| Environment | CTest passed | Elapsed |
+| --- | ---: | ---: |
+| macOS arm64 Release | 242/242 | 17.42 s |
+| Emulated Linux amd64 Release | 242/242 | 123.83 s |
+| Emulated Linux amd64 ASan+UBSan, leak detection | 242/242 | 173.14 s |
+
+The six self-contained adapter tests passed again. The post-fix JSON evidence
+also records hashes of these logs and the deliberately failing old-code
+regression control. All build, temporary and diagnostic artifacts stayed
+inside the project; external reference files were read-only.
