@@ -201,7 +201,7 @@ class EvidenceTests(unittest.TestCase):
         self.assertLess(text.index("Verify review publication guards"), text.index("Checkout frozen review head"))
         self.assertIn("never approve by default or because checks passed", text)
         self.assertIn("No full duplicate sanitizer build", text)
-        self.assertLess(text.index("Verify review toolchain outside checkout"), text.index("Review with DeepSeek and GLM"))
+        self.assertLess(text.index("Verify review toolchain outside checkout"), text.index("AI review with DeepSeek only"))
 
 
 if __name__ == "__main__":

@@ -1,8 +1,7 @@
 # Independent OpenCode review
 
 The [review workflow](../../.github/workflows/opencode-review.yml) uses
-`openrouter/deepseek/deepseek-v4.1-flash` as the primary reviewer and
-`openrouter/z-ai/glm-5.3` as the `architecture-review` subagent. It runs on
+`openrouter/deepseek/deepseek-v4.1-flash` as its only model. It runs on
 GitHub-hosted Ubuntu runners, with a 25-minute job timeout. It does not replace
 the project's numerical validation or human review.
 
@@ -23,13 +22,13 @@ the project's numerical validation or human review.
 3. Merge the workflow into the default branch, `main`. Comment-triggered
    workflows must exist there before GitHub will dispatch them.
 4. Open or update a non-draft PR from a branch in this repository. Check
-   [Actions](https://github.com/okolo/mcray/actions), the detailed PR comment,
-   and the formal review. Confirm the reviewed head SHA matches the PR's head.
+   [Actions](https://github.com/okolo/mcray/actions) and the formal `AI review`.
+   Confirm the reviewed head SHA matches the PR's head.
 
 This setup uses the automatic `GITHUB_TOKEN`, not a personal access token or
-the OpenCode GitHub App. The token can read code and write PR comments and
-reactions, including inline review comments. GitHub requires the PR write
-permission for these operations; the token has no code-write permission.
+the OpenCode GitHub App. Metadata/evidence steps use it for GitHub reads; only
+the publisher uses it to submit the formal review. The analysis subprocess
+does not receive GitHub CLI/API tokens. The token has no code-write permission.
 No OIDC permission is requested.
 Automatic session sharing is disabled.
 
@@ -37,40 +36,34 @@ Automatic session sharing is disabled.
 
 ### Model routing
 
-The primary `reviewer` handles the complete diff, checks, final structured
-verdict, and summary. It delegates complex questions about public interfaces,
-cross-module contracts, ownership/lifecycle, concurrency/RNG behavior, and
-numerical/physical invariants to `architecture-review`. Changes to the review
-pipeline's model routing, permissions, SHA checks, or approval publication
-also require consultation. Routine documentation, formatting, and isolated
-fixes do not require a second model unless they expose such a concern.
+The `reviewer` performs all code and architectural analysis directly using
+DeepSeek V4.1 Flash. Task/subagent delegation is denied globally and for the
+reviewer; no architectural subagent or consultation result is configured.
+The final verdict has only `head_sha`, `base_sha`, `review_complete`, `verdict`,
+`blocking_findings`, and `summary`. The formal heading remains `AI review`.
 
-The primary sends the frozen head/base SHAs, relevant diff, code/contracts,
-command results when needed, and a specific question to a foreground Task,
-then waits and verifies the findings. GLM uses reading/search tools only:
-edits, shell commands, and further delegation are denied. It returns analysis
-to the primary; it never posts reviews or writes the final verdict. Both
-models use the existing OpenRouter secret; no extra GitHub token is needed.
+The main `model` and auxiliary `small_model` both explicitly select
+`openrouter/deepseek/deepseek-v4.1-flash`. The built-in `title` agent is disabled
+because CI does not need generated conversation titles; otherwise it can use
+an automatically selected small model and bill that request to the same API
+key. The `compaction` and `summary` agents explicitly use DeepSeek as well.
+Only the OpenRouter provider is enabled, and its model whitelist contains
+only `deepseek/deepseek-v4.1-flash`, so other catalog models fail resolution
+rather than silently receive API calls. These are OpenCode v1 settings;
+revalidate their equivalents before a runtime migration.
 
-Routing is a model decision guided by the prompt, not a deterministic file
-classifier. The final JSON must include `architecture_review` with a boolean
-`required`, a `status` of `not_required`, `completed`, `failed`, or
-`inconclusive`, and a nonempty `summary`. For consultations the summary records
-the real GLM result and task/session ID when provided. The publisher rejects
-approval if required consultation is not completed, its metadata is missing,
-or the requirement/status is inconsistent. Metadata describes what the primary
-reports; use Actions logs to verify that GLM actually ran. Runtime agent
-configuration is inline so switching PR branches cannot remove it.
-Set both the Action's `agent: reviewer` input and runtime
-`default_agent: reviewer`: OpenCode CLI v1.19.5's GitHub handler omits the
-agent from its prompt request and therefore uses the configured default.
-Do not rely on the Action input alone to select the restricted primary agent.
+This policy limits this OpenCode runtime, not every other application using
+the API key. Verify actual `providerID`/`modelID`/`agent` stream records in
+Actions logs after updates; the set of billable models should contain only
+OpenRouter DeepSeek V4.1 Flash, with no `title` stream or subagent invocation.
+No new secret or GitHub permission is required. The CLI is invoked with
+`--agent reviewer`, and `default_agent: reviewer` is retained in its inline
+configuration. Only the frozen checkout is analyzed.
 
-The formal review heading is `AI review`; it identifies the primary model and
-the architectural consultation status. Only the primary writes
-`OPENCODE_REVIEW_RESULT`, and the existing publisher validates SHAs and submits
-the single formal verdict. An incomplete required consultation prevents a new
-approval; it does not withdraw an existing approval for unchanged code.
+The reviewer writes `OPENCODE_REVIEW_RESULT`; the existing publisher validates
+SHAs and submits the single formal verdict. Failed/incomplete review cannot
+create a new approval and does not preemptively withdraw an existing approval
+for unchanged code.
 
 ### Events
 
@@ -81,7 +74,8 @@ inline review comment. Start the comment with exactly `/opencode` or `/oc`,
 optionally followed by a space and review context. Mentions inside URLs or
 other prose do not trigger review. These commands always request a review,
 including when their text asks for implementation. Issue comments outside
-PRs are ignored. The upstream action verifies the requester's permissions.
+PRs are ignored. The metadata step verifies comment requesters have write or
+admin access before checkout or provider credentials are used.
 
 Fork PRs are excluded from automatic review and from comment-triggered review.
 For comment triggers, a metadata-only step checks the PR's source repository
@@ -119,30 +113,45 @@ never merges PRs or bypasses branch protection, and it does not add a required
 status check. A successful job can also mean `COMMENT` or `REQUEST_CHANGES`;
 inspect the formal verdict rather than treating the job result as approval.
 
-The publisher is copied outside the checkout before the agent starts. This
-preserves the publication code even when OpenCode switches to an older PR
-branch that does not yet contain the integration scripts.
+The publisher and analysis wrapper are copied outside the checkout before
+the frozen head is checked out, preserving the integration for older PR
+branches that do not yet contain its scripts.
 Runtime permissions explicitly allow the runner's temporary directory and
 `/tmp` for context, verdicts, and scratch work. Other external directories
 and interactive question/loop prompts are denied so CI cannot hang waiting
 for approval to read the frozen context or write its verdict.
 
 The review must leave the checkout clean. Build directories, caches, logs,
-and test outputs belong outside it. Otherwise the upstream action tries to
-commit/push the generated files and fails with these restricted credentials,
-potentially losing the review. The agent writes its JSON verdict only to
+and test outputs belong outside it. The wrapper fails before publication if
+the checkout has tracked changes/untracked files or HEAD changes. It never
+attempts an automatic commit or push. The agent writes its JSON verdict only to
 `OPENCODE_REVIEW_RESULT`; it must not submit formal reviews itself. Only the
-publisher should do that after validation. The prompt also forbids merges
-and changes to PR state or metadata. These are instructions to the agent,
-not restrictions on the token, which needs PR write access for the integration.
+publisher does that after validation. The prompt forbids ordinary PR comments,
+formal reviews, merges, and PR state/metadata changes. The wrapper strips
+GitHub authentication tokens from the AI subprocess environment.
+
+### Single publication
+
+Analysis runs through the ordinary `opencode run` CLI, not `opencode github
+run` or the upstream GitHub Action, which automatically posts its final
+response as an issue comment. The full report goes into the verdict JSON's
+`summary`; only the Python publisher posts it as a formal `AI review`.
+This produces one report per successful run without first posting/deleting
+a duplicate comment or creating its notifications. Analysis failures remain
+in Actions logs rather than creating ordinary error comments. Historical
+comments from earlier runs are not removed.
 
 ## Maintenance and verification
 
-The checkout and OpenCode Action references are pinned to commit SHAs. The
-upstream OpenCode Action itself downloads the latest OpenCode CLI and uses
-its own dependencies, so the complete runtime is not immutable. Recheck
-upstream behavior when updating it. The job requires outbound access to
-GitHub, OpenCode installation endpoints, and OpenRouter.
+Checkout/upload Actions are pinned to commit SHAs. OpenCode CLI v1.19.5 is
+downloaded from its versioned Linux amd64 baseline release asset and its
+reported version is checked. Revalidate the CLI flags, model restrictions,
+credential isolation, and single-publication behavior when upgrading it.
+The job requires outbound access to GitHub release assets and OpenRouter;
+the versioned upstream asset itself is not authenticated by a local checksum.
+Inspect CLI output in the standard Actions job log, where GitHub masks its
+secrets. Raw model output is not uploaded as an artifact because artifact
+files do not receive the job log's secret masking.
 
 Local YAML/static checks do not verify provider credentials, model access,
 GitHub comment permissions, or review quality. Verify those with an actual
