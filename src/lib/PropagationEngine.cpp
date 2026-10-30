@@ -167,6 +167,13 @@ void PropagationEngine::RunMultithread(double aMaxRateVariation, int aNumberOfTh
 }
 
   pe->Run(aMaxRateVariation);
+#pragma omp critical (PropagationEngine)
+  {
+      // Clones share intrusive, non-atomic references (fields, filters and
+      // backgrounds). Destroy them under the same lock used for construction.
+      // The now-empty SafePtr is harmless when its thread leaves the scope.
+      pe = nullptr;
+  }
 }
 }
 

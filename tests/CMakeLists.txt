@@ -123,3 +123,10 @@ target_include_directories(spatial_geometry_tests PRIVATE ../src/lib)
 target_link_libraries(spatial_geometry_tests PRIVATE GTest::gtest_main mcray)
 gtest_discover_tests(spatial_geometry_tests TEST_PREFIX "unit.spatial."
     PROPERTIES TIMEOUT 30 LABELS "unit")
+
+# Worker construction/destruction must serialize shared intrusive references.
+add_executable(propagation_lifetime_tests propagation_lifetime.cpp)
+target_include_directories(propagation_lifetime_tests PRIVATE ../src/lib)
+target_link_libraries(propagation_lifetime_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(propagation_lifetime_tests TEST_PREFIX "unit.concurrent."
+    PROPERTIES TIMEOUT 30 LABELS "unit;concurrency")

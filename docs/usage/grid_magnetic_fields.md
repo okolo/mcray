@@ -106,8 +106,10 @@ queries use local scratch storage and support concurrent reads. Other
 component classes must also support concurrent const queries. The existing
 intrusive reference counts are not atomic: assemble fields, create clones
 and release references in serial lifetime-management code; concurrent reads
-do not copy component smart pointers. Existing `Deflection3D::Clone` shares
-the field through that ownership mechanism. No owning pointer is added to
+do not copy component smart pointers. PropagationEngine serializes both worker
+construction and destruction under the same OpenMP critical section, including
+references retained by Deflection3D clones. Other callers must provide the
+same lifetime synchronization when cloning or releasing shared fields. No owning pointer is added to
 `Particle` and no RNG is used during grid loading or field queries.
 
 ## Verification
