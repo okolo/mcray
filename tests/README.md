@@ -24,7 +24,7 @@ bash bin/test-docker.sh
 bash bin/test-docker.sh -L unit
 ```
 
-The current short suite contains 155 CTest entries, including nuclear,
+The short CTest suite includes nuclear,
 EM-secondary, configuration, background/convolution and no-interaction E2E
 checks. Use `ctest --test-dir build/Release -N` for the exact inventory of
 the selected revision. Unit tests exercise the production library:
@@ -486,3 +486,16 @@ input with its actual file line number. Test
 temporary files remain inside build/mc-rotate-tests. See
 [the results and scope](../docs/validation/mc_rotate.md). They do not require
 a C++ build or PyYAML and do not replace propagation validation.
+
+## Worker lifetime regression
+
+`unit.concurrent.PropagationLifetime.WorkerCleanupSerializesSharedReferenceRelease`
+uses two and four OpenMP workers over repeated empty-stack batches. A cloned
+interaction retains a shared intrusive token and observes overlapping clone
+destructors. The test checks serial cleanup, restored reference counts after
+each batch, and exactly one token destruction after the final owner releases
+it. The empty stack isolates lifetime handling from simulation physics/RNG.
+
+Run `ctest --test-dir build/Release -R unit.concurrent. --output-on-failure`.
+The automatic [Linux build/test workflow](../docs/usage/ci.md) runs it as part
+of the complete short suite on every PR.

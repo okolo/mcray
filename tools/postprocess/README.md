@@ -26,7 +26,8 @@ Install the libraries listed in [requirements.txt](requirements.txt):
 python3 -m pip install -r tools/postprocess/requirements.txt
 ```
 
-NumPy is used for numerical processing; PyYAML is used by file_helpers.py
+NumPy >=1.26.4 is the tested baseline for numerical processing and extended
+text precision; PyYAML is used by file_helpers.py
 when reading config.yaml or run.yaml. These are optional analysis dependencies; CRbeam
 itself does not require them.
 

@@ -1,4 +1,4 @@
 # Numerical arrays, vectorized geometry and high-precision text formatting.
-numpy
+numpy>=1.26.4
 # Reading effective config.yaml files in file_helpers.py.
 PyYAML

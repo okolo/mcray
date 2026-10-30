@@ -1,0 +1,103 @@
+name: C++ build and tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: cpp-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux amd64 Release
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    env:
+      OMP_NUM_THREADS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout tested revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install build and test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake gfortran libgsl-dev \
+            libboost-filesystem-dev libboost-system-dev libyaml-cpp-dev libssl-dev \
+            python3-venv
+
+      - name: Install pinned Python test libraries
+        run: |
+          mkdir -p build/ci/tmp
+          export TMPDIR="$GITHUB_WORKSPACE/build/ci/tmp"
+          python3 -m venv build/ci/venv
+          build/ci/venv/bin/python -m pip install --disable-pip-version-check \
+            --cache-dir build/ci/pip-cache -r tools/postprocess/requirements.txt \
+            numpy==1.26.4 PyYAML==6.0.3
+          build/ci/venv/bin/python -m pip freeze > build/ci/python-requirements.txt
+
+      - name: Record revision and tool versions
+        run: |
+          mkdir -p build/ci/tmp
+          {
+            git rev-parse HEAD
+            uname -m
+            cmake --version
+            g++ --version
+            gfortran --version
+            build/ci/venv/bin/python -c 'import numpy, yaml; print("NumPy", numpy.__version__, "PyYAML", yaml.__version__)'
+          } | tee build/ci/environment.log
+
+      - name: Configure Release tests
+        run: |
+          export TMPDIR="$GITHUB_WORKSPACE/build/ci/tmp"
+          cmake -S src/app/crbeam -B build/ci -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON 2>&1 | tee build/ci/configure.log
+
+      - name: Build all targets
+        run: |
+          export TMPDIR="$GITHUB_WORKSPACE/build/ci/tmp"
+          cmake --build build/ci --parallel 2 2>&1 | tee build/ci/build.log
+
+      - name: Run complete short CTest suite
+        run: |
+          export TMPDIR="$GITHUB_WORKSPACE/build/ci/tmp"
+          ctest --test-dir build/ci --output-on-failure --parallel 2 \
+            --output-junit "$GITHUB_WORKSPACE/build/ci/ctest-results.xml" 2>&1 | tee build/ci/ctest.log
+
+      - name: Run postprocessing and CI guard tests
+        run: |
+          export TMPDIR="$GITHUB_WORKSPACE/build/ci/tmp"
+          export MCRAY_CRBEAM="$GITHUB_WORKSPACE/build/ci/CRbeam"
+          build/ci/venv/bin/python tests/test_mc_rotate.py -v 2>&1 | tee build/ci/mc-rotate.log
+          build/ci/venv/bin/python tests/test_spatial_output.py -v 2>&1 | tee build/ci/spatial-output.log
+          build/ci/venv/bin/python -m unittest discover -s .github/scripts -p 'test_*.py' -v \
+            2>&1 | tee build/ci/workflow-guards.log
+
+      - name: Retain build and test diagnostics
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: linux-amd64-release-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            build/ci/*.log
+            build/ci/python-requirements.txt
+            build/ci/**/ctest-results.xml
+            build/ci/Testing/Temporary/LastTest.log
+            build/ci/Testing/Temporary/LastTestsFailed.log
