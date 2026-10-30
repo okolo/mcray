@@ -69,7 +69,7 @@ def extract(fork, output):
     return actual
 
 
-def compile_probe(build, output, prefix):
+def compile_probe(build, output, prefix, sources=None, executable='fork-kernel-probe'):
     recipe = build / 'tests/CMakeFiles/grid_magnetic_field_tests.dir/link.txt'
     tokens = shlex.split(recipe.read_text())
     compiler, flags, libraries = tokens[0], [], []
@@ -88,10 +88,12 @@ def compile_probe(build, output, prefix):
             libraries.append(token)
         else:
             flags.append(token)
+    if sources is None:
+        sources = [output/'reference.cpp', HERE/'compare.cpp',
+                   ROOT/'src/lib/GridMagneticField.cpp', ROOT/'src/lib/SpatialGeometry.cpp']
     command = [compiler, *flags, '-std=c++17', '-I'+str(ROOT/'src/lib'), '-I'+str(HERE),
-               '-iquote', str(output), str(output/'reference.cpp'), str(HERE/'compare.cpp'),
-               str(ROOT/'src/lib/GridMagneticField.cpp'), str(ROOT/'src/lib/SpatialGeometry.cpp'),
-               '-o', str(output/'fork-kernel-probe'), *libraries]
+               '-iquote', str(output), *map(str, sources),
+               '-o', str(output/executable), *libraries]
     (output / 'compiler-version.txt').write_text(subprocess.check_output([*prefix, compiler, '--version'], text=True))
     (output / 'compile-command.json').write_text(json.dumps(command, indent=2)+'\n')
     with (output/'compile.log').open('w') as log:

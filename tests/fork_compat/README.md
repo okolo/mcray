@@ -1,5 +1,9 @@
 # Historical fork kernel comparison
 
+For the subsequent interaction-free charged-particle trajectory diagnostic,
+see [deterministic transport comparison](TRANSPORT.md). The field/source
+comparison below remains independently runnable and unchanged in scope.
+
 This optional diagnostic compiles the actual historical `SavedMF` implementation
 and uniform-cone initialization block (`fJetType=0`), rather than a transcription
 of their formulas. It also compiles the fork's complete Randomizer and Jet
