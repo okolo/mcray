@@ -1,0 +1,20 @@
+schema_version: 2
+source:
+  redshift: 0.001
+  particle: {type: proton}
+  spectrum: {type: monoenergetic, energy_eV: 1.0e12}
+  position_Mpc: [0, 0, 0]
+  angular_distribution: {model: cone, axis: [0, 0, 1], half_angle_deg: 10}
+simulation: {primaries: 12, seed: 42, threads: 1, batch_size: 12}
+backgrounds: {ebl: {model: none}}
+magnetic_field: {model: none}
+electromagnetic: {cascade: false}
+propagation: {end_redshift: 0}
+observer:
+  model: sphere
+  center_Mpc: [0, 0, 0]
+  radius_Mpc: 0.001
+  stop_when: outside
+output:
+  directory: ../output/spatial-observer
+  primary_direction: true

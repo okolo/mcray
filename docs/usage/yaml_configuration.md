@@ -7,7 +7,7 @@ CRbeam simulation.yaml
 CRbeam --particle proton --z 0.01 --emax 1e19 --seed 123 --output results
 ```
 
-The complete supported schema, enum choices, units, inactive-field semantics
+The complete version 1 schema, enum choices, units, inactive-field semantics
 and CLI mappings are documented in
 [examples/config.full.yaml](../../examples/config.full.yaml). Its explicit
 Fe56 settings enable all agreed processes and are not the legacy defaults.
@@ -25,7 +25,10 @@ approved approximations are unchanged.
 
 - One positional `.yaml` or `.yml` file; YAML and simulation CLI arguments
   cannot be mixed. A CLI option value ending in `.yaml` remains an option value.
-- `schema_version: 1` is mandatory. Unknown/duplicate keys, invalid enum values,
+- `schema_version: 1` or `2` is mandatory. Version 1 retains its original
+  magnetic-field behavior. Version 2 adds explicitly selected grid/none/sum
+  fields; see [the magnetic-field contract](grid_magnetic_fields.md).
+  Unknown/duplicate keys, invalid enum values,
   unsupported types, nonfinite numbers and invalid ranges are errors.
 - Booleans are `true`/`false`. Numeric values must be numbers, not quoted
   numeric strings. Units are part of field names; unit expressions are unsupported.
@@ -166,3 +169,6 @@ parsing, all EBL choices, the complete example, seeded CLI/YAML/snapshot
 history equivalence, path resolution, fixed nuclear installation, checksum
 rejection, actual seed/batch recording, SHA-256 and failed-run metadata.
 Long physical acceptance remains a separate server workload.
+
+Source geometry, strict sphere membership and the compatible spatial table
+format are described in [the spatial input contract](spatial_source_observer.md).

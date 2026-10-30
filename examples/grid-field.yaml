@@ -1,0 +1,17 @@
+# Requires a complete six-column Cartesian grid at field.txt beside this file.
+schema_version: 2
+source:
+  redshift: 0.01
+  particle: {type: proton}
+  spectrum: {type: monoenergetic, energy_eV: 1.0e19}
+simulation:
+  primaries: 100
+  seed: 42
+  threads: 1
+magnetic_field:
+  model: grid
+  file: ./field.txt
+  boundary: zero
+  deflection_accuracy: 10
+output:
+  directory: ./grid-results

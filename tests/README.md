@@ -24,7 +24,7 @@ bash bin/test-docker.sh
 bash bin/test-docker.sh -L unit
 ```
 
-The current short suite contains 155 CTest entries, including nuclear,
+The short CTest suite includes nuclear,
 EM-secondary, configuration, background/convolution and no-interaction E2E
 checks. Use `ctest --test-dir build/Release -N` for the exact inventory of
 the selected revision. Unit tests exercise the production library:
@@ -68,6 +68,14 @@ identical pair spectra.
 CTest labels distinguish unit, integration, and e2e. CRbeam help and the
 short z2t calculation also have the smoke label. Every current test has a 30-second timeout.
 These smoke checks do not validate nuclear propagation.
+
+## Grid magnetic fields
+
+The `grid_magnetic_field_tests` target covers validated Cartesian grids,
+trilinear interpolation, boundary extensions, component ownership, concurrent
+reads and existing deflector clones. It uses only temporary synthetic input
+and runs through CTest with prefix `unit.magnetic.` and label `unit`.
+See [the public API contract](../docs/usage/grid_magnetic_fields.md).
 
 ## Adding checks
 
@@ -466,3 +474,28 @@ target exports production coefficients without sampling histories. These tools
 also provide [combined PD+decay energy-state transport](deterministic/COUPLED.md)
 with explicit grid and stiff-solver controls. Neither tool issues acceptance
 verdicts.
+
+## Python postprocessing checks
+
+Run `PYTHONDONTWRITEBYTECODE=1 python3 tests/test_mc_rotate.py` from the
+repository root with NumPy installed. These 18 deterministic checks compare
+sphere-extrapolated delays with analytic and 100-digit Decimal references,
+exercise tiny angles and output precision, compare vectorized geometry with
+scalar matrices, verify block-size-independent output, and diagnose invalid
+input with its actual file line number. Test
+temporary files remain inside build/mc-rotate-tests. See
+[the results and scope](../docs/validation/mc_rotate.md). They do not require
+a C++ build or PyYAML and do not replace propagation validation.
+
+## Worker lifetime regression
+
+`unit.concurrent.PropagationLifetime.WorkerCleanupSerializesSharedReferenceRelease`
+uses two and four OpenMP workers over repeated empty-stack batches. A cloned
+interaction retains a shared intrusive token and observes overlapping clone
+destructors. The test checks serial cleanup, restored reference counts after
+each batch, and exactly one token destruction after the final owner releases
+it. The empty stack isolates lifetime handling from simulation physics/RNG.
+
+Run `ctest --test-dir build/Release -R unit.concurrent. --output-on-failure`.
+The automatic [Linux build/test workflow](../docs/usage/ci.md) runs it as part
+of the complete short suite on every PR.

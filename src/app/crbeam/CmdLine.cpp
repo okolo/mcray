@@ -150,7 +150,7 @@ CmdInfo* CmdLine::get_command( const char* name )
 		for( int i=0 ; ; i++ ) {
 			if( _commands[i].code == 0 )
 				return NULL;
-			if( strcmp(_commands[i].short_name,name)==0 || strcmp(_commands[i].name,name)==0 )
+			if( (_commands[i].short_name && *_commands[i].short_name && strcmp(_commands[i].short_name,name)==0) || strcmp(_commands[i].name,name)==0 )
 				return _commands+i;
 		}
 	}

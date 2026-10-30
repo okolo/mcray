@@ -110,3 +110,23 @@ target_link_libraries(nuclear_photon_probe PRIVATE mcray)
 add_executable(deterministic_pd_export deterministic_pd_export.cpp)
 target_include_directories(deterministic_pd_export PRIVATE ../src/lib)
 target_link_libraries(deterministic_pd_export PRIVATE mcray)
+
+# Cartesian field loading, boundaries, ownership and existing deflection integration.
+add_executable(grid_magnetic_field_tests grid_magnetic_field.cpp)
+target_include_directories(grid_magnetic_field_tests PRIVATE ../src/lib)
+target_link_libraries(grid_magnetic_field_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(grid_magnetic_field_tests TEST_PREFIX "unit.magnetic."
+    PROPERTIES TIMEOUT 30 LABELS "unit")
+
+add_executable(spatial_geometry_tests spatial_geometry.cpp spatial_output.cpp)
+target_include_directories(spatial_geometry_tests PRIVATE ../src/lib)
+target_link_libraries(spatial_geometry_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(spatial_geometry_tests TEST_PREFIX "unit.spatial."
+    PROPERTIES TIMEOUT 30 LABELS "unit")
+
+# Worker construction/destruction must serialize shared intrusive references.
+add_executable(propagation_lifetime_tests propagation_lifetime.cpp)
+target_include_directories(propagation_lifetime_tests PRIVATE ../src/lib)
+target_link_libraries(propagation_lifetime_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(propagation_lifetime_tests TEST_PREFIX "unit.concurrent."
+    PROPERTIES TIMEOUT 30 LABELS "unit;concurrency")

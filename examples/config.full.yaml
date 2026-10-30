@@ -5,7 +5,8 @@
 # Values below form an explicit Fe56 example, NOT the legacy/default settings.
 # Install verified nuclear/PD/photon tables under the standard application
 # tables root, alongside the other tabulated data. No YAML data-path key exists.
-# Every current simulation CLI option has a mapping or explanation below.
+# Legacy simulation CLI settings have mappings or explanations below.
+# Grid/sum field settings use version 2; see grid-field.yaml and composed-field.yaml.
 # --help is an informational action, not a simulation parameter.
 #
 # Format rules:
@@ -19,7 +20,8 @@
 #   mechanisms are outside this first schema.
 # - YAML and simulation CLI overrides cannot be mixed in this first schema.
 
-# Supported schema versions: 1.
+# This example uses version 1. Version 2 magnetic fields are documented in
+# docs/usage/grid_magnetic_fields.md.
 schema_version: 1
 
 source:

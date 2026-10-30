@@ -1,0 +1,25 @@
+# The grid is shared; stochastic waves are regenerated per primary history.
+schema_version: 2
+source:
+  redshift: 0.01
+  particle: {type: proton}
+  spectrum: {type: monoenergetic, energy_eV: 1.0e19}
+simulation:
+  primaries: 100
+  seed: 42
+  threads: 1
+magnetic_field:
+  model: sum
+  realization: per_primary
+  deflection_accuracy: 10
+  components:
+    - model: grid
+      file: ./field.txt
+      boundary: mirror
+    - model: kolmogorov
+      strength_G: 1.0e-15
+      minimum_scale_Mpc: 0.05
+      maximum_scale_Mpc: 5.0
+      modes: 300
+output:
+  directory: ./composed-results
