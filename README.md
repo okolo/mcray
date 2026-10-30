@@ -18,16 +18,67 @@ validation limits, see the [release notes](docs/validation/nuclear_release_notes
 
 ### Installation
 
-The code requires C++17. CRbeam additionally requires yaml-cpp >=0.6 and
-OpenSSL Crypto >=1.1.1 for SHA-256. See [YAML configuration and table installation](docs/usage/yaml_configuration.md). Test builds require CMake 3.16 or newer and use
-GoogleTest 1.18.0. See [tests/README.md](tests/README.md).
+On Ubuntu 22.04/24.04 amd64, build the application, run the short tests and
+install the complete pinned nuclear table package with one command from a
+source checkout:
 
-- Install required libraries to [external](src/external) folder
-<pre><code>
+```bash
+bash bin/install.sh --install-deps
+```
+
+`--install-deps` uses `sudo apt-get` (or apt-get directly when already root)
+to install the system build and Python dependencies. Build products, generated
+data, Python environment and logs remain in the checkout; no system-wide
+CRbeam executable is installed. Use `--jobs 4` to change build/test parallelism
+from its default of two. When dependencies are already installed, omit
+`--install-deps`; `bash bin/install.sh --help` lists the options.
+
+For a clean Ubuntu machine without Git, installation including source download
+can be started with this single shell command:
+
+```bash
+sudo apt-get update && sudo apt-get install -y git ca-certificates && \
+  git clone https://github.com/okolo/mcray.git && \
+  bash mcray/bin/install.sh --install-deps
+```
+
+The installer builds the checked-out application revision. It fetches
+CRPropa3-data at `34b10e27375c0e9894d7c984ac15fb96e12975ef`, then prepares
+TALYS cross sections, corrected decays, the switchable GZK data and both nuclear
+photon sources. No TALYS executable or CRPropa application build is needed.
+Prepared data and their SHA-256 manifests are installed in `bin/tables/nuclear`,
+alongside the other application tables. Python preparation uses an isolated
+environment with NumPy 2.2.6, SciPy 1.15.3 and GitPython 3.1.45. Internet access
+is needed for Ubuntu packages, GoogleTest, Python wheels and reference data.
+
+Every attempt retains its log and preparation files under
+`.crbeam-install/run.*/`. Failures stop installation before a new nuclear
+package is published. Repeating the command verifies and preserves an existing
+package with matching GZK/photon preparer fingerprints, without downloading or
+regenerating its data. A partial, corrupt or incompatible existing package causes an error;
+the installer never deletes or replaces it. Use a fresh checkout when changing
+an installation whose data you need to preserve. Other table directories,
+including `sophia2`, are unchanged.
+Stage progress is printed to the terminal; detailed build, test and preparation
+output is in the displayed `install.log` file.
+
+After installation, run from `bin` so the common table-location mechanism finds
+all installed tables:
+
+```bash
 cd bin
-cmake -S ../src/app/crbeam -B .
-make
-</code></pre>
+../build/Release/CRbeam /absolute/path/to/simulation.yaml
+```
+
+See [the complete commented YAML example](examples/config.full.yaml) and
+[configuration and run records](docs/usage/yaml_configuration.md). Nuclear
+processes remain opt-in; installing their tables does not enable them. The
+data retain the documented compatibility approximations and validation limits.
+
+For a manual build, install C++17, CMake >=3.16, GFortran, GSL, Boost.Filesystem/
+System, yaml-cpp >=0.6 and OpenSSL Crypto >=1.1.1, then run
+`bash bin/build.sh Release`. Test builds use pinned GoogleTest 1.18.0; see
+[tests/README.md](tests/README.md).
 
 ### Linux amd64 checks
 

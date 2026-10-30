@@ -122,6 +122,20 @@ to avoid downloading or building GoogleTest.
 The test executable links GoogleTest's main before mcray because the legacy
 library also contains a main object that delegates to user_main.
 
+## Installer orchestration checks
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/installer -v
+```
+
+These short checks exercise the real shell installer with isolated command
+and generator substitutes: no apt changes, network downloads, C++ builds or
+physical calculations run. They check preserved/corrupt packages, pinned
+source selection, interruption boundaries, locking, destination races,
+paths with spaces and repeat installation. Temporary fixtures stay under
+build/installer-tests in this checkout. They do not establish a native Ubuntu
+installation or physical validation of prepared tables.
+
 ## PSB propagation against TransportCR
 
 See [the PSB validation results](../docs/validation/psb_validation_results.md)
