@@ -495,8 +495,13 @@ int CRbeam::run() try
 	int kAc = 1;
 	fEBLMaxE *= units.eV;
 	double Emax = fEmax_eV*units.eV;//eV
-	if(!cosmology.IsInitialized())
-		cosmology.Init(fZmax + 10);
+    const auto cosmologySpec = fConfiguration.Effective()["cosmology"];
+    const cosmo_time hubble = cosmologySpec["hubble_km_s_Mpc"].as<double>();
+    const cosmo_time vacuum = cosmologySpec["omega_lambda"].as<double>();
+    if (!cosmology.IsInitialized())
+        cosmology.Init(fZmax + 10, vacuum, hubble);
+    else if (!cosmology.HasParameters(vacuum, hubble) || !cosmology.CoversRedshift(fZmax))
+        Exception::ThrowFatal("Cosmology: initialized global state conflicts with requested parameters or redshift range; use a fresh process");
     const SpatialConfiguration spatial(fConfiguration.Effective());
     const auto sourceGeometry=spatial.Source();
     const auto observer=spatial.Observer();

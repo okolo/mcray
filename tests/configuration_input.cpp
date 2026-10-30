@@ -9,6 +9,9 @@
 #include <sstream>
 #include <gtest/gtest.h>
 #include <unistd.h>
+#include <cerrno>
+#include <fcntl.h>
+#include <sys/wait.h>
 namespace fs = std::filesystem;
 namespace {
 class ConfigurationTest : public ::testing::Test {
@@ -35,6 +38,38 @@ protected:
     const auto path = root / "configs/input.yaml";
     std::ofstream(path) << text;
     return path;
+  }
+  int Execute(const fs::path& input) {
+    // A fresh process isolates the library's one-time global cosmology. Use
+    // exec directly rather than a shell so paths never become shell code.
+    const auto log = root / "child.log";
+    const int logFd = open(log.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (logFd < 0) throw std::runtime_error("Cannot open CRbeam test log");
+    const pid_t child = fork();
+    if (child == 0) {
+      // Only async-signal-safe calls between fork and exec, including when
+      // the parent test binary has already initialized an OpenMP runtime.
+      if (dup2(logFd, STDOUT_FILENO) < 0 || dup2(logFd, STDERR_FILENO) < 0)
+        _exit(126);
+      close(logFd);
+      execl(CRBEAM_EXECUTABLE, CRBEAM_EXECUTABLE, input.c_str(),
+            static_cast<char*>(nullptr));
+      _exit(127);
+    }
+    close(logFd);
+    if (child < 0) throw std::runtime_error("Cannot fork CRbeam test");
+    int status;
+    while (waitpid(child, &status, 0) < 0) {
+      if (errno != EINTR) throw std::runtime_error("Cannot wait for CRbeam test");
+    }
+    // Invalid input also exits nonzero. Do not let that expected failure
+    // conceal sanitizer errors emitted by an instrumented child process.
+    const auto diagnostics = Read(log);
+    for (const auto* marker : {"ERROR: AddressSanitizer:", "ERROR: LeakSanitizer:",
+                               "UndefinedBehaviorSanitizer:", "runtime error:"})
+      if (diagnostics.find(marker) != std::string::npos)
+        throw std::runtime_error("CRbeam subprocess sanitizer diagnostic: " + diagnostics);
+    return WIFEXITED(status) ? WEXITSTATUS(status) : 128;
   }
   void Parse(std::vector<std::string> options) {
     program.reset();
@@ -141,6 +176,8 @@ TEST_F(ConfigurationTest,
   const auto yamlData = Read(root / "yaml-output/z0/proton");
   ASSERT_FALSE(yamlData.empty());
   auto config = YAML::LoadFile((root / "yaml-output/config.yaml").string());
+  EXPECT_DOUBLE_EQ(config["cosmology"]["hubble_km_s_Mpc"].as<double>(), 67.8);
+  EXPECT_DOUBLE_EQ(config["cosmology"]["omega_lambda"].as<double>(), 0.692);
   EXPECT_EQ(config["simulation"]["seed"].as<unsigned long>(), 123456ul);
   EXPECT_EQ(config["simulation"]["threads"].as<int>(), 1);
   EXPECT_EQ(config["simulation"]["batch_size"].as<int>(), 12);
@@ -913,5 +950,129 @@ TEST_F(ConfigurationTest, VmfZeroKappaReplaysConeAndZeroAngleRetainsSpatialForma
   const auto zero = Read(root / "vmf-zero/z0/proton");
   EXPECT_NE(zero.find("spatial_format = 1"), std::string::npos);
   EXPECT_NE(zero.find("\tFlightMpc"), std::string::npos);
+}
+} // namespace
+
+namespace {
+TEST_F(ConfigurationTest, CosmologyDefaultsAndPartialOverridesApplyToBothSchemas) {
+  Parse({});
+  EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["cosmology"]["hubble_km_s_Mpc"].as<double>(),67.8);
+  EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["cosmology"]["omega_lambda"].as<double>(),0.692);
+  for (int version : {1,2}) {
+    auto cfg=YAML::Load(Common()); cfg["schema_version"]=version;
+    cfg["cosmology"]["hubble_km_s_Mpc"]=70;
+    auto path=Write(YAML::Dump(cfg)); Parse({path.string()});
+    EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["cosmology"]["hubble_km_s_Mpc"].as<double>(),70);
+    EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["cosmology"]["omega_lambda"].as<double>(),0.692);
+    cfg["cosmology"]=YAML::Load("{omega_lambda: 0}");
+    path=Write(YAML::Dump(cfg)); Parse({path.string()});
+    EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["cosmology"]["hubble_km_s_Mpc"].as<double>(),67.8);
+    EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["cosmology"]["omega_lambda"].as<double>(),0);
+  }
+}
+TEST_F(ConfigurationTest, CosmologyRejectsInvalidAndUnsupportedInputBeforeOutput) {
+  for (const auto* settings : {"{hubble_km_s_Mpc: 0}","{hubble_km_s_Mpc: -1}",
+      "{hubble_km_s_Mpc: .inf}","{hubble_km_s_Mpc: '70'}","{omega_lambda: .nan}",
+      "{omega_lambda: -0.01}","{omega_lambda: 1}","{omega_lambda: 1.01}",
+      "{omega_m: 0.3}","{hubble_km_s_Mpc: 70, hubble_km_s_Mpc: 71}",
+      "{omega_lambda: 0.7, omega_lambda: 0.6}","[]","null","true"}) {
+    SCOPED_TRACE(settings);
+    const auto path=Write(Common()+"cosmology: "+settings+"\noutput: {directory: ../bad-cosmology}\n");
+    Error([&] { Parse({path.string()}); },"cosmology");
+    EXPECT_FALSE(fs::exists(root/"bad-cosmology"));
+  }
+}
+TEST_F(ConfigurationTest, CosmologyChangesBallisticFlightAndSnapshotReplaysInFreshProcess) {
+  auto cfg=YAML::Load(Common()); cfg["schema_version"]=2;
+  cfg["source"]["redshift"]=0.01; cfg["source"]["particle"]["type"]="neutrinoE";
+  cfg["source"]["angular_distribution"]=YAML::Load("{model: cone, half_angle_deg: 0}");
+  cfg["simulation"]["primaries"]=2; cfg["magnetic_field"]=YAML::Load("{model: none}");
+  std::vector<long double> flights;
+  for (const auto& parameters : std::vector<std::pair<double,double>>{{67.8,0.692},{70,0.692},{70,0.7},{70,0}}) {
+    const auto directory=root/("cosmology-"+std::to_string(flights.size()));
+    cfg["cosmology"]["hubble_km_s_Mpc"]=parameters.first;
+    cfg["cosmology"]["omega_lambda"]=parameters.second;
+    cfg["output"]["directory"]=directory.string();
+    auto path=Write(YAML::Dump(cfg));
+    ASSERT_EQ(Execute(path),0) << Read(root/"child.log");
+    const auto data=Read(directory/"z0/neutrinoE"); ASSERT_FALSE(data.empty());
+    std::istringstream rows(data); std::string line;
+    long double flight=0;
+    while (std::getline(rows,line)) {
+      if (line.empty() || line[0]=='#') continue;
+      std::istringstream values(line); long double value;
+      while (values >> value) flight=value; // FlightMpc is the final column.
+      break;
+    }
+    ASSERT_GT(flight,0); flights.push_back(flight);
+    mcray::Cosmology reference;
+    reference.Init(0.01+10,parameters.second,parameters.first);
+    const auto expected=(reference.z2t(0)-reference.z2t(0.01))/mcray::units.Mpc;
+    const auto tolerance=256*std::numeric_limits<mcray::cosmo_time>::epsilon()*
+        reference.getAgeOfUniverse()/mcray::units.Mpc;
+    EXPECT_LE(std::abs(flight-expected),tolerance);
+    auto saved=YAML::LoadFile((directory/"config.yaml").string());
+    EXPECT_DOUBLE_EQ(saved["cosmology"]["hubble_km_s_Mpc"].as<double>(),parameters.first);
+    EXPECT_DOUBLE_EQ(saved["cosmology"]["omega_lambda"].as<double>(),parameters.second);
+    const auto run=YAML::LoadFile((directory/"run.yaml").string());
+    EXPECT_FALSE(run["cosmology"].IsDefined());
+    EXPECT_EQ(run["config_sha256"].as<std::string>(),Configuration::HashFile((directory/"config.yaml").string()));
+    saved["output"]["directory"]=(directory.string()+"-replay");
+    path=Write(YAML::Dump(saved));
+    ASSERT_EQ(Execute(path),0) << Read(root/"child.log");
+    EXPECT_EQ(Read(fs::path(directory.string()+"-replay")/"z0/neutrinoE"),data);
+  }
+  EXPECT_NEAR(flights[1]/flights[0],67.8/70,1e-11);
+  EXPECT_GT(std::abs(flights[2]-flights[1]),1e-6L);
+}
+TEST_F(ConfigurationTest, CosmologyCannotSilentlyReuseConflictingGlobalState) {
+  if (!mcray::cosmology.IsInitialized()) mcray::cosmology.Init();
+  auto cfg=YAML::Load(Common());
+  cfg["cosmology"]=YAML::Load("{hubble_km_s_Mpc: 70, omega_lambda: 0.7}");
+  cfg["output"]["directory"]=(root/"conflicting-cosmology").string();
+  auto path=Write(YAML::Dump(cfg)); Parse({path.string()});
+  Error([&] { program->run(); },"initialized global state conflicts");
+  EXPECT_FALSE(fs::exists(root/"conflicting-cosmology"));
+}
+} // namespace
+
+namespace {
+TEST(CosmologyParameters, ChecksInitializationIdentityAndCoveredRedshift) {
+  mcray::Cosmology model;
+  EXPECT_FALSE(model.HasParameters(0.7,70));
+  EXPECT_FALSE(model.CoversRedshift(0));
+  model.Init(2,0.7,70);
+  EXPECT_TRUE(model.HasParameters(0.7,70));
+  EXPECT_FALSE(model.HasParameters(0.692,70));
+  EXPECT_FALSE(model.HasParameters(0.7,67.8));
+  EXPECT_TRUE(model.CoversRedshift(0));
+  EXPECT_TRUE(model.CoversRedshift(2));
+  EXPECT_FALSE(model.CoversRedshift(-0.01));
+  EXPECT_FALSE(model.CoversRedshift(2.01));
+}
+TEST(CosmologyParameters, RejectsUnrepresentableHubbleConversionWithoutInitializing) {
+  mcray::Cosmology model;
+  try {
+    model.Init(2,0.7,std::numeric_limits<mcray::cosmo_time>::min());
+    FAIL() << "Expected fatal internal H0 conversion error";
+  } catch (Utils::Exception* error) {
+    std::unique_ptr<Utils::Exception> owner(error);
+    EXPECT_FALSE(error->Retryable());
+    EXPECT_NE(error->Message().find("H0 is not representable"),std::string::npos);
+  }
+  EXPECT_FALSE(model.IsInitialized());
+}
+} // namespace
+
+namespace {
+TEST_F(ConfigurationTest, CosmologyUnrepresentableRateFailsBeforeOutput) {
+  auto cfg=YAML::Load(Common());
+  cfg["source"]["particle"]["type"]="neutrinoE";
+  cfg["cosmology"]["hubble_km_s_Mpc"]=1e-300;
+  cfg["output"]["directory"]=(root/"unrepresentable-cosmology").string();
+  const auto path=Write(YAML::Dump(cfg));
+  EXPECT_EQ(Execute(path),1);
+  EXPECT_NE(Read(root/"child.log").find("H0 is not representable"),std::string::npos);
+  EXPECT_FALSE(fs::exists(root/"unrepresentable-cosmology"));
 }
 } // namespace
