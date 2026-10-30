@@ -117,6 +117,18 @@ as a fallback. Legacy source/observer parameter aliases exposed by the loader
 use kpc. Source position from a spatial-format header takes precedence.
 Table and header values use NumPy longdouble, subject to platform precision.
 
+If adjacent run.yaml metadata exists, its status must be completed. Failed,
+interrupted, running or malformed records are rejected; historical standalone
+files without run metadata remain supported. This status check does not prove
+the validity of a file whose metadata is absent.
+
+The older modern RawOutput3D layout (z_cascade_production / N_interactions)
+normalizes each row by its own primary flight interval. A single header T
+cannot reconstruct a continuous source in that layout. The loader rejects
+such files when continuous emission is indicated by config.yaml/params or
+varying z_src values. Use the spatial format with one scale per file instead.
+The fork's z_production layout uses the file scale and remains supported.
+
 `delay_Mpc('radial')` computes `FlightMpc - |X-X_source|/Mpc`.
 `delay_Mpc('axis', axis)` computes
 `FlightMpc - dot(X-X_source, normalized_axis)/Mpc`, the excess relative to a
@@ -133,7 +145,8 @@ python3 tools/postprocess/flight_delay.py output/spatial-observer/z0/proton --re
 MCRAY_CRBEAM="$PWD/build/Release/CRbeam" python3 tests/test_spatial_output.py
 ```
 
-The command writes energy, weight and delay in Mpc to stdout. The old rotateMC
+The command writes energy, weight and delay in Mpc to stdout, preserving
+longdouble precision with NumPy scalar formatting. The old rotateMC
 assumptions (zero source position, +z pencil, and interpreting 1-z/T as a delay)
 do not apply to general spatial runs. Old plotting/launch scripts require
 adaptation to the new settings and are not copied wholesale.

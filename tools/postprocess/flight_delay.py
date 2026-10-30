@@ -19,8 +19,12 @@ def main():
         delay = data.delay_Mpc(args.reference, args.axis)
     except (ValueError, OSError) as error:
         parser.error(str(error))
-    np.savetxt(sys.stdout, np.column_stack((data["E/eV"], data.weights, delay)),
-               header="E/eV\tweight\tdelay_Mpc", delimiter="\t", fmt="%.17g")
+    print("# E/eV\tweight\tdelay_Mpc")
+    # np.savetxt's printf-style formatting can narrow longdouble to float64.
+    # Format NumPy scalars directly so extended-precision delays round-trip.
+    for row in zip(data["E/eV"], data.weights, delay):
+        print("\t".join(np.format_float_scientific(value, unique=True, trim="-")
+                        for value in row))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """Read normalized CRbeam tables. Coordinates exposed by CRbeamFile are in kpc.
 
-Requires NumPy; reading config.yaml also requires PyYAML. No plotting imports.
+Requires NumPy; reading config.yaml or run.yaml also requires PyYAML. No plotting imports.
 """
 
 import io
@@ -21,6 +21,19 @@ def header_number(header, name):
     if not np.isfinite(value):
         raise ValueError("Non-finite header field: " + name)
     return value
+
+
+def _yaml_mapping(path):
+    """Read optional run metadata without accepting malformed scalar/list roots."""
+    import yaml
+    try:
+        with path.open() as stream:
+            result = yaml.safe_load(stream)
+    except yaml.YAMLError as error:
+        raise ValueError(f"Invalid YAML metadata: {path}") from error
+    if not isinstance(result, dict):
+        raise ValueError(f"Expected a YAML mapping: {path}")
+    return result
 
 
 class CRbeamFile:
@@ -72,11 +85,14 @@ class CRbeamFile:
         self.config, self.params_dict = {}, {}
         directory = path.resolve().parent
         run_directory = directory.parent if directory.name.startswith("z") else directory
+        run_file = run_directory / "run.yaml"
+        if run_file.exists():
+            run = _yaml_mapping(run_file)
+            if run.get("status") != "completed":
+                raise ValueError(f"Run is not completed: {run_file} (status={run.get('status')!r})")
         config = Path(config_path) if config_path else run_directory / "config.yaml"
         if config.exists():
-            import yaml
-            with config.open() as stream:
-                self.config = yaml.safe_load(stream)
+            self.config = _yaml_mapping(config)
             source = self.config.get("source", {})
             observer = self.config.get("observer", {})
             self.params_dict["z"] = source.get("redshift")
@@ -96,6 +112,21 @@ class CRbeamFile:
                     if line.startswith("--"):
                         key, _, value = line.partition("\t")
                         self.params_dict[key[2:]] = value
+        # RawOutput3D used each row's flight interval, whereas its header
+        # contains only the first interval. A common header scale cannot
+        # reconstruct positions for a continuous source. Spatial format 1
+        # deliberately uses one fixed scale per file and is not affected.
+        legacy_modern = ("spatial_format = " not in self.header
+                         and "z_cascade_production" in self.columns
+                         and "N_interactions" in self.columns)
+        varying_birth = ("z_src" in self.columns and len(self) > 1
+                         and np.any(self["z_src"] != self["z_src"][0]))
+        continuous = self.config.get("source", {}).get("distribution") == "continuous"
+        if "m_z" in self.params_dict:
+            continuous = continuous or float(self.params_dict["m_z"]) != 1000
+        if legacy_modern and (continuous or varying_birth):
+            raise ValueError("Legacy modern output uses per-particle normalization; "
+                             "one header T cannot reconstruct a continuous source")
         try:
             self.source_position_Mpc = np.array([
                 header_number(self.header, "source_" + name + "_Mpc") for name in "xyz"], dtype=np.longdouble)

@@ -27,7 +27,7 @@ python3 -m pip install -r tools/postprocess/requirements.txt
 ```
 
 NumPy is used for numerical processing; PyYAML is used by file_helpers.py
-when reading config.yaml. These are optional analysis dependencies; CRbeam
+when reading config.yaml or run.yaml. These are optional analysis dependencies; CRbeam
 itself does not require them.
 
 The command-line utility can be run directly:

@@ -72,3 +72,7 @@ checks, including executable round trips, passed again; both command paths
 and the legacy FileHelpers import were checked. C++ sources were unchanged
 by this relocation. The retained manifest above describes the preceding
 implementation check, before these Python path changes.
+
+The later main integration review adds run-status and legacy continuous-source
+normalization guards and extended output precision. Its current checks are
+recorded in [the integration review](fork_integration_review.md).
