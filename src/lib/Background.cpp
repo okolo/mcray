@@ -210,13 +210,13 @@ MatrixBackground::MatrixBackground(std::string aName, std::string aTableFile, bo
 	fLogEtoIndex = new GSLTableFunc(fLogE, fLogEindex, gsl_interp_linear, -1., -1.);
 	fMinE = exp(fLogE[0]);
 	fMaxE = exp(*(fLogE.end()-1));
-	delete fBuffer;
+	delete [] fBuffer;
 	fBuffer = 0;
 }
 
 MatrixBackground::~MatrixBackground()
 {
-	delete fBuffer;
+	delete [] fBuffer;
 	delete fZtoIndex;
 	delete fLogEtoIndex;
 	for(std::vector<Vector*>::iterator  it = fLogEdN_dE.begin(); it != fLogEdN_dE.end(); it++)
