@@ -44,7 +44,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REQUEST_ACTOR: ${{ github.actor }}
         run: |
+          permission=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$REQUEST_ACTOR/permission" --jq .permission)
+          if [ "$permission" != "admin" ] && [ "$permission" != "write" ]; then
+            echo 'allowed=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::AI review commands require write or admin access.'
+            exit 0
+          fi
           head_repository=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.repo.full_name')
           if [ "$head_repository" != "$GITHUB_REPOSITORY" ]; then
             echo 'allowed=false' >> "$GITHUB_OUTPUT"
@@ -66,6 +73,7 @@ jobs:
           OPENCODE_REVIEW_CONTEXT: ${{ runner.temp }}/opencode-review-context.json
         run: |
           cp .github/scripts/opencode_review.py "$RUNNER_TEMP/opencode_review.py"
+          cp .github/scripts/run_opencode_review.py "$RUNNER_TEMP/run_opencode_review.py"
           cp .github/scripts/ci_review_evidence.py "$RUNNER_TEMP/ci_review_evidence.py"
           cp .github/scripts/prepare_review_toolchain.sh "$RUNNER_TEMP/prepare_review_toolchain.sh"
           python3 "$RUNNER_TEMP/opencode_review.py" prepare
@@ -122,17 +130,29 @@ jobs:
             --context "$RUNNER_TEMP/opencode-review-context.json" \
             --output "$RUNNER_TEMP/opencode-ci-evidence.json" --timeout-seconds 600
 
+      - name: Install pinned OpenCode CLI
+        if: steps.prepared.outputs.allowed == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/opencode-cli"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/anomalyco/opencode/releases/download/v1.19.5/opencode-linux-x64-baseline.tar.gz \
+            --output "$RUNNER_TEMP/opencode-cli.tar.gz"
+          tar -xzf "$RUNNER_TEMP/opencode-cli.tar.gz" -C "$RUNNER_TEMP/opencode-cli"
+          test "$("$RUNNER_TEMP/opencode-cli/opencode" --version)" = '1.19.5'
+
       - name: AI review with DeepSeek only
         if: steps.prepared.outputs.allowed == 'true'
-        uses: anomalyco/opencode/github@2c14fc5586fe0b88e5c04732d2e846769cc35671
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_REVIEW_CONTEXT: ${{ runner.temp }}/opencode-review-context.json
+          OPENCODE_REVIEW_CLI: ${{ runner.temp }}/opencode-cli/opencode
+          OPENCODE_EXPECTED_HEAD_SHA: ${{ steps.prepared.outputs.head_sha }}
           OPENCODE_REVIEW_RESULT: ${{ runner.temp }}/opencode-review-result.json
           OPENCODE_CI_EVIDENCE: ${{ runner.temp }}/opencode-ci-evidence.json
           OPENCODE_CONFIG_CONTENT: |
             {
+              "share": "disabled",
               "default_agent": "reviewer",
               "model": "openrouter/deepseek/deepseek-v4.1-flash",
               "small_model": "openrouter/deepseek/deepseek-v4.1-flash",
@@ -162,12 +182,7 @@ jobs:
                 "summary": {"model": "openrouter/deepseek/deepseek-v4.1-flash"}
               }
             }
-        with:
-          model: openrouter/deepseek/deepseek-v4.1-flash
-          agent: reviewer
-          use_github_token: true
-          share: false
-          prompt: |
+          OPENCODE_REVIEW_PROMPT: |
             Perform an independent code review of this pull request. Read the
             repository AGENTS.md, if present, and relevant public usage
             contracts first.
@@ -227,12 +242,13 @@ jobs:
             Keep the checkout completely clean: do not create or modify files
             there, including build products, caches, logs, and test outputs.
             Put all scratch work and build artifacts outside the checkout.
-            A dirty checkout makes the upstream action attempt a commit/push
-            and fail before publishing the review; never rely on that path.
+            The analysis wrapper rejects checkout modifications or a branch
+            switch before any formal review can be published.
             Do not edit repository files, commit, push, create branches, open
             other PRs, submit formal GitHub reviews, merge PRs, or change PR
             state or metadata. A separate publisher submits the formal verdict.
-            Publish the review as a comment on this PR, in English. For each
+            Do not publish ordinary PR comments or any other GitHub messages.
+            Put the full review in the JSON summary, in English. For each
             finding give severity, path and line, concrete failure conditions,
             and supporting evidence. Separate confirmed defects from questions
             and unverified risks. If no actionable defects are found, say so
@@ -258,6 +274,9 @@ jobs:
             reliable verdict; never approve by default or because checks passed.
             Missing essential evidence must prevent APPROVE. Do not manufacture
             blockers from unrelated missing external data or approved physics.
+        run: |
+          set -euo pipefail
+          python3 "$RUNNER_TEMP/run_opencode_review.py" 2>&1 | tee "$RUNNER_TEMP/opencode-review-cli.log"
 
       - name: Publish formal independent review
         if: steps.prepared.outputs.allowed == 'true'
@@ -278,6 +297,7 @@ jobs:
           if-no-files-found: ignore
           path: |
             ${{ runner.temp }}/opencode-toolchain.log
+            ${{ runner.temp }}/opencode-review-cli.log
             ${{ runner.temp }}/opencode-ci-evidence.json
             ${{ runner.temp }}/opencode-ci-reports/**/environment.log
             ${{ runner.temp }}/opencode-ci-reports/**/ctest-results.xml
