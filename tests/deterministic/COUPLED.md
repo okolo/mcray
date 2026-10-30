@@ -72,8 +72,7 @@ are retained diagnostically rather than clipped into apparent rare yields.
 
 Use the existing NumPy/SciPy reference environment and normal Release build
 from the public repository root; rebuild `deterministic_pd_export` after this
-extension. All paths below refer to prepared data/reference files, not the
-private planning repository.
+extension. All paths below refer to prepared data and reference files.
 
 ```bash
 cmake --build build/Release --target deterministic_pd_export -j2
@@ -131,7 +130,7 @@ Activate the NumPy/SciPy environment first. The requested commit must be
 available on the public remote before running this command. The runner fetches
 and resolves the exact revision, builds, runs CTest and Python controls, and
 archives all results or failures in TEST_DATA_DIR. The workload uses a fresh
-public checkout and never reads private plans.
+public checkout.
 
 `initial` runs N=3,5,9 with I order16; `full` runs N=17,33,65 with I order32.
 Both profiles cover I/M/C on both backgrounds. Additional runs double I order

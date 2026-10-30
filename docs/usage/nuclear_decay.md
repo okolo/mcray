@@ -172,5 +172,6 @@ This implementation does not establish full CRPropa E2E agreement, precision
 of rare branches, accuracy of the ionization correction, or nuclear GZK/pair
 support. Dedicated rate, branching and spectral comparisons remain necessary.
 
-The follow-up CRPropa comparison stages and pending acceptance proposals are
-recorded in https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_decay_comparison_plan.md.
+For subsequent comparisons and the retained acceptance limits, see
+[the eight-hour results](../validation/release_check_8h_results_20261027.md)
+and [the frozen comparison protocol](../../tests/crpropa/ACCEPTANCE.md).

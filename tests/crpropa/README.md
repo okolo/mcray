@@ -1,8 +1,9 @@
 # CRPropa comparison adapters
 
 These tools compare the unchanged production libraries on Linux amd64.
-Read https://github.com/okolo/mcray_dev/blob/main/docs/validation/nuclear_decay_comparison_plan.md and
-../../docs/validation/nuclear_decay_comparison_results.md before interpreting results.
+Read [the nuclear-decay comparison results](../../docs/validation/nuclear_decay_comparison_results.md)
+and [the release validation limits](../../docs/validation/nuclear_release_notes.md)
+before interpreting results.
 Outputs, frozen sources, generated tables and Docker images stay outside Git.
 No script declares statistical acceptance from diagnostic z scores.
 

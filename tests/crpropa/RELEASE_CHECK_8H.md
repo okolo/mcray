@@ -48,7 +48,7 @@ the 20261019 coupled deterministic cache and the 20261020 v1 results. If
 retained work directories were removed, it restores the original archives
 from `/home2/ok/mcray-test-data` into `/home2/ok/release-check-inputs`.
 Keep `20261020T153324Z-d619dbcb.json` beside its original archive.
-No new nuclear data or private repository is required. System `flock` and
+No new nuclear data is required. System `flock` and
 the existing Linux amd64 compiler/scientific environment are used.
 
 The external harness fetches the exact published revision into its own fresh

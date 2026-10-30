@@ -47,6 +47,6 @@ through OpenRouter, automatically and on request with `/opencode`.
 
 ## Documentation
 
-See the [documentation index](docs/README.md) for design, reference, usage and
-validation documents, and the [future task list](https://github.com/okolo/mcray_dev/blob/main/docs/tasks/FUTURE_TASKS.md)
-for deferred work.
+See the [documentation index](docs/README.md) for usage, reference tools and
+validation results. The [release notes](docs/validation/nuclear_release_notes.md)
+describe the supported scope and known limitations.

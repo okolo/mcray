@@ -122,7 +122,7 @@ provenance.
 The installed-file inventory is labelled as an inventory, not a claim every
 file was used. Directory symlinks are followed with cycle protection; the
 current output directory is excluded from its own data inventory. The
-executable hash identifies the exact binary; no private repository is needed.
+executable hash identifies the exact binary.
 
 Records are initially written before background/process initialization, then
 updated on completion or failure. A failure before output creation, such as
