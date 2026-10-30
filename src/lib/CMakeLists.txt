@@ -84,6 +84,8 @@ Deflection1D.cpp
 Deflection1D.h
 Deflection3D.cpp
 Deflection3D.h
+GridMagneticField.cpp
+GridMagneticField.h
 Filter.cpp
 Filter.h
 GammaPP.cpp

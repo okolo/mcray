@@ -69,6 +69,14 @@ CTest labels distinguish unit, integration, and e2e. CRbeam help and the
 short z2t calculation also have the smoke label. Every current test has a 30-second timeout.
 These smoke checks do not validate nuclear propagation.
 
+## Grid magnetic fields
+
+The `grid_magnetic_field_tests` target covers validated Cartesian grids,
+trilinear interpolation, boundary extensions, component ownership, concurrent
+reads and existing deflector clones. It uses only temporary synthetic input
+and runs through CTest with prefix `unit.magnetic.` and label `unit`.
+See [the public API contract](../docs/usage/grid_magnetic_fields.md).
+
 ## Adding checks
 
 TransportCR GZK cases can use externally supplied finer SOPHIA tables:

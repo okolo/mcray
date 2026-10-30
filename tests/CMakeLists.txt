@@ -110,3 +110,10 @@ target_link_libraries(nuclear_photon_probe PRIVATE mcray)
 add_executable(deterministic_pd_export deterministic_pd_export.cpp)
 target_include_directories(deterministic_pd_export PRIVATE ../src/lib)
 target_link_libraries(deterministic_pd_export PRIVATE mcray)
+
+# Cartesian field loading, boundaries, ownership and existing deflection integration.
+add_executable(grid_magnetic_field_tests grid_magnetic_field.cpp)
+target_include_directories(grid_magnetic_field_tests PRIVATE ../src/lib)
+target_link_libraries(grid_magnetic_field_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(grid_magnetic_field_tests TEST_PREFIX "unit.magnetic."
+    PROPERTIES TIMEOUT 30 LABELS "unit")

@@ -6,6 +6,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Usage and tests
 
+- [Grid magnetic fields and composition C++ API](usage/grid_magnetic_fields.md)
 - [YAML configuration, CLI compatibility and run records](usage/yaml_configuration.md)
 - [Complete commented configuration](../examples/config.full.yaml)
 - [Unified nuclei and TALYS](usage/talys_usage.md)
@@ -25,6 +26,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [Grid magnetic field implementation checks](validation/grid_magnetic_fields.md)
 - [Corrected ICS/GammaPP spectra with fast invariant selection](validation/em_secondary_sampling.md)
 
 - [YAML configuration regression checks](validation/yaml_configuration.md)
