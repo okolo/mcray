@@ -7,7 +7,7 @@ global-state handling and replay.
 
 ## Checks
 
-Seven new CTest cases cover:
+The original seven CTest cases cover:
 
 - CLI/default values and partial overrides in both YAML schema versions;
 - invalid, nonfinite, quoted, singular and unsupported fields and duplicate
@@ -110,6 +110,28 @@ After the ownership fix, the complete rebuilt macOS Release suite passed
 241/241 in 17.58 s. Native Linux sanitizer CI remains the decisive regression
 check for this leak; successful emulated checks alone do not replace it.
 
+
+## Library-default reuse regression
+
+`ConfigurationTest.CosmologyYamlDefaultsReuseLibraryInitialization` adds an
+eighth cosmology case. For both schema versions, it checks omitted cosmology
+and explicit `(67.8, 0.692)` after library-default initialization. It verifies
+the actual YAML doubles against a fresh local Cosmology object and runs CRbeam
+successfully in the already-initialized process, checking particle output.
+The existing conflicting-parameter rejection test remains unchanged.
+
+The default constants are initialized from unsuffixed double literals, then
+widened to `cosmo_time`. They therefore agree exactly with the YAML doubles;
+they are not the extended-precision literals `67.8L` and `0.692L`. This test
+guards that compatibility without changing precision or adding a tolerance
+to production parameter matching. Linux amd64 exercises the distinction
+between double and extended-precision long double.
+
+On 2026-10-31 the eight cosmology cases passed after rebuilding the test
+target: macOS arm64 Release (0.43 s) and emulated Ubuntu 22.04 amd64
+ASan/UBSan with leak detection (15.84 s). The existing toolchains and offline
+Ubuntu image described above were used. No production code or numerical
+acceptance criteria changed in this regression follow-up.
 
 ## Reproduction
 
