@@ -276,7 +276,7 @@ jobs:
             blockers from unrelated missing external data or approved physics.
         run: |
           set -euo pipefail
-          python3 "$RUNNER_TEMP/run_opencode_review.py" 2>&1 | tee "$RUNNER_TEMP/opencode-review-cli.log"
+          python3 "$RUNNER_TEMP/run_opencode_review.py"
 
       - name: Publish formal independent review
         if: steps.prepared.outputs.allowed == 'true'
@@ -297,7 +297,6 @@ jobs:
           if-no-files-found: ignore
           path: |
             ${{ runner.temp }}/opencode-toolchain.log
-            ${{ runner.temp }}/opencode-review-cli.log
             ${{ runner.temp }}/opencode-ci-evidence.json
             ${{ runner.temp }}/opencode-ci-reports/**/environment.log
             ${{ runner.temp }}/opencode-ci-reports/**/ctest-results.xml

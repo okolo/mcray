@@ -149,8 +149,9 @@ reported version is checked. Revalidate the CLI flags, model restrictions,
 credential isolation, and single-publication behavior when upgrading it.
 The job requires outbound access to GitHub release assets and OpenRouter;
 the versioned upstream asset itself is not authenticated by a local checksum.
-The CLI output is retained as `opencode-review-cli.log` in the review evidence
-artifact so model streams and failures can be inspected.
+Inspect CLI output in the standard Actions job log, where GitHub masks its
+secrets. Raw model output is not uploaded as an artifact because artifact
+files do not receive the job log's secret masking.
 
 Local YAML/static checks do not verify provider credentials, model access,
 GitHub comment permissions, or review quality. Verify those with an actual
