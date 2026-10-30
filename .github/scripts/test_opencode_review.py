@@ -20,15 +20,15 @@ class ReviewTests(unittest.TestCase):
                    "base": {"sha": "b" * 40}}
         self.verdict = {"head_sha": "a" * 40, "base_sha": "b" * 40,
                         "review_complete": True, "verdict": "APPROVE",
-                        "blocking_findings": [], "summary": "Reviewed the diff; no blocking findings.",
-                        "architecture_review": {"required": False, "status": "not_required",
-                                                "summary": "Localized documentation change."}}
+                        "blocking_findings": [], "summary": "Reviewed the diff; no blocking findings."}
 
     def test_completed_review_approves_exact_commit(self):
         payload = review.review_payload(self.context, self.verdict, self.pr)
         self.assertEqual(payload["event"], "APPROVE")
         self.assertEqual(payload["commit_id"], "a" * 40)
         self.assertIn(review.MARKER, payload["body"])
+        self.assertIn("## AI review\n", payload["body"])
+        self.assertIn("Reviewer: DeepSeek V4.1 Flash", payload["body"])
 
     def test_incomplete_or_blocking_review_cannot_approve(self):
         for changes in ({"review_complete": False}, {"review_complete": "true"},
@@ -67,33 +67,6 @@ class ReviewTests(unittest.TestCase):
         for verdict in (None, [], missing, self.verdict | {"unexpected": True}):
             with self.subTest(verdict=verdict), self.assertRaises(ValueError):
                 review.review_payload(self.context, verdict, self.pr)
-
-    def test_required_consultation_must_complete_before_approval(self):
-        for status in ("failed", "inconclusive"):
-            verdict = self.verdict | {"architecture_review": {
-                "required": True, "status": status, "summary": "GLM consultation did not complete."}}
-            with self.subTest(status=status), self.assertRaises(ValueError):
-                review.review_payload(self.context, verdict, self.pr)
-            verdict.update(verdict="COMMENT", review_complete=False)
-            self.assertEqual(review.review_payload(self.context, verdict, self.pr)["event"], "COMMENT")
-
-    def test_completed_consultation_is_reported_in_formal_review(self):
-        verdict = self.verdict | {"architecture_review": {
-            "required": True, "status": "completed", "summary": "Task ses_example: contracts are consistent."}}
-        payload = review.review_payload(self.context, verdict, self.pr)
-        self.assertEqual(payload["event"], "APPROVE")
-        self.assertIn("## AI review\n", payload["body"])
-        self.assertIn("DeepSeek V4.1 Flash", payload["body"])
-        self.assertIn("GLM-5.3: completed", payload["body"])
-
-    def test_invalid_or_missing_consultation_evidence_cannot_approve(self):
-        invalid = [None, {}, {"required": "true", "status": "completed", "summary": "Checked."},
-                   {"required": True, "status": "not_required", "summary": "Skipped."},
-                   {"required": False, "status": "completed", "summary": "Checked."},
-                   {"required": True, "status": "completed", "summary": ""}]
-        for architecture in invalid:
-            with self.subTest(architecture=architecture), self.assertRaises(ValueError):
-                review.review_payload(self.context, self.verdict | {"architecture_review": architecture}, self.pr)
 
     @patch.object(review, "api")
     def test_prepare_only_reads_metadata_and_preserves_existing_reviews(self, api):
