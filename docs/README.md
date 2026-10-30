@@ -31,6 +31,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [Deterministic historical-fork charged-particle transport](validation/fork_transport_comparison.md)
+
 - [YAML cosmology verification](validation/yaml_cosmology.md)
 
 - [Direct historical-fork field and cone comparison](validation/fork_kernel_comparison.md)
