@@ -35,11 +35,53 @@ Python requirements and CTest JUnit results are retained as an artifact for
 14 days, including on failure. Large build outputs and numerical tables are
 not uploaded. Each job has a 25-minute timeout and two build/test workers.
 
-The independent AI-review workflow remains a separate check. Its approval
-is not evidence that a C++ build ran: that job previously lacked the required
-development dependencies. Use the dedicated build/test check for execution
-evidence, and the review for analysis. This change does not alter repository
-branch-protection rules or make a new check required automatically.
+## Independent review execution evidence
+
+The independent AI-review workflow remains a separate check. It runs on Ubuntu
+22.04, installs the same C/C++/Fortran, Boost, GSL, yaml-cpp and OpenSSL development
+dependencies, and checks them by compiling/linking a small toolchain probe.
+The probe uses workflow-owned source outside the checkout; it does not configure
+or execute the candidate project's CMake code. System compiler paths and /usr
+package prefix avoid accidentally selecting an unrelated Conda installation.
+The reviewer receives a scratch build path and must keep the frozen head clean.
+
+Before analysis, a read-only collector waits up to ten minutes for the matching
+pull-request CI run. It validates the repository, workflow, frozen PR head/base,
+latest run and current attempt, both required jobs and their CTest steps, and
+current-attempt nonexpired artifacts. It reads only bounded environment/JUnit
+members without extracting arbitrary archive paths. The environment's actual
+build SHA must be the reviewed head or a merge commit whose parents are exactly
+that frozen base and head. The build tree, report hashes, counts/skips and job
+URLs are recorded. Reruns or PR changes during collection invalidate evidence;
+an older success cannot replace a newer failed/pending run. A changed CI
+workflow definition is reported as unavailable for automatic evidence reuse
+and needs independent assessment/local checks.
+
+Verified means provenance and report consistency, not code correctness or
+physical acceptance. Logs/reports are untrusted data, never model instructions.
+The reviewer must independently analyze the diff and required architecture
+consultation, assess relevant coverage, and distinguish CI execution from
+checks it personally ran. Missing/failed/stale evidence is never success;
+the installed toolchain also allows targeted project checks. Full duplicate
+sanitizer builds or unavailable historical-fork data are not mandatory when
+verified CI provides the relevant execution evidence. Material unresolved
+verification gaps still require COMMENT; confirmed blockers require
+REQUEST_CHANGES. Green checks never automatically produce APPROVE.
+
+The formal publisher's head/base, completed-review, blocking-finding and
+architectural-consultation gates are unchanged, including the check after
+approval publication. Branch protection is unchanged. The job adds only
+`actions: read` for CI evidence access; its existing review permissions remain.
+Toolchain logs, evidence JSON and the two selected reports are retained for
+14 days. Availability errors remain explicit in the evidence file. The review
+job's success means execution/publication completed, not necessarily APPROVE.
+
+The collector and existing publication guards have offline standard-library
+tests, included automatically in the Release CI Python checks:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
+```
 
 These tests are implementation/regression checks, not full physical acceptance.
 They do not start external-data research ensembles or table generation.
