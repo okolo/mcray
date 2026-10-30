@@ -24,6 +24,15 @@
 # docs/usage/grid_magnetic_fields.md.
 schema_version: 1
 
+cosmology:
+  # Present-day H0 in km/s/Mpc, finite and >0. Default: 67.8.
+  # YAML-only; existing CLI runs retain this default and record it in config.yaml.
+  hubble_km_s_Mpc: 67.8
+  # Flat matter-plus-Lambda model: Omega_m = 1 - omega_lambda.
+  # Finite 0 <= omega_lambda < 1. Default: 0.692; zero is matter-only.
+  # The old CRbeam fork used H0=70 and omega_lambda=0.7.
+  omega_lambda: 0.692
+
 source:
   # Choices: point | continuous. CLI: --m_z selects the legacy source mode.
   # point: all primary histories start at the specified redshift.

@@ -11,6 +11,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Truncated vMF angular source](usage/vmf_source.md)
 - [Grid magnetic fields, composition and CLI/YAML input](usage/grid_magnetic_fields.md)
 - [YAML configuration, CLI compatibility and run records](usage/yaml_configuration.md)
+- [Cosmology settings](usage/cosmology.md)
 - [Optional photon-threshold thinning](usage/photon_thinning.md)
 - [Complete commented configuration](../examples/config.full.yaml)
 - [Unified nuclei and TALYS](usage/talys_usage.md)
@@ -29,6 +30,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Docker Linux amd64](../docker/README.md)
 
 ## Validation results
+
+- [YAML cosmology verification](validation/yaml_cosmology.md)
 
 - [Direct historical-fork field and cone comparison](validation/fork_kernel_comparison.md)
 

@@ -1,4 +1,5 @@
 #include "Configuration.h"
+#include "Cosmology.h"
 #include "MagneticConfiguration.h"
 #include "SpatialConfiguration.h"
 #include "Particle.h"
@@ -200,6 +201,8 @@ std::string StringValue(const YAML::Node &node, const std::string &path) {
 std::set<std::string> Fields(bool versionTwo = false) {
   std::set<std::string> fields = {
       "schema_version",
+      "cosmology.hubble_km_s_Mpc",
+      "cosmology.omega_lambda",
       "source.distribution",
       "source.evolution_index",
       "source.spectrum.type",
@@ -602,6 +605,9 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
     // into the same command model consumed by CRbeam process setup.
     CmdLine cli(yaml ? 1 : argc, yaml ? defaults.data() : argv, commands);
     fEffective["schema_version"] = 1;
+    // These are the existing library defaults, now explicit in every snapshot.
+    Put(fEffective, "cosmology.hubble_km_s_Mpc", static_cast<double>(mcray::Cosmology::DefaultHubbleKmSecMpc));
+    Put(fEffective, "cosmology.omega_lambda", static_cast<double>(mcray::Cosmology::DefaultOmegaVac));
     for (const auto &b : bindings) {
       auto p = cli.get_param(b.option);
       std::string value = static_cast<const char *>(p);
@@ -902,6 +908,19 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
                       "magnetic_field.maximum_scale_Mpc"))
         Invalid("magnetic_field", "minimum scale must be below maximum");
     }
+    // Shared physical settings have no legacy CLI override. Validate after
+    // overlay so both schema versions retain defaults for omitted values.
+    const double hubble = Numeric(Get(fEffective, "cosmology.hubble_km_s_Mpc"),
+                                  "cosmology.hubble_km_s_Mpc");
+    const double vacuum = Numeric(Get(fEffective, "cosmology.omega_lambda"),
+                                  "cosmology.omega_lambda");
+    if (!(hubble > 0))
+      Invalid("cosmology.hubble_km_s_Mpc", "must be positive");
+    // Omega_m is derived. Pure de Sitter has no finite age in this model.
+    if (vacuum < 0 || vacuum >= 1)
+      Invalid("cosmology.omega_lambda", "require 0 <= omega_lambda < 1");
+    Put(fEffective, "cosmology.hubble_km_s_Mpc", hubble);
+    Put(fEffective, "cosmology.omega_lambda", vacuum);
     for (auto &arg : fArguments)
       fArgv.push_back(arg.data());
     fArgv.push_back(nullptr);

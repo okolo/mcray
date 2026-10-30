@@ -30,6 +30,8 @@
 #include "gsl/gsl_sf_hyperg.h"
 #include "gsl/gsl_sf_gamma.h"
 #include <iostream>
+#include <cmath>
+#include <limits>
 #include "Particle.h"
 
 namespace mcray {
@@ -38,6 +40,11 @@ Cosmology cosmology;
 
 void Cosmology::Init(cosmo_time aMaxZ, cosmo_time aOmegaVac, cosmo_time aHubbleKm_sec_Mpc, int aAccuracy)
 {
+    if (!std::isfinite(aMaxZ) || !(aMaxZ > 0) ||
+        !std::isfinite(aOmegaVac) || aOmegaVac < 0 || aOmegaVac >= 1 ||
+        !std::isfinite(aHubbleKm_sec_Mpc) || !(aHubbleKm_sec_Mpc > 0) ||
+        aAccuracy <= 100)
+        Utils::Exception::ThrowFatal("Cosmology: require finite maxZ>0, H0>0, 0<=OmegaLambda<1 and accuracy>100");
 	ASSERT(t0==0);//init should be called only once
 	ASSERT(aMaxZ>0);
 	ASSERT(aOmegaVac>=0 && aOmegaVac<=1.);
@@ -45,6 +52,11 @@ void Cosmology::Init(cosmo_time aMaxZ, cosmo_time aOmegaVac, cosmo_time aHubbleK
 	Accuracy = aAccuracy;
 
 	H = 1e5*aHubbleKm_sec_Mpc/Units::Mpc_in_cm*units.Tunit;
+    // RedShift::Rate returns double even when cosmological time is wider.
+    // Reject a Hubble rate that would silently become zero or infinity there.
+    if (!std::isfinite(H) || H < std::numeric_limits<double>::denorm_min() ||
+        H > std::numeric_limits<double>::max())
+        Utils::Exception::ThrowFatal("Cosmology: H0 is not representable in internal units");
 	fMaxZ = aMaxZ;
 
 	Lv = aOmegaVac;
@@ -61,8 +73,24 @@ void Cosmology::Init(cosmo_time aMaxZ, cosmo_time aOmegaVac, cosmo_time aHubbleK
 		t0 = log((2. + 2.*sqrtLv - Lm)/Lm)/(3.*sqrtLv)/H;
 		//t0 = 2./3./H/sqrtLv*log((1+sqrtLv)/sqrtLm);
 	}
+    if (!std::isfinite(t0) || !(t0 > 0)) {
+        t0 = 0; // Failed initialization must not appear usable.
+        Utils::Exception::ThrowFatal("Cosmology: age is not finite and positive at this precision");
+    }
 	initZ2T();
 	initZ2D();
+}
+
+bool Cosmology::HasParameters(cosmo_time omegaVac, cosmo_time hubbleKmSecMpc) const
+{
+    // Reproduce Init's conversion exactly, without a lossy inverse conversion.
+    const cosmo_time expectedH = 1e5*hubbleKmSecMpc/Units::Mpc_in_cm*units.Tunit;
+    return IsInitialized() && Lv == omegaVac && H == expectedH;
+}
+
+bool Cosmology::CoversRedshift(cosmo_time redshift) const
+{
+    return IsInitialized() && redshift >= 0 && redshift <= fMaxZ;
 }
 
 Cosmology::Cosmology()

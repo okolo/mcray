@@ -40,8 +40,12 @@ typedef long double cosmo_time;
 class Cosmology
 {
 public:
+    // Preserve the existing defaults in one place for library and application.
+    static constexpr cosmo_time DefaultOmegaVac = 0.692;
+    static constexpr cosmo_time DefaultHubbleKmSecMpc = 67.8;
 	Cosmology();
-	void Init(cosmo_time aMaxZ=100., cosmo_time aOmegaVac=0.692, cosmo_time aHubbleKm_sec_Mpc=67.8, int aAccuracy=100000);
+	void Init(cosmo_time aMaxZ=100., cosmo_time aOmegaVac=DefaultOmegaVac,
+              cosmo_time aHubbleKm_sec_Mpc=DefaultHubbleKmSecMpc, int aAccuracy=100000);
 // z -> t, dz -> dt and back transformation
 	inline cosmo_time z2t0(cosmo_time _z) const;//t0==0 at z=0
 	inline cosmo_time t02z(cosmo_time _t) const;//t0==0 at z=0
@@ -63,7 +67,9 @@ public:
 	//test output
 	void print() const;
 	static void UnitTest();
-	inline bool IsInitialized() { return t0!=0; }
+	inline bool IsInitialized() const { return t0!=0; }
+	bool HasParameters(cosmo_time omegaVac, cosmo_time hubbleKmSecMpc) const;
+	bool CoversRedshift(cosmo_time redshift) const;
 	inline cosmo_time RelError() const { return 1./Accuracy; }
 private:
 	//test

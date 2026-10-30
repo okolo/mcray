@@ -53,6 +53,14 @@ A seed alone does not promise identical trajectories for different
 thread/batch settings, platforms or data. These controls are preserved in
 both the effective configuration and run provenance.
 
+## Cosmology
+
+Both schema versions support [cosmology settings](cosmology.md):
+`cosmology.hubble_km_s_Mpc` and `cosmology.omega_lambda`. Defaults remain
+67.8 km/s/Mpc and 0.692; effective snapshots record them explicitly. The
+matter density is derived from flatness. Existing CLI invocations retain the
+same cosmology and acquire these explicit values in their saved YAML.
+
 ## Nuclear tables
 
 The default nuclear package is **`<standard tables root>/nuclear`**. The root

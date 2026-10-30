@@ -58,7 +58,9 @@ target_include_directories(crbeam_input_tests PRIVATE ../src/lib ../src/app/crbe
 target_link_libraries(crbeam_input_tests PRIVATE GTest::gtest_main mcray crbeam_configuration
     ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${CMAKE_DL_LIBS})
 target_compile_definitions(crbeam_input_tests PRIVATE
-    CRBEAM_FULL_EXAMPLE="${CMAKE_CURRENT_SOURCE_DIR}/../examples/config.full.yaml")
+    CRBEAM_FULL_EXAMPLE="${CMAKE_CURRENT_SOURCE_DIR}/../examples/config.full.yaml"
+    CRBEAM_EXECUTABLE="$<TARGET_FILE:CRbeam>")
+add_dependencies(crbeam_input_tests CRbeam)
 # These interface/regression cases run several real EM cascades. Give
 # emulated/sanitized builds headroom without changing statistical tolerances.
 set(thinning_cascade_filter "ConfigurationTest.PhotonThinningIsActiveInRealCascadeAndReplaysAcrossInterfaces:ConfigurationTest.ExplicitEnergyPolicyPreservesLegacySeededOutput")
