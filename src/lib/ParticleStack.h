@@ -35,9 +35,11 @@
 #include "Filter.h"
 #include <vector>
 #include <set>
+#include <memory>
 
 namespace mcray
 {
+class SpatialObserver;
 
 //Thread-safe stack
 class ParticleStack {
@@ -90,10 +92,8 @@ public:
 	@param[in]  aParticle particle
 	@return true if farther propagation simulation is required for the particle, false otherwise
 	*/
-	bool ContinuePropagation(const Particle& aParticle) const
-	{
-		return GetMinTravelTimeLeft(aParticle)>0 && !(fIncludeFilterInPropagation &&  fFilter && !fFilter->Pass(aParticle));
-	}
+    bool ContinuePropagation(const Particle& particle) const;
+    void SetObserver(std::shared_ptr<const SpatialObserver> observer);
 	inline const CosmoTime& T() const {return fT;}
 	cosmo_time GetMinTravelTimeLeft(const Particle& aParticles) const;
 	~Result();
@@ -105,7 +105,11 @@ public:
     inline void SetOutputFilter(IFilter* aFilter) {fFilter = aFilter;}
 	void EnableFlushOnCtrlC();
 	bool AbortRequested() const { return fStopRequested; }
+protected:
+    cosmo_time LimitTravelTime(const Particle& particle, cosmo_time remaining) const;
 private:
+    bool CanRecord(const Particle& particle) const;
+    std::shared_ptr<const SpatialObserver> fObserver;
 	static void SIGINT_handler(int);
 	static std::vector<Result*> fCtrlCFlushList;
     CosmoTime			fT;//default end time is z=0 (see default constructor of CosmoTime)

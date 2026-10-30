@@ -86,6 +86,8 @@ Deflection3D.cpp
 Deflection3D.h
 GridMagneticField.cpp
 GridMagneticField.h
+SpatialGeometry.cpp
+SpatialGeometry.h
 Filter.cpp
 Filter.h
 GammaPP.cpp
@@ -110,6 +112,8 @@ Nucleus.cpp
 Nucleus.h
 Output.cpp
 Output.h
+SpatialOutput.cpp
+SpatialOutput.h
 PPP.cpp
 PPP.h
 Particle.cpp

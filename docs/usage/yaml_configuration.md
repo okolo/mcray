@@ -169,3 +169,6 @@ parsing, all EBL choices, the complete example, seeded CLI/YAML/snapshot
 history equivalence, path resolution, fixed nuclear installation, checksum
 rejection, actual seed/batch recording, SHA-256 and failed-run metadata.
 Long physical acceptance remains a separate server workload.
+
+Source geometry, strict sphere membership and the compatible spatial table
+format are described in [the spatial input contract](spatial_source_observer.md).

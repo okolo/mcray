@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <sstream>
 #include <gtest/gtest.h>
 #include <unistd.h>
 namespace fs = std::filesystem;
@@ -435,3 +436,211 @@ TEST_F(ConfigurationTest, Sha256HandlesPaddingAndMultipleBlocks) {
 }
 
 } // namespace
+
+TEST_F(ConfigurationTest, SpatialConeCliYamlAndSnapshotReplayAreIdentical) {
+  auto config = YAML::Load(Common());
+  config["schema_version"] = 2;
+  config["magnetic_field"] = YAML::Load("{model: none}");
+  config["source"]["position_Mpc"] = YAML::Load("[1, -2, 3]");
+  config["source"]["angular_distribution"] =
+      YAML::Load("{model: cone, axis: [1, 2, 3], half_angle_deg: 20}");
+  config["output"] =
+      YAML::Load("{directory: ../spatial-yaml, primary_direction: true}");
+  const auto path = Write(YAML::Dump(config));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  const auto data = Read(root / "spatial-yaml/z0/proton");
+  EXPECT_NE(data.find("spatial_format = 1"), std::string::npos);
+  EXPECT_NE(data.find("normalization = first_particle_flight"),
+            std::string::npos);
+  EXPECT_NE(data.find("\tPathMpc\tFlightMpc\n"), std::string::npos);
+  Parse({"--particle",
+         "proton",
+         "--z",
+         "1e-8",
+         "--nparticles",
+         "12",
+         "--seed",
+         "123456",
+         "--batch",
+         "12",
+         "--background",
+         "0",
+         "--EGMF",
+         "0",
+         "--noEMcascade",
+         "--source-position-Mpc",
+         "1,-2,3",
+         "--source-angular-model",
+         "cone",
+         "--source-axis",
+         "1,2,3",
+         "--source-half-angle-deg",
+         "20",
+         "--output-primary-direction",
+         "--output",
+         (root / "spatial-cli").string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "spatial-cli/z0/proton"), data);
+  config = YAML::LoadFile((root / "spatial-yaml/config.yaml").string());
+  config["output"]["directory"] = (root / "spatial-replay").string();
+  const auto replay = Write(YAML::Dump(config));
+  Parse({replay.string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "spatial-replay/z0/proton"), data);
+}
+
+TEST_F(ConfigurationTest, SpatialBirthHitAndOutsideStopProduceFiniteRows) {
+  for (const std::string stop : {"inside", "outside"}) {
+    auto config = YAML::Load(Common());
+    config["schema_version"] = 2;
+    config["magnetic_field"] = YAML::Load("{model: none}");
+    config["source"]["position_Mpc"] = YAML::Load("[1, -2, 3]");
+    config["observer"] = YAML::Load(
+        "{model: sphere, center_Mpc: [1, -2, 3], radius_Mpc: 0.000001}");
+    config["observer"]["stop_when"] = stop;
+    config["output"]["directory"] = (root / stop).string();
+    config["output"]["primary_direction"] = true;
+    const auto path = Write(YAML::Dump(config));
+    Parse({path.string()});
+    ASSERT_EQ(program->run(), 0);
+    const auto data = Read(root / stop / "z0/proton");
+    EXPECT_NE(data.find(stop == "inside"
+                            ? "normalization = fallback"
+                            : "normalization = first_particle_flight"),
+              std::string::npos);
+    std::istringstream lines(data);
+    std::string line;
+    size_t count = 0;
+    while (std::getline(lines, line)) {
+      if (line.empty() || line[0] == '#')
+        continue;
+      std::istringstream fields(line);
+      std::vector<long double> values;
+      long double value;
+      while (fields >> value)
+        values.push_back(value);
+      ASSERT_EQ(values.size(), 17u) << line;
+      for (const auto v : values)
+        EXPECT_TRUE(std::isfinite(v));
+      EXPECT_EQ(values[9], 1);
+      if (stop == "inside")
+        EXPECT_EQ(values.back(), 0);
+      else
+        EXPECT_GT(values.back(), 0);
+      ++count;
+    }
+    EXPECT_EQ(count, 12u);
+  }
+}
+
+TEST_F(ConfigurationTest, SpatialEndRedshiftCapsPropagationWithoutObserver) {
+  auto config = YAML::Load(Common());
+  config["schema_version"] = 2;
+  config["magnetic_field"] = YAML::Load("{model: none}");
+  config["propagation"]["end_redshift"] = 5e-9;
+  config["output"]["directory"] = (root / "end-time").string();
+  const auto path = Write(YAML::Dump(config));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  std::string data;
+  for (const auto &entry : fs::directory_iterator(root / "end-time"))
+    if (entry.is_directory())
+      data = Read(entry.path() / "proton");
+  ASSERT_FALSE(data.empty());
+  const auto expected =
+      (mcray::CosmoTime(5e-9).t() - mcray::CosmoTime(1e-8).t()) /
+      mcray::units.Mpc;
+  std::istringstream lines(data);
+  std::string line;
+  size_t count = 0;
+  while (std::getline(lines, line)) {
+    if (line.empty() || line[0] == '#')
+      continue;
+    std::istringstream fields(line);
+    long double value = 0, last = 0;
+    while (fields >> value)
+      last = value;
+    EXPECT_NEAR(last, expected, std::abs(expected) * 1e-12);
+    ++count;
+  }
+  EXPECT_EQ(count, 12u);
+}
+
+TEST_F(ConfigurationTest, SpatialInputValidatesVectorsRegionsAnglesAndEndTime) {
+  for (const auto &options : std::vector<std::vector<std::string>>{
+           {"--source-axis", "0,0,0"},
+           {"--source-axis", "1,2"},
+           {"--source-axis", "1,2,3,"},
+           {"--source-axis", "nan,0,1"},
+           {"--source-position-Mpc", "1,,3"},
+           {"--source-half-angle-deg", "10"},
+           {"--source-angular-model", "cone", "--source-half-angle-deg", "181"},
+           {"--source-angular-model", "gaussian"},
+           {"--observer-radius-Mpc", "1"},
+           {"--observer", "sphere"},
+           {"--observer", "sphere", "--observer-radius-Mpc", "0"},
+           {"--observer", "none", "--observer-center-Mpc", "0,0,0"},
+           {"--observer", "sphere", "--observer-radius-Mpc", "1",
+            "--observer-stop-when", "enter"},
+           {"--source-axis", "0,0,1", "--source-axis", "1,0,0"},
+           {"--end-redshift", "-1"},
+           {"--end-redshift", ".01"}}) {
+    auto args = options;
+    args.insert(args.end(), {"--z", ".01"});
+    Error([&] { Parse(args); }, "");
+  }
+  for (const char *extra :
+       {"source: {redshift: .01, position_Mpc: [1,2]}\n",
+        "source: {redshift: .01, angular_distribution: {axis: [0,0,0]}}\n",
+        "source: {redshift: .01, angular_distribution: {model: pencil, "
+        "half_angle_deg: 10}}\n",
+        "source: {redshift: .01, angular_distribution: {axis: ['1',0,0]}}\n",
+        "source: {redshift: .01}\nobserver: {model: sphere, radius_Mpc: .1, "
+        "radius_Mpc: .2}\n",
+        "source: {redshift: .01}\nobserver: {model: none, radius_Mpc: .1}\n",
+        "source: {redshift: .01}\nobserver: {model: sphere, radius_Mpc: .1, "
+        "center_Mpc: [0,0]}\n",
+        "source: {redshift: .01}\npropagation: {end_redshift: .01}\n",
+        "source: {redshift: .01}\noutput: {primary_direction: 'true'}\n"}) {
+    auto path = Write(std::string("schema_version: 2\n") + extra);
+    Error([&] { Parse({path.string()}); }, "");
+  }
+  auto v1 = Write(
+      "schema_version: 1\nsource: {redshift: .01, position_Mpc: [0,0,0]}\n");
+  Error([&] { Parse({v1.string()}); }, "unknown");
+}
+
+TEST_F(ConfigurationTest,
+       SpatialCliNormalizesAxisAndRecordsAllEffectiveSettings) {
+  Parse({"--z",
+         ".01",
+         "--source-position-Mpc",
+         "1, -2, 3",
+         "--source-axis",
+         "0,0,5",
+         "--source-angular-model",
+         "cone",
+         "--source-half-angle-deg",
+         "20",
+         "--end-redshift",
+         ".005",
+         "--observer",
+         "sphere",
+         "--observer-center-Mpc",
+         "0,0,1",
+         "--observer-radius-Mpc",
+         ".1",
+         "--observer-stop-when",
+         "outside",
+         "--output-primary-direction"});
+  const auto &cfg = program->EffectiveConfiguration();
+  EXPECT_EQ(cfg["schema_version"].as<int>(), 2);
+  EXPECT_EQ(cfg["source"]["position_Mpc"][1].as<double>(), -2);
+  EXPECT_EQ(cfg["source"]["angular_distribution"]["axis"][2].as<double>(), 1);
+  EXPECT_EQ(
+      cfg["source"]["angular_distribution"]["half_angle_deg"].as<double>(), 20);
+  EXPECT_EQ(cfg["observer"]["stop_when"].as<std::string>(), "outside");
+  EXPECT_EQ(cfg["propagation"]["end_redshift"].as<double>(), .005);
+  EXPECT_TRUE(cfg["output"]["primary_direction"].as<bool>());
+}

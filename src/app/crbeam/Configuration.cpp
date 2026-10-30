@@ -1,5 +1,6 @@
 #include "Configuration.h"
 #include "MagneticConfiguration.h"
+#include "SpatialConfiguration.h"
 #include "Particle.h"
 #include "Sha256.h"
 #include "Utils.h"
@@ -196,7 +197,7 @@ std::string StringValue(const YAML::Node &node, const std::string &path) {
   }
   return text;
 }
-std::set<std::string> Fields() {
+std::set<std::string> Fields(bool versionTwo = false) {
   std::set<std::string> fields = {
       "schema_version",
       "source.distribution",
@@ -214,6 +215,15 @@ std::set<std::string> Fields() {
       "backgrounds.ebl.high_redshift_extension.constant_delta_z"};
   for (const auto &b : bindings)
     fields.insert(b.path);
+  if (versionTwo)
+    for (const char *field :
+         {"source.position_Mpc", "source.angular_distribution.model",
+          "source.angular_distribution.axis",
+          "source.angular_distribution.half_angle_deg",
+          "propagation.end_redshift", "observer.model", "observer.center_Mpc",
+          "observer.radius_Mpc", "observer.stop_when",
+          "output.primary_direction"})
+      fields.insert(field);
   return fields;
 }
 void CheckKeys(const YAML::Node &n, const std::string &path,
@@ -228,7 +238,11 @@ void CheckKeys(const YAML::Node &n, const std::string &path,
     const std::string child = path.empty() ? key : path + "." + key;
     if (!seen.insert(key).second)
       Invalid(child, "duplicate key");
-    if (magneticV2 && child == "magnetic_field") continue;
+    if (magneticV2 &&
+        (child == "magnetic_field" || child == "source.position_Mpc" ||
+         child == "source.angular_distribution.axis" ||
+         child == "observer.center_Mpc"))
+      continue;
     if (fields.count(child)) {
       if (entry.second.IsMap() || entry.second.IsSequence())
         Invalid(child, "expected a scalar");
@@ -239,9 +253,157 @@ void CheckKeys(const YAML::Node &n, const std::string &path,
           parent = true;
       if (!parent)
         Invalid(child, "unknown configuration key");
-      CheckKeys(entry.second, child, fields);
+      CheckKeys(entry.second, child, fields, magneticV2);
     }
   }
+}
+YAML::Node VectorNode(const mcray::SpatialVector &vector) {
+  YAML::Node node(YAML::NodeType::Sequence);
+  for (auto v : vector)
+    node.push_back(static_cast<double>(v));
+  return node;
+}
+mcray::SpatialVector SpatialVectorValue(const YAML::Node &input,
+                                        const std::string &path,
+                                        mcray::SpatialVector fallback) {
+  const auto node = Get(input, path);
+  if (!node)
+    return fallback;
+  if (!node.IsSequence() || node.size() != 3)
+    Invalid(path, "expected exactly three finite numbers");
+  for (size_t i = 0; i < 3; ++i)
+    fallback[i] = Numeric(node[i], path);
+  return fallback;
+}
+void NormalizeSpatial(YAML::Node effective, const YAML::Node &input) {
+  const auto position = SpatialVectorValue(input, "source.position_Mpc", {});
+  auto axis =
+      SpatialVectorValue(input, "source.angular_distribution.axis", {0, 0, 1});
+  const auto scale =
+      std::max({std::abs(axis[0]), std::abs(axis[1]), std::abs(axis[2])});
+  if (!(scale > 0))
+    Invalid("source.angular_distribution.axis", "must not be zero");
+  // Keep already-unit serialized directions stable when replaying config.yaml.
+  const auto length = std::hypot(axis[0], axis[1], axis[2]);
+  if (!std::isfinite(length) ||
+      std::abs(length - 1) > 8 * std::numeric_limits<double>::epsilon())
+    axis = mcray::SourceGeometry::NormalizeAxis(axis);
+  auto text = [&](const char *path, const char *fallback) {
+    const auto node = Get(input, path);
+    return node ? StringValue(node, path) : std::string(fallback);
+  };
+  auto number = [&](const char *path, double fallback) {
+    const auto node = Get(input, path);
+    return node ? Numeric(node, path) : fallback;
+  };
+  const auto model = text("source.angular_distribution.model", "pencil");
+  if (model != "pencil" && model != "cone")
+    Invalid("source.angular_distribution.model", "choices: pencil|cone");
+  const double half = number("source.angular_distribution.half_angle_deg", 0);
+  if (half < 0 || half > 180 || (model == "pencil" && half != 0))
+    Invalid("source.angular_distribution.half_angle_deg",
+            "require 0..180 for cone, zero for pencil");
+  const double end = number("propagation.end_redshift", 0);
+  const auto sourceZ = Get(effective, "source.redshift").as<double>();
+  if (end < 0 || (sourceZ > 0 && end >= sourceZ) || (sourceZ <= 0 && end != 0))
+    Invalid("propagation.end_redshift",
+            "must be nonnegative and below source redshift");
+  const auto observer = text("observer.model", "none");
+  if (observer != "none" && observer != "sphere")
+    Invalid("observer.model", "choices: none|sphere");
+  YAML::Node observerNode;
+  observerNode["model"] = observer;
+  if (observer == "none") {
+    if (Get(input, "observer.center_Mpc") ||
+        Get(input, "observer.radius_Mpc") || Get(input, "observer.stop_when"))
+      Invalid("observer", "center/radius/stop_when require sphere");
+  } else {
+    const auto center = SpatialVectorValue(input, "observer.center_Mpc", {});
+    if (!Get(input, "observer.radius_Mpc"))
+      Invalid("observer.radius_Mpc", "required for sphere");
+    const double radius = number("observer.radius_Mpc", 0);
+    if (!(radius > 0))
+      Invalid("observer.radius_Mpc", "must be positive");
+    const auto stop = text("observer.stop_when", "inside");
+    if (stop != "inside" && stop != "outside")
+      Invalid("observer.stop_when", "choices: inside|outside");
+    observerNode["center_Mpc"] = VectorNode(center);
+    observerNode["radius_Mpc"] = radius;
+    observerNode["stop_when"] = stop;
+  }
+  Put(effective, "source.position_Mpc", VectorNode(position));
+  Put(effective, "source.angular_distribution.model", model);
+  Put(effective, "source.angular_distribution.axis", VectorNode(axis));
+  Put(effective, "source.angular_distribution.half_angle_deg", half);
+  Put(effective, "propagation.end_redshift", end);
+  effective["observer"] = observerNode;
+  const auto direction = Get(input, "output.primary_direction");
+  Put(effective, "output.primary_direction",
+      direction ? Boolean(direction, "output.primary_direction") : false);
+  // Construct the same runtime settings now, so invalid unit conversions fail
+  // before output.
+  const SpatialConfiguration checked(effective);
+}
+bool SpatialCli(CmdLine &cli, YAML::Node effective) {
+  struct Option {
+    const char *option;
+    const char *field;
+    const char *kind;
+  };
+  const Option options[] = {
+      {"--source-position-Mpc", "source.position_Mpc", "vector"},
+      {"--source-angular-model", "source.angular_distribution.model", "text"},
+      {"--source-axis", "source.angular_distribution.axis", "vector"},
+      {"--source-half-angle-deg", "source.angular_distribution.half_angle_deg",
+       "number"},
+      {"--end-redshift", "propagation.end_redshift", "number"},
+      {"--observer", "observer.model", "text"},
+      {"--observer-center-Mpc", "observer.center_Mpc", "vector"},
+      {"--observer-radius-Mpc", "observer.radius_Mpc", "number"},
+      {"--observer-stop-when", "observer.stop_when", "text"},
+      {"--output-primary-direction", "output.primary_direction", "flag"}};
+  YAML::Node input(YAML::NodeType::Map);
+  bool any = false;
+  for (const auto &option : options) {
+    if (!cli.has_param(option.option))
+      continue;
+    any = true;
+    const auto parameter = cli.get_param(option.option);
+    if (std::string(option.kind) == "flag") {
+      Put(input, option.field, true);
+      continue;
+    }
+    if (!parameter.value || !*parameter.value)
+      Invalid(option.option, "requires a nonempty argument");
+    const std::string raw = parameter.value;
+    if (std::string(option.kind) == "vector") {
+      if (std::count(raw.begin(), raw.end(), ',') != 2)
+        Invalid(option.option, "expected x,y,z");
+      YAML::Node vector(YAML::NodeType::Sequence);
+      for (auto item : Split(raw, ',')) {
+        const auto first = item.find_first_not_of(" \t\r\n"),
+                   last = item.find_last_not_of(" \t\r\n");
+        if (first == std::string::npos)
+          Invalid(option.option, "empty vector component");
+        item = item.substr(first, last - first + 1);
+        vector.push_back(Numeric(YAML::Node(item), option.option));
+      }
+      if (vector.size() != 3)
+        Invalid(option.option, "expected exactly three coordinates");
+      Put(input, option.field, vector);
+    } else if (std::string(option.kind) == "number")
+      Put(input, option.field, Numeric(YAML::Node(raw), option.option));
+    else
+      Put(input, option.field, raw);
+  }
+  if (!any)
+    return false;
+  if (!cli.has_param("--observer") && (cli.has_param("--observer-center-Mpc") ||
+                                       cli.has_param("--observer-radius-Mpc") ||
+                                       cli.has_param("--observer-stop-when")))
+    Invalid("observer", "sphere parameters require --observer sphere");
+  NormalizeSpatial(effective, input);
+  return true;
 }
 // Check events before constructing nodes, so aliases cannot create recursive
 // trees.
@@ -454,14 +616,23 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
         std::max(0., dz));
     if (!yaml) {
       fArguments = fOriginal;
-      for (const char* option : {"--magnetic-field","--magnetic-field-file","--magnetic-field-boundary"})
+      for (const char* option : {"--magnetic-field","--magnetic-field-file","--magnetic-field-boundary",
+          "--source-position-Mpc","--source-angular-model","--source-axis","--source-half-angle-deg",
+          "--end-redshift","--observer","--observer-center-Mpc","--observer-radius-Mpc",
+          "--observer-stop-when","--output-primary-direction"})
         if (std::count(fOriginal.begin()+1,fOriginal.end(),std::string(option)) > 1)
-          Invalid("magnetic_field",std::string("duplicate option ")+option);
+          Invalid(std::string(option).rfind("--magnetic-",0)==0 ? "magnetic_field" : "spatial_geometry",
+              std::string("duplicate option ")+option);
       const auto field = MagneticFieldFromCli(cli, fEffective["magnetic_field"]);
       if (field.IsDefined()) {
         fEffective["schema_version"] = 2;
         fEffective["magnetic_field"] = field;
         MagneticLegacyArguments(field,fArguments);
+      }
+      if (SpatialCli(cli,fEffective) && fEffective["schema_version"].as<int>()==1) {
+        const YAML::Node missing(YAML::NodeType::Undefined);
+        fEffective["magnetic_field"]=NormalizeMagneticField(missing,fEffective["magnetic_field"],fs::current_path().string());
+        fEffective["schema_version"]=2;
       }
     } else {
       fInputFile = Absolute(argv[file], fs::current_path());
@@ -470,7 +641,7 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
       if (!input["schema_version"]) Invalid("schema_version", "supported versions are 1 and 2");
       const auto version = Unsigned(input["schema_version"], "schema_version");
       if (version != 1 && version != 2) Invalid("schema_version", "supported versions are 1 and 2");
-      CheckKeys(input,"",Fields(),version == 2);
+      CheckKeys(input,"",Fields(version == 2),version == 2);
       const auto legacyMagnetic = YAML::Clone(fEffective["magnetic_field"]);
       YAML::Node magnetic;
       if (version == 2) {
@@ -478,13 +649,16 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
             legacyMagnetic,fs::path(fInputFile).parent_path().string());
         input.remove("magnetic_field");
       }
-      CheckKeys(input, "", Fields());
+      CheckKeys(input, "", Fields(version == 2),version == 2);
       const auto spectrum = Get(input, "source.spectrum");
       if (spectrum && spectrum["type"] &&
           spectrum["type"].as<std::string>() == "power_law")
         fEffective["source"]["spectrum"] = YAML::Node(YAML::NodeType::Map);
       Overlay(fEffective, input);
-      if (version == 2) fEffective["magnetic_field"] = magnetic;
+      if (version == 2) {
+        fEffective["magnetic_field"] = magnetic;
+        NormalizeSpatial(fEffective,input);
+      }
       fArguments.push_back(argv[0]);
       auto add = [&](const std::string &key, const std::string &value) {
         fArguments.push_back(key);

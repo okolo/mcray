@@ -26,6 +26,7 @@
  */
 
 #include "ParticleStack.h"
+#include "SpatialGeometry.h"
 #include <signal.h>
 #include "Utils.h"
 #include <time.h>
@@ -110,9 +111,9 @@ bool ParticleStack::Pop(Particle& aParticle)
 void Result::Add(std::vector<Particle> aParticles)
 {
     for (const auto& p : aParticles) p.ValidateIdentity();
-	if(fFilter)///! filtering outside critical section
+	if(fFilter || fObserver)///! filtering outside critical section
 		for(int i=aParticles.size()-1; i>=0; i--)
-			if (aParticles[i].Time < fT || (fFilter && !fFilter->Pass(aParticles[i])))
+			if (!CanRecord(aParticles[i]))
 				aParticles.erase(aParticles.begin()+i);
 
 #pragma omp critical (Result_Add)
@@ -134,7 +135,7 @@ void Result::Add(std::vector<Particle> aParticles)
 void Result::Add(const Particle& aParticle)
 {
     aParticle.ValidateIdentity();
-	if(aParticle.Time < fT || (fFilter && !fFilter->Pass(aParticle)))///! filtering outside critical section
+	if(!CanRecord(aParticle))///! filtering outside critical section
 		return;
 #pragma omp critical (Result_Add)
 	{
@@ -167,6 +168,12 @@ void Result::Flush(bool aFinal)
 	}
 }
 
+bool Result::CanRecord(const Particle& particle) const {
+    // A spatial detection is final even when the cosmological end time is later.
+    return (!(particle.Time < fT) || (fObserver && fObserver->Reached(particle))) &&
+        (!fFilter || fFilter->Pass(particle));
+}
+
 void Result::SetEndTime(const CosmoTime& aT)
 {
 	fT = aT;
@@ -174,7 +181,18 @@ void Result::SetEndTime(const CosmoTime& aT)
 
 cosmo_time Result::GetMinTravelTimeLeft(const Particle& aParticle) const
 {
-	return fT-aParticle.Time;
+    return LimitTravelTime(aParticle,fT-aParticle.Time);
+}
+
+void Result::SetObserver(std::shared_ptr<const SpatialObserver> observer) {
+    fObserver=std::move(observer);
+}
+bool Result::ContinuePropagation(const Particle& particle) const {
+    return (!fObserver || !fObserver->Reached(particle)) && GetMinTravelTimeLeft(particle)>0 &&
+        !(fIncludeFilterInPropagation && fFilter && !fFilter->Pass(particle));
+}
+cosmo_time Result::LimitTravelTime(const Particle& particle, cosmo_time remaining) const {
+    return fObserver ? fObserver->LimitStep(particle,remaining) : remaining;
 }
 
 Result::~Result()

@@ -117,3 +117,9 @@ target_include_directories(grid_magnetic_field_tests PRIVATE ../src/lib)
 target_link_libraries(grid_magnetic_field_tests PRIVATE GTest::gtest_main mcray)
 gtest_discover_tests(grid_magnetic_field_tests TEST_PREFIX "unit.magnetic."
     PROPERTIES TIMEOUT 30 LABELS "unit")
+
+add_executable(spatial_geometry_tests spatial_geometry.cpp spatial_output.cpp)
+target_include_directories(spatial_geometry_tests PRIVATE ../src/lib)
+target_link_libraries(spatial_geometry_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(spatial_geometry_tests TEST_PREFIX "unit.spatial."
+    PROPERTIES TIMEOUT 30 LABELS "unit")

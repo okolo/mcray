@@ -42,6 +42,8 @@
 #include "ICS.h"
 #include "CRbeam.h"
 #include "MagneticConfiguration.h"
+#include "SpatialConfiguration.h"
+#include "SpatialOutput.h"
 #include "Test.h"
 #include "NeutronDecay.h"
 #include "NuclearDecay.h"
@@ -87,13 +89,23 @@ enum ClineParams
     PNparticles,PBatchSize,PSeed,
     PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PPDMissingData,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
-	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,PMagneticModel,PMagneticFile,PMagneticBoundary
+	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,PMagneticModel,PMagneticFile,PMagneticBoundary,PSourcePosition,PSourceAngular,PSourceAxis,PSourceHalfAngle,PEndRedshift,PObserver,PObserverCenter,PObserverRadius,PObserverStop,PPrimaryDirection
 };
 #define xstr(s) str(s)
 #define str(s) #s
 #define M_POINT_SOURCE 1000
 
 static CmdInfo commands[] = {
+        { PSourcePosition, CmdInfo::FLAG_ARGUMENT, "", "--source-position-Mpc", "0,0,0", "Comoving source position: x,y,z in Mpc" },
+        { PSourceAngular, CmdInfo::FLAG_ARGUMENT, "", "--source-angular-model", "pencil", "Source angular distribution: pencil or cone" },
+        { PSourceAxis, CmdInfo::FLAG_ARGUMENT, "", "--source-axis", "0,0,1", "Source direction: finite nonzero x,y,z vector (normalized)" },
+        { PSourceHalfAngle, CmdInfo::FLAG_ARGUMENT, "", "--source-half-angle-deg", "0", "Cone half-angle in degrees, from 0 to 180" },
+        { PEndRedshift, CmdInfo::FLAG_ARGUMENT, "", "--end-redshift", "0", "End redshift: nonnegative and below source redshift" },
+        { PObserver, CmdInfo::FLAG_ARGUMENT, "", "--observer", "none", "Spatial observer: none or sphere" },
+        { PObserverCenter, CmdInfo::FLAG_ARGUMENT, "", "--observer-center-Mpc", "0,0,0", "Comoving sphere center: x,y,z in Mpc" },
+        { PObserverRadius, CmdInfo::FLAG_ARGUMENT, "", "--observer-radius-Mpc", "", "Positive comoving sphere radius in Mpc" },
+        { PObserverStop, CmdInfo::FLAG_ARGUMENT, "", "--observer-stop-when", "inside", "Stop on strict inside or outside membership, including at birth" },
+        { PPrimaryDirection, CmdInfo::FLAG_NULL, "", "--output-primary-direction", nullptr, "Include the primary direction in spatial output" },
         { PMagneticModel, CmdInfo::FLAG_ARGUMENT, "", "--magnetic-field", "", "Magnetic model: none, monochromatic, kolmogorov or grid; sum uses YAML" },
         { PMagneticFile, CmdInfo::FLAG_ARGUMENT, "", "--magnetic-field-file", "", "Grid file: x/y/z in comoving Mpc, Bx/By/Bz in Gauss" },
         { PMagneticBoundary, CmdInfo::FLAG_ARGUMENT, "", "--magnetic-field-boundary", "zero", "Grid extension: zero, nearest, periodic or mirror" },
@@ -213,14 +225,15 @@ public:
     }
 };
 
-cosmo_time CRbeam::FilamentFilter::GetMinTravelTimeLeft(const Particle& aParticle) const{
-    if (aParticle.ElectricCharge())
-        if (aParticle.Time.z() >= fFilamentLocation.z())
-            return fFilamentLocation.t() - aParticle.Time.t();
-        else if(aParticle.Time.z()<fFilamentLocation.z()*0.9999)
-            return 0.;// avoid rounding error when
-
-    return Result::GetMinTravelTimeLeft(aParticle);
+cosmo_time CRbeam::FilamentFilter::GetMinTravelTimeLeft(const Particle& particle) const {
+    cosmo_time remaining=Result::GetMinTravelTimeLeft(particle);
+    if (particle.ElectricCharge()) {
+        if (particle.Time.z()>=fFilamentLocation.z())
+            remaining=std::min(remaining,fFilamentLocation.t()-particle.Time.t());
+        else if (particle.Time.z()<fFilamentLocation.z()*0.9999)
+            return 0.;
+    }
+    return remaining;
 }
 
 CRbeam::CRbeam(int argc, char** argv):
@@ -481,7 +494,12 @@ int CRbeam::run() try
 	double Emax = fEmax_eV*units.eV;//eV
 	if(!cosmology.IsInitialized())
 		cosmology.Init(fZmax + 10);
-	double zMin = 0.;
+    const SpatialConfiguration spatial(fConfiguration.Effective());
+    const auto sourceGeometry=spatial.Source();
+    const auto observer=spatial.Observer();
+    const double zMin=spatial.EndRedshift();
+    if (!std::isfinite(zMin) || zMin<0 || zMin>=fZmax)
+        Exception::ThrowFatal("End redshift must be nonnegative and below source redshift");
 	double logStepK = pow(10,0.05/kAc);
 	double Emin = fEmin_eV*units.eV;
 	double EminSource = fEminSource_eV*units.eV;
@@ -533,12 +551,17 @@ int CRbeam::run() try
 	}
     std::cout << "output dir: " << outputDir << std::endl;
     bool saveZprod = true;
-    SmartPtr<RawOutput3D> pOutput = new RawOutput3D(outputDir, fOverwriteOutput, true, true, fTrajectoryLogging, saveZprod);//this creates folder outputDir, later we will set output to outputDir/z0
+    SmartPtr<RawOutput> pOutput;
+    if (spatial.HasSpatialSettings())
+        pOutput = new SpatialOutput(outputDir, fOverwriteOutput, spatial.PrimaryDirection(), fTrajectoryLogging, observer);
+    else
+        pOutput = new RawOutput3D(outputDir, fOverwriteOutput, true, true, fTrajectoryLogging, saveZprod);//this creates folder outputDir, later we will set output to outputDir/z0
     fConfiguration.ResolveExecution(seed,omp_get_max_threads(),fBatchSize,outputDir,
         fNuclearPrimary?fPrimaryA:0,fPrimaryZ);
     fConfiguration.WriteConfig(outputDir);
     RunRecord runRecord(outputDir,YAML::Node(YAML::NodeType::Map));
     auto provenance=fConfiguration.Provenance(talys?fTalysDataPath:"");
+    if (spatial.HasSpatialSettings()) provenance["output"]["spatial_format"] = 1;
     if (configuredField) provenance["magnetic_field"]["files_sha256"] = YAML::Clone(configuredField->Provenance());
     if(fNuclearPrimary) provenance["nuclear"]["mass_model"]=talys?
         (fGzkResiduals=="CRPropa"?"CRPropa-compatible-bundle":"TALYS-tabulated"):"PSB-approximate";
@@ -658,6 +681,7 @@ int CRbeam::run() try
 	SmartPtr<IFilter> resultFilter = new EnergyBasedFilter(Emin, M_PI);
 	bool useResultFilterInRuntime = true;
     FilamentFilter result(fZfilament, resultFilter, useResultFilterInRuntime);
+    result.SetObserver(observer);
 	result.SetAutoFlushInterval(10);//save every 10 particle cascades
 	result.EnableFlushOnCtrlC();//make sure results are not lost if program is interrupted by Ctrl-C
 
@@ -813,6 +837,7 @@ int CRbeam::run() try
 			particle.Weight = weight*normW*pow(particle.Energy, 1.-fPowerLaw);
 		}
 
+        sourceGeometry.Initialize(particle,rand);
         if (extendedMagnetic && perPrimaryField) {
             composedFields[i%fBatchSize] = configuredField->Build(rand);
             particle.interactionData[Bslot] = static_cast<MagneticField*>(composedFields[i%fBatchSize]);
