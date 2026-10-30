@@ -1025,6 +1025,41 @@ TEST_F(ConfigurationTest, CosmologyChangesBallisticFlightAndSnapshotReplaysInFre
   EXPECT_NEAR(flights[1]/flights[0],67.8/70,1e-11);
   EXPECT_GT(std::abs(flights[2]-flights[1]),1e-6L);
 }
+TEST_F(ConfigurationTest, CosmologyYamlDefaultsReuseLibraryInitialization) {
+  // CTest starts each case in a fresh process. Keep the test compatible with
+  // running the whole GoogleTest binary too, where prior cases can initialize
+  // the global. A separate object always exercises the library defaults.
+  mcray::Cosmology libraryDefaults;
+  libraryDefaults.Init();
+  if (!mcray::cosmology.IsInitialized())
+    mcray::cosmology.Init();
+
+  for (const int schema : {1, 2}) {
+    for (const bool explicitDefaults : {false, true}) {
+      SCOPED_TRACE(::testing::Message() << "schema=" << schema
+                                      << ", explicit=" << explicitDefaults);
+      auto cfg = YAML::Load(Common());
+      cfg["schema_version"] = schema;
+      cfg["source"]["particle"]["type"] = "neutrinoE";
+      cfg["simulation"]["primaries"] = 2;
+      if (explicitDefaults)
+        cfg["cosmology"] = YAML::Load("{hubble_km_s_Mpc: 67.8, omega_lambda: 0.692}");
+      const auto directory = root / ("default-reuse-" + std::to_string(schema) +
+                                    (explicitDefaults ? "-explicit" : "-omitted"));
+      cfg["output"]["directory"] = directory.string();
+      const auto path = Write(YAML::Dump(cfg));
+      Parse({path.string()});
+      const auto settings = program->EffectiveConfiguration()["cosmology"];
+      // Exercise the actual YAML double-to-cosmo_time conversion, rather than
+      // repeating the library constants or introducing a comparison tolerance.
+      ASSERT_TRUE(libraryDefaults.HasParameters(settings["omega_lambda"].as<double>(),
+                                               settings["hubble_km_s_Mpc"].as<double>()));
+      ASSERT_EQ(program->run(), 0);
+      EXPECT_FALSE(Read(directory / "z0/neutrinoE").empty());
+    }
+  }
+}
+
 TEST_F(ConfigurationTest, CosmologyCannotSilentlyReuseConflictingGlobalState) {
   if (!mcray::cosmology.IsInitialized()) mcray::cosmology.Init();
   auto cfg=YAML::Load(Common());
