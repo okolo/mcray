@@ -72,6 +72,13 @@ positions without reversing component signs. These displacements can be a
 substantial fraction of a cell. They are compatibility behavior, not an
 exact periodic interpolation across matching endpoints.
 
+The inset applies to the **mapped** endpoint, not the original query's face.
+For example, on a zero-based axis `[0,L]`, repeat maps `x=L` to zero before
+applying the lower inset, giving `L/N`. Mirror maps the same point to `L`
+before applying the upper inset, giving `L-L/N`. This distinction is part
+of the historical seam behavior; floating-point remainder rounding near a
+seam can also select its side.
+
 Box limits and periods use the fork's double-precision arithmetic in internal
 units, including the order of subtraction before the remainder. This matters
 at a seam: a rounding difference in the remainder can select a finite inset.
