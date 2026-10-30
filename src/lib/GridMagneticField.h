@@ -5,6 +5,7 @@
 
 #include "Deflection3D.h"
 #include <array>
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,9 @@ class SavedMF final : public MagneticField {
 public:
     enum FillingType : int { FILLING_ZERO, FILLING_NEAREST, FILLING_REPEAT, FILLING_MIRROR };
     explicit SavedMF(const std::string& filename, FillingType filling = FILLING_ZERO);
+    // Allows callers to hash and parse the same frozen bytes without reopening a path.
+    SavedMF(std::istream& input, const std::string& source,
+            FillingType filling = FILLING_ZERO);
     SavedMF(const SavedMF&) = delete;
     SavedMF& operator=(const SavedMF&) = delete;
 
@@ -24,6 +28,7 @@ public:
     double MinVariabilityScale(const CosmoTime& time) const override;
 
 private:
+    void Load(std::istream& input, const std::string& source);
     using Axis = std::vector<coord_type>;
     struct Cell { size_t index; coord_type fraction; };
     coord_type MapCoordinate(coord_type value, size_t axis) const;

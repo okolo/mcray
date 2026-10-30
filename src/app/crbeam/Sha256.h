@@ -6,5 +6,6 @@
 // SHA-256 file fingerprint for reproducibility and manifest verification.
 // Uses OpenSSL Crypto EVP; throws on read or digest failure.
 std::string Sha256File(const std::string &path);
+std::string Sha256Bytes(const std::string& bytes);
 
 #endif

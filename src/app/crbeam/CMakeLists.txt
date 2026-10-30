@@ -55,7 +55,7 @@ endif()
 execute_process(COMMAND git diff HEAD WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     OUTPUT_VARIABLE CRBEAM_PATCH ERROR_QUIET)
 string(SHA256 CRBEAM_PATCH_HASH "${CRBEAM_PATCH}")
-set(CRBEAM_APPLICATION_SOURCES Configuration.cpp Configuration.h Sha256.cpp Sha256.h CRbeam.cpp CRbeam.h CmdLine.cpp CmdLine.h CMakeLists.txt)
+set(CRBEAM_APPLICATION_SOURCES Configuration.cpp Configuration.h MagneticConfiguration.cpp MagneticConfiguration.h Sha256.cpp Sha256.h CRbeam.cpp CRbeam.h CmdLine.cpp CmdLine.h CMakeLists.txt)
 set(CRBEAM_APPLICATION_HASHES "")
 foreach(source IN LISTS CRBEAM_APPLICATION_SOURCES)
     file(SHA256 "${CMAKE_CURRENT_SOURCE_DIR}/${source}" source_hash)
@@ -63,9 +63,9 @@ foreach(source IN LISTS CRBEAM_APPLICATION_SOURCES)
 endforeach()
 string(SHA256 CRBEAM_CONFIG_HASH "${CRBEAM_APPLICATION_HASHES}")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CRBEAM_APPLICATION_SOURCES})
-add_library(crbeam_configuration STATIC Configuration.cpp Sha256.cpp)
+add_library(crbeam_configuration STATIC Configuration.cpp MagneticConfiguration.cpp Sha256.cpp)
 target_include_directories(crbeam_configuration PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "../../lib")
-target_link_libraries(crbeam_configuration PUBLIC ${CRBEAM_YAML_TARGET} OpenSSL::Crypto)
+target_link_libraries(crbeam_configuration PUBLIC ${CRBEAM_YAML_TARGET} OpenSSL::Crypto mcray)
 target_compile_definitions(crbeam_configuration PRIVATE
     MCRAY_REVISION="${CRBEAM_REVISION}" MCRAY_PATCH_SHA256="${CRBEAM_PATCH_HASH}"
     MCRAY_CONFIG_SHA256="${CRBEAM_CONFIG_HASH}" MCRAY_BUILD_TYPE="${CMAKE_BUILD_TYPE}"

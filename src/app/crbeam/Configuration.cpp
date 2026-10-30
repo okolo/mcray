@@ -1,4 +1,5 @@
 #include "Configuration.h"
+#include "MagneticConfiguration.h"
 #include "Particle.h"
 #include "Sha256.h"
 #include "Utils.h"
@@ -216,7 +217,7 @@ std::set<std::string> Fields() {
   return fields;
 }
 void CheckKeys(const YAML::Node &n, const std::string &path,
-               const std::set<std::string> &fields) {
+               const std::set<std::string> &fields, bool magneticV2 = false) {
   if (!n.IsMap())
     Invalid(path, "expected a mapping");
   std::set<std::string> seen;
@@ -227,6 +228,7 @@ void CheckKeys(const YAML::Node &n, const std::string &path,
     const std::string child = path.empty() ? key : path + "." + key;
     if (!seen.insert(key).second)
       Invalid(child, "duplicate key");
+    if (magneticV2 && child == "magnetic_field") continue;
     if (fields.count(child)) {
       if (entry.second.IsMap() || entry.second.IsSequence())
         Invalid(child, "expected a scalar");
@@ -450,21 +452,39 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
     Put(fEffective, "backgrounds.ebl.high_redshift_extension.enabled", dz >= 0);
     Put(fEffective, "backgrounds.ebl.high_redshift_extension.constant_delta_z",
         std::max(0., dz));
-    if (!yaml)
+    if (!yaml) {
       fArguments = fOriginal;
-    else {
+      for (const char* option : {"--magnetic-field","--magnetic-field-file","--magnetic-field-boundary"})
+        if (std::count(fOriginal.begin()+1,fOriginal.end(),std::string(option)) > 1)
+          Invalid("magnetic_field",std::string("duplicate option ")+option);
+      const auto field = MagneticFieldFromCli(cli, fEffective["magnetic_field"]);
+      if (field.IsDefined()) {
+        fEffective["schema_version"] = 2;
+        fEffective["magnetic_field"] = field;
+        MagneticLegacyArguments(field,fArguments);
+      }
+    } else {
       fInputFile = Absolute(argv[file], fs::current_path());
       fInputHash = HashFile(fInputFile);
       auto input = Load(fInputFile);
+      if (!input["schema_version"]) Invalid("schema_version", "supported versions are 1 and 2");
+      const auto version = Unsigned(input["schema_version"], "schema_version");
+      if (version != 1 && version != 2) Invalid("schema_version", "supported versions are 1 and 2");
+      CheckKeys(input,"",Fields(),version == 2);
+      const auto legacyMagnetic = YAML::Clone(fEffective["magnetic_field"]);
+      YAML::Node magnetic;
+      if (version == 2) {
+        magnetic = NormalizeMagneticField(static_cast<const YAML::Node&>(input)["magnetic_field"],
+            legacyMagnetic,fs::path(fInputFile).parent_path().string());
+        input.remove("magnetic_field");
+      }
       CheckKeys(input, "", Fields());
-      if (!input["schema_version"] ||
-          Unsigned(input["schema_version"], "schema_version") != 1)
-        Invalid("schema_version", "supported version is 1");
       const auto spectrum = Get(input, "source.spectrum");
       if (spectrum && spectrum["type"] &&
           spectrum["type"].as<std::string>() == "power_law")
         fEffective["source"]["spectrum"] = YAML::Node(YAML::NodeType::Map);
       Overlay(fEffective, input);
+      if (version == 2) fEffective["magnetic_field"] = magnetic;
       fArguments.push_back(argv[0]);
       auto add = [&](const std::string &key, const std::string &value) {
         fArguments.push_back(key);
@@ -472,6 +492,7 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
       };
       const auto base = fs::path(fInputFile).parent_path();
       for (const auto &b : bindings) {
+        if (version == 2 && std::string(b.path).rfind("magnetic_field.",0) == 0) continue;
         auto n = Get(fEffective, b.path);
         const std::string kind = b.kind;
         if (kind == "boolean" || kind == "inverse" || kind == "onoff") {
@@ -622,7 +643,8 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
           Boolean(Get(fEffective, prefix + "enabled"), prefix + "enabled")
               ? Number(plateau)
               : "-1");
-      if (Numeric(Get(fEffective, "magnetic_field.strength_G"),
+      if (version == 2) MagneticLegacyArguments(fEffective["magnetic_field"],fArguments);
+      if (version == 1 && Numeric(Get(fEffective, "magnetic_field.strength_G"),
                   "magnetic_field.strength_G") > 0 &&
           Get(fEffective, "magnetic_field.model").as<std::string>() ==
               "kolmogorov" &&

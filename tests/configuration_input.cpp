@@ -1,4 +1,5 @@
 #include "CRbeam.h"
+#include "Sha256.h"
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -70,7 +71,7 @@ TEST_F(ConfigurationTest, RejectsDuplicatesUnknownTypesAliasesAndMixedInputs) {
   for (const auto &text :
        {"schema_version: 1\nschema_version: 1\n",
         "schema_version: 1\nsource: {redshift: .1, redshfit: .2}\n",
-        "schema_version: 2\n",
+        "schema_version: 3\n",
         "schema_version: 1\nsource: {redshift: .1}\noutput: {directory: 123}\n",
         "schema_version: 1\nsource: {redshift: .1}\noutput: {name_suffix: "
         "true}\n",
@@ -296,7 +297,122 @@ TEST_F(ConfigurationTest, ValidAdditionalBackgroundUsesYamlRelativeFile) {
             table.string());
 }
 
+std::string GridInput() {
+  std::ostringstream out;
+  for (int i=0;i<2;++i) for (int j=0;j<2;++j) for (int k=0;k<2;++k)
+    out << i << ' ' << j << ' ' << k << " 0 1e-12 0\n";
+  return out.str();
+}
+TEST_F(ConfigurationTest, GridCliYamlAndSnapshotAreEquivalentAndHashLoadedInput) {
+  const auto grid=root/"configs/map.dat";
+  std::ofstream(grid)<<GridInput();
+  auto config=YAML::Load(Common()); config["schema_version"]=2;
+  config["magnetic_field"]=YAML::Load("{model: grid, file: map.dat, boundary: mirror}");
+  config["output"]["directory"]=(root/"grid-yaml").string();
+  auto path=Write(YAML::Dump(config)); Parse({path.string()});
+  ASSERT_EQ(program->run(),0);
+  const auto data=Read(root/"grid-yaml/z0/proton"); ASSERT_FALSE(data.empty());
+  const auto run=YAML::LoadFile((root/"grid-yaml/run.yaml").string());
+  EXPECT_EQ(run["magnetic_field"]["files_sha256"][grid.string()].as<std::string>(),Configuration::HashFile(grid.string()));
+  EXPECT_FALSE(run["magnetic_field"]["settings"].IsDefined());
+  auto saved=YAML::LoadFile((root/"grid-yaml/config.yaml").string());
+  EXPECT_EQ(saved["schema_version"].as<int>(),2);
+  EXPECT_FALSE(saved["magnetic_field"]["strength_G"].IsDefined());
+  EXPECT_EQ(saved["magnetic_field"]["file"].as<std::string>(),grid.string());
+  Parse({"--particle","proton","--z","1e-8","--nparticles","12","--seed","123456","--batch","12",
+    "--background","0","--noEMcascade","--magnetic-field","grid","--magnetic-field-file",grid.string(),
+    "--magnetic-field-boundary","mirror","--output",(root/"grid-cli").string()});
+  ASSERT_EQ(program->run(),0); EXPECT_EQ(Read(root/"grid-cli/z0/proton"),data);
+  saved["output"]["directory"]=(root/"grid-replay").string();
+  path=Write(YAML::Dump(saved)); Parse({path.string()}); ASSERT_EQ(program->run(),0);
+  EXPECT_EQ(Read(root/"grid-replay/z0/proton"),data);
+}
+TEST_F(ConfigurationTest, VersionTwoRejectsInapplicableAndMalformedFieldSettings) {
+  const auto base=YAML::Load(Common());
+  for (const char* field : {
+      "{model: grid}", "{model: grid, file: 42}", "{model: grid, file: map.dat, strength_G: 0}",
+      "{model: grid, file: map.dat, boundary: unknown}", "{model: grid, file: map.dat, realization: per_primary}",
+      "{model: grid, file: map.dat, file: duplicate}", "{model: none, modes: 1}",
+      "{model: sum, components: []}", "{model: sum, components: [{model: sum, components: []}]}",
+      "{model: sum, components: [{model: grid, file: map.dat, boundary: nope}]}",
+      "{model: kolmogorov, modes: 1}", "{model: kolmogorov, modes: 1.5}",
+      "{model: kolmogorov, minimum_scale_Mpc: 5, maximum_scale_Mpc: 1}",
+      "{model: monochromatic, strength_G: .nan}", "{model: monochromatic, strength_G: '1'}",
+      "{model: grid, file: map.dat, deflection_accuracy: 0}"}) {
+    SCOPED_TRACE(field);
+    auto path=Write(std::string("schema_version: 2\nsource: {redshift: .01}\nmagnetic_field: ")+field+"\n");
+    Error([&]{Parse({path.string()});},"magnetic_field");
+  }
+  auto duplicate=Write("schema_version: 2\nsource: {redshift: .01}\nmagnetic_field: {model: none}\nmagnetic_field: {model: grid, file: map.dat}\n");
+  Error([&]{Parse({duplicate.string()});},"duplicate");
+  auto cfg=YAML::Clone(base); cfg["magnetic_field"]=YAML::Load("{model: grid, file: map.dat}");
+  auto path=Write(YAML::Dump(cfg)); Error([&]{Parse({path.string()});},"Configuration");
+}
+TEST_F(ConfigurationTest, NewFieldCliRejectsConflictsAndBadNumbers) {
+  for (auto options : std::vector<std::vector<std::string>>{
+      {"--magnetic-field-file","map.dat"}, {"--magnetic-field","sum"},
+      {"--magnetic-field","none","--magnetic-field","grid"},
+      {"--magnetic-field","grid","--magnetic-field-file","map.dat","--magnetic-field-boundary",""},
+      {"--magnetic-field","grid","--magnetic-field-file","map.dat","--EGMF","0"},
+      {"--magnetic-field","grid","--magnetic-field-file","map.dat","--randomEGMF"},
+      {"--magnetic-field","grid","--magnetic-field-file","map.dat","--accEGMF","10foo"},
+      {"--magnetic-field","monochromatic","--turbulentEGMF"},
+      {"--magnetic-field","monochromatic","--EGMF","oops"},
+      {"--magnetic-field","kolmogorov","--nmodesEGMF","2.5"},
+      {"--magnetic-field","none","--magnetic-field-boundary","zero"}}) {
+    Error([&]{Parse(options);},"magnetic_field");
+  }
+  Parse({"--magnetic-field","none"});
+  EXPECT_EQ(program->EffectiveConfiguration()["magnetic_field"]["model"].as<std::string>(),"none");
+}
+TEST_F(ConfigurationTest, GridFilesFailBeforeOutput) {
+  auto cfg=YAML::Load(Common()); cfg["schema_version"]=2;
+  cfg["magnetic_field"]=YAML::Load("{model: grid, file: bad.dat}");
+  cfg["output"]["directory"]=(root/"invalid-grid").string();
+  auto path=Write(YAML::Dump(cfg));
+  Parse({path.string()}); Error([&]{program->run();},"Cannot hash");
+  EXPECT_FALSE(fs::exists(root/"invalid-grid"));
+  std::ofstream(root/"configs/bad.dat")<<"0 0 0 0 0 0\n";
+  Parse({path.string()}); Error([&]{program->run();},"at least two");
+  EXPECT_FALSE(fs::exists(root/"invalid-grid"));
+}
+TEST_F(ConfigurationTest, SumPreservesGridUnitsAndSupportsStochasticPerPrimaryReplay) {
+  const auto grid=root/"configs/map.dat"; std::ofstream(grid)<<GridInput();
+  auto cfg=YAML::Load(Common()); cfg["schema_version"]=2;
+  cfg["magnetic_field"]=YAML::Load(
+    "{model: sum, realization: per_primary, components: ["
+    "{model: grid, file: map.dat, boundary: nearest},"
+    "{model: kolmogorov, strength_G: 1e-12, minimum_scale_Mpc: 0.05, maximum_scale_Mpc: 5, modes: 8}]}");
+  cfg["output"]["directory"]=(root/"sum").string();
+  auto path=Write(YAML::Dump(cfg)); Parse({path.string()}); ASSERT_EQ(program->run(),0);
+  const auto data=Read(root/"sum/z0/proton"); ASSERT_FALSE(data.empty());
+  auto saved=YAML::LoadFile((root/"sum/config.yaml").string());
+  EXPECT_EQ(saved["magnetic_field"]["components"].size(),2u);
+  saved["output"]["directory"]=(root/"sum-replay").string();
+  path=Write(YAML::Dump(saved)); Parse({path.string()}); ASSERT_EQ(program->run(),0);
+  EXPECT_EQ(Read(root/"sum-replay/z0/proton"),data);
+}
+TEST_F(ConfigurationTest, ExplicitWaveModelMatchesLegacyCli) {
+  const auto examples=fs::path(CRBEAM_FULL_EXAMPLE).parent_path();
+  Parse({(examples/"grid-field.yaml").string()});
+  EXPECT_EQ(program->EffectiveConfiguration()["magnetic_field"]["model"].as<std::string>(),"grid");
+  Parse({(examples/"composed-field.yaml").string()});
+  EXPECT_EQ(program->EffectiveConfiguration()["magnetic_field"]["model"].as<std::string>(),"sum");
+  for (bool turbulent : {false,true}) {
+    std::vector<std::string> common={"--z","1e-8","--nparticles","2","--seed","17","--background","0",
+      "--noEMcascade","--EGMF","1e-12"};
+    if (turbulent) {common.insert(common.end(),{"--turbulentEGMF","--nmodesEGMF","8"});}
+    auto legacy=common; legacy.insert(legacy.end(),{"--output",(root/"legacy").string()});
+    Parse(legacy); ASSERT_EQ(program->run(),0);
+    common.insert(common.end(),{"--magnetic-field",turbulent?"kolmogorov":"monochromatic",
+      "--output",(root/"explicit").string()});
+    Parse(common); ASSERT_EQ(program->run(),0);
+    EXPECT_EQ(Read(root/"legacy/z0/proton"),Read(root/"explicit/z0/proton"));
+    fs::remove_all(root/"legacy");fs::remove_all(root/"explicit");
+  }
+}
 TEST_F(ConfigurationTest, Sha256UsesStandardDigest) {
+  EXPECT_EQ(Sha256Bytes("abc"),"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
   const auto path = Write("abc");
   EXPECT_EQ(Configuration::HashFile(path.string()),
             "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");

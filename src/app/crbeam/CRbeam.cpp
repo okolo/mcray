@@ -41,6 +41,7 @@
 #include "TableBackgrounds.h"
 #include "ICS.h"
 #include "CRbeam.h"
+#include "MagneticConfiguration.h"
 #include "Test.h"
 #include "NeutronDecay.h"
 #include "NuclearDecay.h"
@@ -86,13 +87,16 @@ enum ClineParams
     PNparticles,PBatchSize,PSeed,
     PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PPDMissingData,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
-	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix
+	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,PMagneticModel,PMagneticFile,PMagneticBoundary
 };
 #define xstr(s) str(s)
 #define str(s) #s
 #define M_POINT_SOURCE 1000
 
 static CmdInfo commands[] = {
+        { PMagneticModel, CmdInfo::FLAG_ARGUMENT, "", "--magnetic-field", "", "Magnetic model: none, monochromatic, kolmogorov or grid; sum uses YAML" },
+        { PMagneticFile, CmdInfo::FLAG_ARGUMENT, "", "--magnetic-field-file", "", "Grid file: x/y/z in comoving Mpc, Bx/By/Bz in Gauss" },
+        { PMagneticBoundary, CmdInfo::FLAG_ARGUMENT, "", "--magnetic-field-boundary", "zero", "Grid extension: zero, nearest, periodic or mirror" },
         { PSeed, CmdInfo::FLAG_ARGUMENT, "-seed", "--seed", "0", "Explicit unsigned random seed; omission preserves automatic seeding" },
 		{ PHelp,    CmdInfo::FLAG_NULL,     "-h",   "--help",       NULL,   "Show help information" },
 		{ PLog,    CmdInfo::FLAG_NULL,     "-log",   "--log",       NULL,   "Enable logging" },
@@ -465,6 +469,13 @@ int CRbeam::run() try
         if (talys) talys->SetParticle(p, fPrimaryA, fPrimaryZ);
         else p.SetPsbNucleus(fPrimaryA);
     };
+    const auto magneticSpec = fConfiguration.Effective()["magnetic_field"];
+    const auto magneticModel = magneticSpec["model"].as<std::string>();
+    const bool extendedMagnetic = magneticModel == "grid" || magneticModel == "sum";
+    std::unique_ptr<ConfiguredMagneticField> configuredField;
+    if (extendedMagnetic) configuredField = std::make_unique<ConfiguredMagneticField>(magneticSpec);
+    const bool perPrimaryField = extendedMagnetic ?
+        magneticSpec["realization"].as<std::string>() == "per_primary" : fRandomizeEGMF && fEGMF > 0;
 	int kAc = 1;
 	fEBLMaxE *= units.eV;
 	double Emax = fEmax_eV*units.eV;//eV
@@ -491,7 +502,8 @@ int CRbeam::run() try
         }
         if(fZfilament>0.)
             outputDir += "_zf" + ToString(fZfilament);
-		if(fEGMF!=0)
+        if (extendedMagnetic) outputDir += "_B" + magneticModel;
+		else if(fEGMF!=0)
 		{
 			outputDir += "_B";
 			if(fRandomizeEGMF)
@@ -527,6 +539,7 @@ int CRbeam::run() try
     fConfiguration.WriteConfig(outputDir);
     RunRecord runRecord(outputDir,YAML::Node(YAML::NodeType::Map));
     auto provenance=fConfiguration.Provenance(talys?fTalysDataPath:"");
+    if (configuredField) provenance["magnetic_field"]["files_sha256"] = YAML::Clone(configuredField->Provenance());
     if(fNuclearPrimary) provenance["nuclear"]["mass_model"]=talys?
         (fGzkResiduals=="CRPropa"?"CRPropa-compatible-bundle":"TALYS-tabulated"):"PSB-approximate";
     provenance["nuclear"]["skipped_missing_pd"]=YAML::Node(YAML::NodeType::Sequence);
@@ -688,7 +701,16 @@ int CRbeam::run() try
 	double Phi = 0;
 	int Bslot = -1;
     SmartPtr<MagneticField> mf;
-	if(fEGMF>0.) {
+    if (extendedMagnetic) {
+        if (perPrimaryField) {
+            auto* deflection = new Deflection3D(fDeflectionAccuracy);
+            Bslot = deflection->MFSlot();
+            pe.AddInteraction(deflection);
+        } else {
+            mf = configuredField->Build(rand);
+            pe.AddInteraction(new Deflection3D(mf,fDeflectionAccuracy));
+        }
+    } else if(fEGMF>0.) {
 	    if (fTurbulentEGMF){
             CosmoTime t0;
             auto l_cor = TurbulentMF::MeanCorLength(rand, fLminEGMF, fLmaxEGMF, fEGMF, fNmodesEGMF, t0);
@@ -738,6 +760,7 @@ int CRbeam::run() try
 	}
 
     std::vector<SafePtr<MagneticField> > fields(fBatchSize);
+    std::vector<SmartPtr<MagneticField>> composedFields(extendedMagnetic && perPrimaryField ? fBatchSize : 0);
     if(fTauPrint){
         class Kern : public Function{
             PropagationEngine& fPe;
@@ -790,7 +813,10 @@ int CRbeam::run() try
 			particle.Weight = weight*normW*pow(particle.Energy, 1.-fPowerLaw);
 		}
 
-		if(fRandomizeEGMF)
+        if (extendedMagnetic && perPrimaryField) {
+            composedFields[i%fBatchSize] = configuredField->Build(rand);
+            particle.interactionData[Bslot] = static_cast<MagneticField*>(composedFields[i%fBatchSize]);
+        } else if(perPrimaryField)
 		{
             MagneticField* mf = fTurbulentEGMF ? ((MagneticField*) new TurbulentMF(rand, fLminEGMF, fLmaxEGMF, fEGMF, fNmodesEGMF)) :
 						((MagneticField*) new MonochromaticMF(rand, fLmaxEGMF, fEGMF));

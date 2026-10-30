@@ -35,3 +35,14 @@ std::string Sha256File(const std::string &path) {
         << static_cast<unsigned>(digest[i]);
   return out.str();
 }
+
+std::string Sha256Bytes(const std::string& bytes) {
+  std::array<unsigned char, EVP_MAX_MD_SIZE> digest;
+  unsigned length = 0;
+  if (EVP_Digest(bytes.data(), bytes.size(), digest.data(), &length, EVP_sha256(), nullptr) != 1 || length != 32)
+    throw std::runtime_error("SHA-256 byte digest failed");
+  std::ostringstream out;
+  for (unsigned i=0; i<length; ++i)
+    out << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(digest[i]);
+  return out.str();
+}

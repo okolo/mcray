@@ -29,9 +29,17 @@ struct Row {
 } // namespace
 
 SavedMF::SavedMF(const std::string& filename, FillingType filling) : filling_(filling) {
-    if (filling < FILLING_ZERO || filling > FILLING_MIRROR) GridError("invalid boundary mode");
     std::ifstream input(filename);
     if (!input) GridError("cannot open '" + filename + "'");
+    Load(input,filename);
+}
+
+SavedMF::SavedMF(std::istream& input, const std::string& source, FillingType filling) : filling_(filling) {
+    Load(input,source);
+}
+
+void SavedMF::Load(std::istream& input, const std::string& filename) {
+    if (filling_ < FILLING_ZERO || filling_ > FILLING_MIRROR) GridError("invalid boundary mode");
     input.imbue(std::locale::classic());
     std::vector<Row> rows;
     size_t lineNumber = 0;

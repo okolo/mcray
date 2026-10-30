@@ -3,8 +3,8 @@
 The C++ library provides `Interactions::SavedMF` and `Interactions::ComboMF`
 in `GridMagneticField.h`. They extend the existing `MagneticField` interface
 without changing the wave fields, particle identity, random generator or
-simulation defaults. The current CRbeam CLI/YAML interface does not select
-these new classes yet.
+simulation defaults. The CRbeam CLI and YAML version 2 can select them as
+specified below; version 1 remains compatible.
 
 ## Input and units
 
@@ -126,3 +126,94 @@ scales, concurrent reads and shared deflector clones. A uniform-field control
 checks an electron and an explicit Fe56 identity without changing their
 energy or weight. These are implementation controls, not physical acceptance
 of an external field realization or a long propagation calculation.
+
+## CRbeam CLI and YAML
+
+CRbeam now accepts a grid through the following long options. Relative CLI
+file paths resolve against the working directory:
+
+```sh
+CRbeam --particle proton --z 0.01 --emax 1e19 \
+  --magnetic-field grid --magnetic-field-file ./field.txt \
+  --magnetic-field-boundary mirror --accEGMF 10 --seed 42 --output results
+```
+
+`--magnetic-field` accepts `none`, `monochromatic`, `kolmogorov` and `grid`.
+The two other new options require `grid`. Its file is mandatory and boundary
+choices are `zero` (default), `nearest`, `periodic` and `mirror`. No short
+aliases are introduced. Compositions are configured through YAML only.
+
+Existing CLI invocations keep their previous settings and RNG path. For
+explicit wave models, existing `--EGMF`, `--lmaxEGMF`, `--lminEGMF`,
+`--nmodesEGMF`, `--randomEGMF` and `--accEGMF` supply the applicable settings.
+`monochromatic` rejects an explicit `--turbulentEGMF`, minimum scale or mode
+count. `grid` and `none` reject explicitly supplied strength/spectral/random
+flags; a field file is never silently rescaled. Duplicate new options and
+invalid numeric arguments are errors. `--accEGMF` remains the accuracy option.
+
+YAML version 1 retains its existing magnetic-field schema, zero-strength
+switch and behavior. Version 2 uses a model-specific mapping:
+
+```yaml
+schema_version: 2
+source:
+  redshift: 0.01
+  particle: {type: proton}
+  spectrum: {type: monoenergetic, energy_eV: 1.0e19}
+magnetic_field:
+  model: sum
+  realization: shared
+  deflection_accuracy: 10
+  components:
+    - model: grid
+      file: ./field.txt
+      boundary: zero
+    - model: kolmogorov
+      strength_G: 1.0e-15
+      minimum_scale_Mpc: 0.05
+      maximum_scale_Mpc: 5.0
+      modes: 300
+output:
+  directory: ./results
+```
+
+Relative grid paths resolve against the input YAML directory. Other sections
+retain the version 1 format. The following model keys are supported:
+
+| Model | Model-specific keys |
+| --- | --- |
+| `none` | None; explicitly disables deflection. |
+| `grid` | Required `file`; optional `boundary` defaults to `zero`. |
+| `monochromatic` | `strength_G`, `maximum_scale_Mpc` (wavelength). |
+| `kolmogorov` | `strength_G`, `minimum_scale_Mpc`, `maximum_scale_Mpc`, `modes`. |
+| `sum` | Required nonempty `components` sequence of grids and wave fields. |
+
+The top-level mapping also accepts `deflection_accuracy` and `realization`.
+Accuracy defaults to 10. Realization choices are `shared` (default) and
+`per_primary`. Pure `grid`/`none` require `shared`. For a stochastic sum,
+`per_primary` regenerates only the wave components for each primary history;
+its grids stay fixed. The same field realization is shared by that primary's
+secondary cascade, as in the existing per-primary wave-field mechanism.
+
+Components do not accept their own realization/accuracy, nested sums or
+`none`. Inapplicable/unknown/duplicate keys are errors. Wave defaults remain
+those of the legacy command model: strength 1e-15 Gauss, maximum scale 5 Mpc,
+minimum scale 0.05 Mpc and 300 modes where applicable. Kolmogorov requires at
+least two modes and minimum scale strictly below maximum. Explicit zero
+strength is allowed for a wave component and does not disable its neighbors.
+If the entire field mapping is omitted in version 2, the legacy default is
+preserved; there is no hidden change to the default model or amplitude.
+
+Every grid is loaded and validated before creating simulation output. The
+application freezes its file bytes, hashes and parses those same bytes once,
+and retains the immutable grid. Repeated components using the same file and
+boundary reuse the loaded field; a change detected between separate boundary
+loads is an error. Neither propagation nor per-primary construction reopens
+the file. The loader uses temporary memory for the file bytes in addition to
+the grid's parsing/storage buffers.
+
+The effective `config.yaml` records version 2, resolved absolute file paths,
+model defaults and applicable settings. `run.yaml` records the SHA-256 of each
+loaded grid under `magnetic_field.files_sha256`, without duplicating settings.
+The hashes identify the bytes parsed for that execution; snapshots do not
+embed grids or require a prior run's hash for a later intentional rerun.
