@@ -67,7 +67,12 @@ jobs:
         run: |
           cp .github/scripts/opencode_review.py "$RUNNER_TEMP/opencode_review.py"
           cp .github/scripts/ci_review_evidence.py "$RUNNER_TEMP/ci_review_evidence.py"
+          cp .github/scripts/prepare_review_toolchain.sh "$RUNNER_TEMP/prepare_review_toolchain.sh"
           python3 "$RUNNER_TEMP/opencode_review.py" prepare
+
+      - name: Verify review publication guards
+        if: steps.prepared.outputs.allowed == 'true'
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
 
       - name: Checkout frozen review head
         if: steps.prepared.outputs.allowed == 'true'
@@ -89,7 +94,7 @@ jobs:
         if: steps.prepared.outputs.allowed == 'true'
         run: |
           set -euo pipefail
-          bash .github/scripts/prepare_review_toolchain.sh 2>&1 | tee "$RUNNER_TEMP/opencode-toolchain.log"
+          bash "$RUNNER_TEMP/prepare_review_toolchain.sh" 2>&1 | tee "$RUNNER_TEMP/opencode-toolchain.log"
           echo "TMPDIR=$RUNNER_TEMP/opencode-toolchain/tmp" >> "$GITHUB_ENV"
           echo "XDG_CACHE_HOME=$RUNNER_TEMP/opencode-toolchain/cache" >> "$GITHUB_ENV"
           echo "CMAKE_PREFIX_PATH=/usr" >> "$GITHUB_ENV"
@@ -107,10 +112,6 @@ jobs:
             echo '::error::Add the OPENROUTER_API_KEY repository Actions secret.'
             exit 1
           fi
-
-      - name: Verify review publication guards
-        if: steps.prepared.outputs.allowed == 'true'
-        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
 
       - name: Collect frozen-revision CI evidence
         if: steps.prepared.outputs.allowed == 'true'

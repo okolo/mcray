@@ -43,6 +43,8 @@ dependencies, and checks them by compiling/linking a small toolchain probe.
 The probe uses workflow-owned source outside the checkout; it does not configure
 or execute the candidate project's CMake code. System compiler paths and /usr
 package prefix avoid accidentally selecting an unrelated Conda installation.
+Control scripts are copied and tested before checking out the frozen head,
+so a PR branch predating this workflow need not contain the new helpers.
 The reviewer receives a scratch build path and must keep the frozen head clean.
 
 Before analysis, a read-only collector waits up to ten minutes for the matching

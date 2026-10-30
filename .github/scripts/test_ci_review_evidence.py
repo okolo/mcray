@@ -186,6 +186,8 @@ class EvidenceTests(unittest.TestCase):
         self.assertIn("actions: read", text)
         self.assertIn("libyaml-cpp-dev libssl-dev", text)
         self.assertIn("OPENCODE_CI_EVIDENCE:", text)
+        self.assertIn('bash "$RUNNER_TEMP/prepare_review_toolchain.sh"', text)
+        self.assertLess(text.index("Verify review publication guards"), text.index("Checkout frozen review head"))
         self.assertIn("never approve by default or because checks passed", text)
         self.assertIn("No full duplicate sanitizer build", text)
         self.assertLess(text.index("Verify review toolchain outside checkout"), text.index("Review with DeepSeek and GLM"))
