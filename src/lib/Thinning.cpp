@@ -27,6 +27,7 @@
 
 
 #include "Thinning.h"
+#include <cmath>
 
 namespace mcray
 {
@@ -60,6 +61,54 @@ void EnergyBasedThinning::Run(std::vector<Particle>& aParticles, Randomizer& aRa
 		else
 			aParticles[i].Weight /= probability;
 	}
+}
+
+PhotonThinning::PhotonThinning(double alpha, double threshold)
+    : alpha_(alpha), threshold_(threshold)
+{
+    if (!std::isfinite(alpha) || alpha < 0 || alpha > 10)
+        Utils::Exception::ThrowFatal("Photon thinning alpha must be finite and in [0,10]");
+    if (!std::isfinite(threshold) || threshold <= 0)
+        Utils::Exception::ThrowFatal("Photon thinning threshold must be finite and positive");
+}
+
+void PhotonThinning::Run(std::vector<Particle>& particles, Randomizer& randomizer)
+{
+    if (alpha_ == 0)
+        return; // Disabled means no validation, modification or RNG draws.
+
+    // Stable in-place compaction is linear even for a large secondary list.
+    size_t retained = 0;
+    for (size_t i = 0; i < particles.size(); ++i) {
+        Particle& particle = particles[i];
+        if (particle.Type == Photon) {
+            if (!std::isfinite(particle.Energy) || particle.Energy <= 0 ||
+                !std::isfinite(particle.Weight) || particle.Weight < 0)
+                Utils::Exception::ThrowFatal("Photon thinning requires positive finite photon energy and finite nonnegative weight");
+            if (particle.Energy < threshold_) {
+                // Avoid the fork's product of powers, which can overflow even
+                // when their ratio is moderate. Logs also handle E/Et underflow.
+                const double ratio = particle.Energy / threshold_;
+                const double logRatio = ratio > 0 ? std::log(ratio)
+                    : std::log(particle.Energy) - std::log(threshold_);
+                const double probability = std::exp(alpha_ * logRatio);
+                if (!(probability > 0) || !std::isfinite(probability))
+                    Utils::Exception::ThrowFatal("Photon thinning survival probability is not representable");
+                const double weight = particle.Weight / probability;
+                // Validate BEFORE sampling: dropping only overflowing survivors
+                // would bias the estimator. The whole run must be failed.
+                if (!std::isfinite(weight))
+                    Utils::Exception::ThrowFatal("Photon thinning corrected weight is not representable");
+                if (randomizer.Rand() > probability)
+                    continue;
+                particle.Weight = weight;
+            }
+        }
+        if (retained != i)
+            particles[retained] = particle;
+        ++retained;
+    }
+    particles.erase(particles.begin() + retained, particles.end());
 }
 
 }//end of namespace mcray

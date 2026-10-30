@@ -10,6 +10,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Source geometry, sphere observers and spatial output](usage/spatial_source_observer.md)
 - [Grid magnetic fields, composition and CLI/YAML input](usage/grid_magnetic_fields.md)
 - [YAML configuration, CLI compatibility and run records](usage/yaml_configuration.md)
+- [Optional photon-threshold thinning](usage/photon_thinning.md)
 - [Complete commented configuration](../examples/config.full.yaml)
 - [Unified nuclei and TALYS](usage/talys_usage.md)
 - [Nuclear decays and data preparation](usage/nuclear_decay.md)
@@ -29,6 +30,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 ## Validation results
 
 - [OpenMP worker lifetime regression](validation/worker_lifetime.md)
+- [Photon-thinning verification](validation/photon_thinning.md)
 - [Fork integration review against current main](validation/fork_integration_review.md)
 - [Stable legacy mc_rotate delay checks](validation/mc_rotate.md)
 - [Spatial source, observer and output checks](validation/spatial_source_observer.md)
