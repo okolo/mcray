@@ -65,7 +65,7 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
     }
     if (input.bad()) GridError("read failure in '" + filename + "'");
     size_t count = 1;
-    coord_type minimumSpacing = std::numeric_limits<coord_type>::max();
+    coord_type minimumScale = std::numeric_limits<coord_type>::max();
     for (auto& axis : axes_) {
         std::sort(axis.begin(), axis.end());
         axis.erase(std::unique(axis.begin(), axis.end()), axis.end());
@@ -81,13 +81,15 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
         for (size_t i = 1; i < axis.size(); ++i) {
             const coord_type spacing = axis[i] - axis[i - 1];
             if (std::abs(spacing - step) > tolerance) GridError("axis is not regularly spaced");
-            minimumSpacing = std::min(minimumSpacing, spacing);
         }
+        // The historical deflector scale uses extent/node count, not cell count.
+        // Take a true minimum: the fork's strict comparisons mishandle ties.
+        minimumScale = std::min(minimumScale, span / axis.size());
         if (count > rows.size() / axis.size()) GridError("incomplete Cartesian grid");
         count *= axis.size();
     }
     if (count != rows.size()) GridError("duplicate nodes or incomplete Cartesian grid");
-    minimumScale_ = static_cast<double>(minimumSpacing * units.Mpc);
+    minimumScale_ = static_cast<double>(minimumScale * units.Mpc);
     if (!std::isfinite(minimumScale_) || !(minimumScale_ > 0))
         GridError("grid spacing is not representable in internal units");
     values_.resize(count);
@@ -101,9 +103,15 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
         occupied[flat] = true;
         values_[flat] = row.field;
     }
-    // Store nodes in the same units as Particle::X, avoiding a divide-back
-    // rounding error that could classify an exact boundary node as outside.
-    for (auto& axis : axes_) {
+    // Interpolate in Particle::X units. Keep a separate double-precision box
+    // so that seam classification and periods use the fork's arithmetic.
+    for (size_t a = 0; a < axes_.size(); ++a) {
+        auto& axis = axes_[a];
+        bounds_[a] = {static_cast<double>(axis.front()) * units.Mpc,
+                      static_cast<double>(axis.back()) * units.Mpc};
+        const double legacyWidth = bounds_[a][1] - bounds_[a][0];
+        if (!std::isfinite(legacyWidth) || !(legacyWidth > 0))
+            GridError("box extent is not representable at boundary precision");
         for (auto& node : axis) {
             node *= units.Mpc;
             if (!std::isfinite(node)) GridError("coordinate is not representable in internal units");
@@ -112,7 +120,7 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
             if (!(axis[i] > axis[i - 1])) GridError("nodes collapse in internal units");
         const coord_type width = axis.back() - axis.front();
         if (!std::isfinite(width) ||
-            (filling_ == FILLING_MIRROR && !std::isfinite(2 * width)))
+            (filling_ == FILLING_MIRROR && !std::isfinite(2 * legacyWidth)))
             GridError("boundary period is not representable in internal units");
     }
 }
@@ -123,23 +131,34 @@ size_t SavedMF::Index(size_t i, size_t j, size_t k) const {
 
 coord_type SavedMF::MapCoordinate(coord_type value, size_t a) const {
     const auto& axis = axes_[a];
-    const coord_type lo = axis.front(), hi = axis.back();
-    if (value >= lo && value <= hi) return value;
-    if (filling_ == FILLING_NEAREST) return std::clamp(value, lo, hi);
-    const coord_type width = hi - lo;
-    const coord_type period = filling_ == FILLING_MIRROR ? 2 * width : width;
-    // Separate remainders avoid overflow in value-lo for distant finite queries.
-    coord_type v = std::fmod(value, period), origin = std::fmod(lo, period);
-    if (v < 0) v += period;
-    if (origin < 0) origin += period;
-    coord_type offset = v - origin;
+    const coord_type lo = bounds_[a][0], hi = bounds_[a][1];
+    const double width = bounds_[a][1] - bounds_[a][0];
+    const double period = filling_ == FILLING_MIRROR ? 2 * width : width;
+    // Use the fork's subtraction and fmod order for representable differences.
+    // Splitting the remainder is only needed for extreme finite coordinates.
+    const coord_type difference = value - lo;
+    coord_type offset;
+    if (std::isfinite(difference)) {
+        offset = std::fmod(difference, coord_type(period));
+    } else {
+        offset = std::fmod(value, coord_type(period)) -
+                 std::fmod(lo, coord_type(period));
+        offset = std::fmod(offset, coord_type(period));
+    }
     if (offset < 0) offset += period;
     if (filling_ == FILLING_MIRROR && offset > width) offset = period - offset;
-    return std::clamp(lo + offset, lo, hi);
+    coord_type mapped = std::clamp(lo + offset, lo, hi);
+    // Match the fork's finite seam displacement. All axes are mapped once
+    // any coordinate touches/leaves the box; this is part of its field model.
+    const double inset = width / axis.size();
+    if (mapped >= hi) mapped -= inset;
+    else if (mapped <= lo) mapped += inset;
+    return mapped;
 }
 
 SavedMF::Cell SavedMF::Locate(coord_type value, size_t a) const {
     const auto& axis = axes_[a];
+    value = std::clamp(value, axis.front(), axis.back());
     auto right = std::upper_bound(axis.begin(), axis.end(), value);
     const size_t left = right == axis.end() ? axis.size() - 2 :
         static_cast<size_t>(right - axis.begin() - 1);
@@ -152,11 +171,34 @@ void SavedMF::GetValueGauss(const coord_type* x, const CosmoTime&,
     ValidateQuery(x, value);
     bool outside = false;
     for (size_t a = 0; a < 3; ++a)
-        outside = outside || x[a] < axes_[a].front() || x[a] > axes_[a].back();
+        outside = outside || x[a] <= bounds_[a][0] || x[a] >= bounds_[a][1];
     std::fill(value.begin(), value.end(), 0.);
     if (outside && filling_ == FILLING_ZERO) return;
+    if (outside && filling_ == FILLING_NEAREST) {
+        // Outside means nearest Cartesian node on every axis, including axes
+        // still inside the box. Clamping and interpolating changes this model.
+        std::array<size_t, 3> node;
+        for (size_t a = 0; a < 3; ++a) {
+            const auto& axis = axes_[a];
+            // Clamp before narrowing: distant finite coordinates may exceed
+            // the double range even though their nearest endpoint is known.
+            if (x[a] <= bounds_[a][0]) node[a] = 0;
+            else if (x[a] >= bounds_[a][1]) node[a] = axis.size() - 1;
+            else {
+                const double coordinate = static_cast<double>(x[a]);
+                const double index = std::round((axis.size() - 1) *
+                    (coordinate - bounds_[a][0]) / (bounds_[a][1] - bounds_[a][0]));
+                if (!std::isfinite(index)) GridError("nearest node index overflow");
+                node[a] = static_cast<size_t>(index);
+            }
+        }
+        const auto& field = values_[Index(node[0], node[1], node[2])];
+        std::copy(field.begin(), field.end(), value.begin());
+        return;
+    }
     std::array<Cell, 3> cells;
-    for (size_t a = 0; a < 3; ++a) cells[a] = Locate(MapCoordinate(x[a], a), a);
+    for (size_t a = 0; a < 3; ++a)
+        cells[a] = Locate(outside ? MapCoordinate(x[a], a) : x[a], a);
     std::array<coord_type, 3> sum{};
     for (size_t i = 0; i < 2; ++i)
         for (size_t j = 0; j < 2; ++j)

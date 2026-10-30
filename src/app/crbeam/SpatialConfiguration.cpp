@@ -28,6 +28,10 @@ SpatialConfiguration::SpatialConfiguration(const YAML::Node &effective) {
     axis_ = Vector(angular["axis"]);
     if (angular["model"].as<std::string>() == "cone")
       angular_ = mcray::SourceGeometry::AngularModel::Cone;
+    if (angular["model"].as<std::string>() == "vmf") {
+      angular_ = mcray::SourceGeometry::AngularModel::Vmf;
+      kappa_ = angular["kappa"].as<double>();
+    }
     halfAngle_ = angular["half_angle_deg"].as<double>();
   }
   const auto propagation = effective["propagation"];
@@ -50,7 +54,7 @@ SpatialConfiguration::SpatialConfiguration(const YAML::Node &effective) {
 }
 mcray::SourceGeometry SpatialConfiguration::Source() const {
   return mcray::SourceGeometry(Internal(position_), axis_, angular_,
-                               halfAngle_);
+                               halfAngle_, kappa_);
 }
 std::shared_ptr<const mcray::SpatialObserver>
 SpatialConfiguration::Observer() const {
@@ -63,7 +67,7 @@ SpatialConfiguration::Observer() const {
 }
 bool SpatialConfiguration::HasSpatialSettings() const {
   return sphere_ || primaryDirection_ || endRedshift_ != 0 || halfAngle_ != 0 ||
-         angular_ == mcray::SourceGeometry::AngularModel::Cone ||
+         angular_ != mcray::SourceGeometry::AngularModel::Pencil ||
          position_ != mcray::SpatialVector{} ||
          axis_ != mcray::SpatialVector{0, 0, 1};
 }

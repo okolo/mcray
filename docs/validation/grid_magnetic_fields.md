@@ -6,6 +6,11 @@ describes units, interpolation, extensions, ownership and current application
 scope. These results do not establish physical acceptance of an imported
 field realization or turbulence model.
 
+The initial boundary and step-scale rules described below were subsequently
+aligned with the fork in the [direct kernel comparison](fork_kernel_comparison.md).
+The usage contract describes the current behavior; the results below retain
+their original tested-source scope.
+
 ## Source and environments
 
 The implementation series starts from main

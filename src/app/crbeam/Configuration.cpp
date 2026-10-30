@@ -219,7 +219,7 @@ std::set<std::string> Fields(bool versionTwo = false) {
     for (const char *field :
          {"source.position_Mpc", "source.angular_distribution.model",
           "source.angular_distribution.axis",
-          "source.angular_distribution.half_angle_deg",
+          "source.angular_distribution.half_angle_deg", "source.angular_distribution.kappa",
           "propagation.end_redshift", "observer.model", "observer.center_Mpc",
           "observer.radius_Mpc", "observer.stop_when",
           "output.primary_direction", "sampling.thinning.model",
@@ -298,12 +298,24 @@ void NormalizeSpatial(YAML::Node effective, const YAML::Node &input) {
     return node ? Numeric(node, path) : fallback;
   };
   const auto model = text("source.angular_distribution.model", "pencil");
-  if (model != "pencil" && model != "cone")
-    Invalid("source.angular_distribution.model", "choices: pencil|cone");
+  if (model != "pencil" && model != "cone" && model != "vmf")
+    Invalid("source.angular_distribution.model", "choices: pencil|cone|vmf");
+  const auto kappaNode = Get(input, "source.angular_distribution.kappa");
+  double kappa = 0;
+  if (model == "vmf") {
+    if (!Get(input, "source.angular_distribution.half_angle_deg"))
+      Invalid("source.angular_distribution.half_angle_deg", "required for vmf");
+    if (!kappaNode)
+      Invalid("source.angular_distribution.kappa", "required for vmf");
+    kappa = Numeric(kappaNode, "source.angular_distribution.kappa");
+    if (kappa < 0)
+      Invalid("source.angular_distribution.kappa", "must be nonnegative");
+  } else if (kappaNode)
+    Invalid("source.angular_distribution.kappa", "requires vmf model");
   const double half = number("source.angular_distribution.half_angle_deg", 0);
   if (half < 0 || half > 180 || (model == "pencil" && half != 0))
     Invalid("source.angular_distribution.half_angle_deg",
-            "require 0..180 for cone, zero for pencil");
+            "require 0..180 for cone/vmf, zero for pencil");
   const double end = number("propagation.end_redshift", 0);
   const auto sourceZ = Get(effective, "source.redshift").as<double>();
   if (end < 0 || (sourceZ > 0 && end >= sourceZ) || (sourceZ <= 0 && end != 0))
@@ -336,6 +348,8 @@ void NormalizeSpatial(YAML::Node effective, const YAML::Node &input) {
   Put(effective, "source.angular_distribution.model", model);
   Put(effective, "source.angular_distribution.axis", VectorNode(axis));
   Put(effective, "source.angular_distribution.half_angle_deg", half);
+  if (model == "vmf")
+    Put(effective, "source.angular_distribution.kappa", kappa);
   Put(effective, "propagation.end_redshift", end);
   effective["observer"] = observerNode;
   const auto direction = Get(input, "output.primary_direction");
@@ -401,6 +415,7 @@ bool SpatialCli(CmdLine &cli, YAML::Node effective) {
       {"--source-axis", "source.angular_distribution.axis", "vector"},
       {"--source-half-angle-deg", "source.angular_distribution.half_angle_deg",
        "number"},
+      {"--source-vmf-kappa", "source.angular_distribution.kappa", "number"},
       {"--end-redshift", "propagation.end_redshift", "number"},
       {"--observer", "observer.model", "text"},
       {"--observer-center-Mpc", "observer.center_Mpc", "vector"},
@@ -662,7 +677,7 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
     if (!yaml) {
       fArguments = fOriginal;
       for (const char* option : {"--magnetic-field","--magnetic-field-file","--magnetic-field-boundary",
-          "--source-position-Mpc","--source-angular-model","--source-axis","--source-half-angle-deg",
+          "--source-position-Mpc","--source-angular-model","--source-axis","--source-half-angle-deg","--source-vmf-kappa",
           "--end-redshift","--observer","--observer-center-Mpc","--observer-radius-Mpc",
           "--observer-stop-when","--output-primary-direction",
           "--thinning-model","--thinning-threshold-eV"})

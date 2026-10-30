@@ -21,6 +21,6 @@ private:
   mcray::SphereObserver::StopWhen stop_ =
       mcray::SphereObserver::StopWhen::Inside;
   bool sphere_ = false, primaryDirection_ = false;
-  double halfAngle_ = 0, radius_ = 0, endRedshift_ = 0;
+  double halfAngle_ = 0, kappa_ = 0, radius_ = 0, endRedshift_ = 0;
 };
 #endif

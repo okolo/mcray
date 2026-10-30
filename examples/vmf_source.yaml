@@ -1,0 +1,15 @@
+# One normalized vMF jet inside a 10-degree cone; kappa is dimensionless.
+schema_version: 2
+source:
+  redshift: 0.01
+  particle: {type: electron}
+  spectrum: {type: monoenergetic, energy_eV: 1.0e13}
+  angular_distribution:
+    model: vmf
+    axis: [0, 0, 1]
+    half_angle_deg: 10
+    kappa: 100
+simulation: {primaries: 100, seed: 123, threads: 1}
+backgrounds: {ebl: {model: none}}
+magnetic_field: {model: none}
+output: {directory: ../output/vmf-source, primary_direction: true}

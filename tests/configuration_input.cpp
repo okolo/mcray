@@ -1,5 +1,8 @@
 #include "CRbeam.h"
 #include "Sha256.h"
+#include "SpatialGeometry.h"
+#include <map>
+#include <limits>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -780,5 +783,135 @@ TEST_F(ConfigurationTest, PhotonThinningIsActiveInRealCascadeAndReplaysAcrossInt
   Error([&] { program->run(); }, "Propagation failed; partial output must not be used");
   const auto failed = YAML::LoadFile((root / "failed-photon/run.yaml").string());
   EXPECT_EQ(failed["status"].as<std::string>(), "failed");
+}
+} // namespace
+
+namespace {
+TEST_F(ConfigurationTest, VmfCliYamlSnapshotAndBallisticOutputAreConsistent) {
+  Parse({(fs::path(CRBEAM_FULL_EXAMPLE).parent_path() / "vmf_source.yaml").string()});
+  EXPECT_EQ(program->EffectiveConfiguration()["source"]["angular_distribution"]["model"].as<std::string>(), "vmf");
+  EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["source"]["angular_distribution"]["kappa"].as<double>(), 100);
+  auto cfg = YAML::Load(Common());
+  cfg["schema_version"] = 2;
+  cfg["source"]["particle"]["type"] = "neutrinoE";
+  cfg["source"]["position_Mpc"] = YAML::Load("[1,-2,3]");
+  cfg["source"]["angular_distribution"] = YAML::Load(
+      "{model: vmf, axis: [1,-2,3], half_angle_deg: 10, kappa: 100}");
+  cfg["output"]["directory"] = (root / "vmf-yaml").string();
+  cfg["output"]["primary_direction"] = true;
+  auto path = Write(YAML::Dump(cfg));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  const auto data = Read(root / "vmf-yaml/z0/neutrinoE");
+  ASSERT_FALSE(data.empty());
+  Parse({"--particle", "neutrinoE", "--z", "1e-8", "--nparticles", "12",
+      "--seed", "123456", "--batch", "12", "--background", "0", "--EGMF", "0",
+      "--noEMcascade", "--source-position-Mpc", "1,-2,3", "--source-angular-model", "vmf",
+      "--source-axis", "1,-2,3", "--source-half-angle-deg", "10", "--source-vmf-kappa", "100",
+      "--output-primary-direction", "--output", (root / "vmf-cli").string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "vmf-cli/z0/neutrinoE"), data);
+  auto saved = YAML::LoadFile((root / "vmf-yaml/config.yaml").string());
+  EXPECT_EQ(saved["source"]["angular_distribution"]["model"].as<std::string>(), "vmf");
+  EXPECT_DOUBLE_EQ(saved["source"]["angular_distribution"]["kappa"].as<double>(), 100);
+  EXPECT_DOUBLE_EQ(saved["source"]["angular_distribution"]["half_angle_deg"].as<double>(), 10);
+  saved["output"]["directory"] = (root / "vmf-replay").string();
+  path = Write(YAML::Dump(saved)); Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "vmf-replay/z0/neutrinoE"), data);
+
+  // A massless, undeflected neutral primary travels X-X0 = n * flight.
+  // Check named output columns as well as weights and initial directions.
+  std::map<std::string,size_t> columns;
+  std::istringstream rows(data);
+  std::string line;
+  long double scale = 0;
+  size_t count = 0;
+  const auto axis = mcray::SourceGeometry::NormalizeAxis({1,-2,3});
+  while (std::getline(rows, line)) {
+    const auto marker = line.find("T/Mpc = ");
+    if (marker != std::string::npos) scale = std::stold(line.substr(marker + 8));
+    if (line.rfind("# E/eV", 0) == 0) {
+      std::istringstream names(line.substr(2));
+      std::string name;
+      while (names >> name) { const auto index = columns.size(); columns[name] = index; }
+    }
+    if (line.empty() || line[0] == '#') continue;
+    std::istringstream row(line);
+    std::vector<long double> values;
+    long double value;
+    while (row >> value) values.push_back(value);
+    ASSERT_EQ(values.size(), columns.size());
+    auto get = [&](const std::string& name) { return values.at(columns.at(name)); };
+    EXPECT_EQ(get("weight"), 1);
+    const std::array<long double,3> direction{get("Px/P"),get("Py/P"),1-get("1-(Pz/P)")};
+    const std::array<long double,3> position{get("x/T")*scale,get("y/T")*scale,(1-get("1-(z/T)"))*scale};
+    const std::array<long double,3> start{1,-2,3};
+    long double dot = 0;
+    ASSERT_GT(get("FlightMpc"), 0);
+    for (size_t i = 0; i < 3; ++i) {
+      const std::string name = std::string("source_") + "xyz"[i];
+      EXPECT_NEAR(direction[i], get(name), 1e-14);
+      dot += direction[i] * axis[i];
+      const auto tolerance = 128 * std::numeric_limits<mcray::coord_type>::epsilon() *
+          (std::abs(start[i]) + get("FlightMpc") + 1);
+      EXPECT_LE(std::abs(position[i] - start[i] - direction[i]*get("FlightMpc")), tolerance);
+    }
+    EXPECT_GE(dot, std::cos(10*std::acos(-1.L)/180) - 1e-14);
+    ++count;
+  }
+  EXPECT_EQ(count, 12u);
+}
+TEST_F(ConfigurationTest, VmfRejectsMissingInvalidAndInapplicableSettings) {
+  for (const auto& options : std::vector<std::vector<std::string>>{
+      {"--source-angular-model","vmf"},
+      {"--source-angular-model","vmf","--source-vmf-kappa","1"},
+      {"--source-angular-model","vmf","--source-half-angle-deg","10"},
+      {"--source-vmf-kappa","0"},
+      {"--source-angular-model","cone","--source-half-angle-deg","10","--source-vmf-kappa","0"},
+      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","-1"},
+      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","nan"},
+      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1junk"},
+      {"--source-angular-model","vmf","--source-half-angle-deg","181","--source-vmf-kappa","1"},
+      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1","--source-vmf-kappa","2"},
+      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1","--source-axis","0,0,0"}})
+    Error([&] { Parse(options); }, "Configuration");
+  for (const auto* settings : {"{model: vmf}", "{model: vmf, kappa: 1}",
+      "{model: vmf, half_angle_deg: 10}", "{model: cone, kappa: 0}",
+      "{model: pencil, kappa: 0}", "{model: vmf, half_angle_deg: 10, kappa: -1}",
+      "{model: vmf, half_angle_deg: 10, kappa: .inf}",
+      "{model: vmf, half_angle_deg: 10, kappa: '1'}",
+      "{model: vmf, half_angle_deg: 10, kappa: 1, kappaa: 2}",
+      "{model: vmf, half_angle_deg: 10, kappa: 1, kappa: 2}"}) {
+    SCOPED_TRACE(settings);
+    auto path = Write(std::string("schema_version: 2\nsource: {angular_distribution: ") + settings + "}\n");
+    Error([&] { Parse({path.string()}); }, "Configuration");
+  }
+  const auto path = Write("schema_version: 1\nsource: {angular_distribution: {model: vmf, half_angle_deg: 10, kappa: 1}}\n");
+  Error([&] { Parse({path.string()}); }, "unknown configuration key");
+}
+TEST_F(ConfigurationTest, VmfZeroKappaReplaysConeAndZeroAngleRetainsSpatialFormat) {
+  auto cfg = YAML::Load(Common());
+  cfg["schema_version"] = 2;
+  cfg["source"]["angular_distribution"] = YAML::Load("{model: cone, half_angle_deg: 20}");
+  cfg["output"]["directory"] = (root / "cone-control").string();
+  auto path = Write(YAML::Dump(cfg)); Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  const auto cone = Read(root / "cone-control/z0/proton");
+  ASSERT_FALSE(cone.empty());
+  cfg["source"]["angular_distribution"]["model"] = "vmf";
+  cfg["source"]["angular_distribution"]["kappa"] = 0;
+  cfg["output"]["directory"] = (root / "vmf-uniform").string();
+  path = Write(YAML::Dump(cfg)); Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "vmf-uniform/z0/proton"), cone);
+  cfg["source"]["angular_distribution"]["half_angle_deg"] = 0;
+  cfg["source"]["angular_distribution"]["kappa"] = 100;
+  cfg["output"]["directory"] = (root / "vmf-zero").string();
+  path = Write(YAML::Dump(cfg)); Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  const auto zero = Read(root / "vmf-zero/z0/proton");
+  EXPECT_NE(zero.find("spatial_format = 1"), std::string::npos);
+  EXPECT_NE(zero.find("\tFlightMpc"), std::string::npos);
 }
 } // namespace
