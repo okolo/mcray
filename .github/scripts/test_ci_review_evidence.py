@@ -111,12 +111,23 @@ class EvidenceTests(unittest.TestCase):
 
     def test_missing_failed_or_ambiguous_jobs_and_test_steps_are_not_verified(self):
         variants = [[], self.jobs+self.jobs[:1], [self.jobs[0] | {"conclusion": "failure"}, self.jobs[1]],
-                    [self.jobs[0] | {"steps": []}, self.jobs[1]]]
+                    [self.jobs[0] | {"steps": [dict(name="other", conclusion="success")]}, self.jobs[1]],
+                    [self.jobs[0] | {"steps": [dict(name=evidence.JOBS[self.jobs[0]["name"]][1],
+                                                  conclusion="failure")]}, self.jobs[1]]]
         for jobs in variants:
             with self.subTest(jobs=jobs):
                 original = self.jobs; self.jobs = jobs
                 self.assertEqual(self.collect()["status"], "unavailable")
                 self.jobs = original
+
+    def test_empty_step_metadata_requires_all_other_provenance_and_reports(self):
+        for job in self.jobs:
+            job["steps"] = []
+        result = self.collect()
+        self.assertEqual(result["status"], "verified")
+        self.assertTrue(all(not job["step_metadata_available"] for job in result["jobs"]))
+        self.artifacts.clear()
+        self.assertEqual(self.collect()["status"], "unavailable")
 
     def test_expired_missing_old_attempt_or_oversized_artifacts_are_not_verified(self):
         for change in ({"expired": True}, {"name": "linux-amd64-release-1"},

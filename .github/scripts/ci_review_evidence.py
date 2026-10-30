@@ -149,8 +149,13 @@ def collect_once(context, directory):
         job = matching[0]
         if job["status"] != "completed" or job["conclusion"] != "success":
             raise ValueError("Required CI job did not succeed: " + name)
-        steps = [step for step in job["steps"] if step["name"] == test_step]
-        if len(steps) != 1 or steps[0]["conclusion"] != "success":
+        # GitHub may return an empty step list even for a completed job. In
+        # that case the unchanged CI definition, successful job and revision-
+        # bound JUnit artifact supply the execution evidence. Never ignore a
+        # missing or failed CTest step when step metadata is actually present.
+        metadata = job.get("steps", [])
+        steps = [step for step in metadata if step["name"] == test_step]
+        if metadata and (len(steps) != 1 or steps[0]["conclusion"] != "success"):
             raise ValueError("CTest step did not succeed: " + name)
         wanted = f"{prefix}-{attempt}"
         matching = [item for item in artifacts if item["name"] == wanted]
@@ -173,6 +178,7 @@ def collect_once(context, directory):
         for filename, content in reports.items():
             (target / filename).write_bytes(content)
         evidence.append(dict(name=name, conclusion=job["conclusion"], url=job["html_url"],
+                             step_metadata_available=bool(metadata),
                              artifact_id=artifact["id"], artifact_name=wanted,
                              build=build, ctest=counts,
                              report_sha256={key: hashlib.sha256(value).hexdigest() for key, value in reports.items()}))
