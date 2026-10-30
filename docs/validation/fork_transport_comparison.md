@@ -188,3 +188,9 @@ The six self-contained adapter tests passed again. The post-fix JSON evidence
 also records hashes of these logs and the deliberately failing old-code
 regression control. All build, temporary and diagnostic artifacts stayed
 inside the project; external reference files were read-only.
+
+Before publication, main `b5436fd` (the PR #15 default-cosmology regression)
+was integrated in `38f0601`. All measured production and adapter source hashes
+remained unchanged. The rebuilt macOS Release suite then passed 243/243 in
+16.81 s; the extra case comes from PR #15. Hosted CI checks the published
+combined revision independently.
