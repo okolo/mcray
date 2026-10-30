@@ -525,3 +525,11 @@ cone/pencil RNG limits and primary metadata. Its quantile reference uses
 header-only Boost.Multiprecision (100 decimal digits); its frozen CDF ensemble
 uses the settings in [vMF verification](../docs/validation/vmf_source.md).
 Configuration checks cover CLI/YAML/snapshot replay and ballistic output.
+
+## Historical fork differential probe
+
+The optional [fork comparison adapter](fork_compat/README.md) compiles hash-pinned
+historical field and cone functions directly, and compares them with the current
+kernels. It accepts explicit read-only reference and modern build paths; ordinary
+builds and CI do not require the historical checkout. The self-contained
+`unit.magnetic.*` regression cases cover the restored boundary and scale rules.

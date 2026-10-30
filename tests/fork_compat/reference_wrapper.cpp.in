@@ -1,0 +1,78 @@
+// Compile pinned historical kernels verbatim in an isolated namespace.
+#include "fork_api.h"
+#include <cassert>
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <set>
+#include <sstream>
+#include <stdexcept>
+#include <vector>
+#define MCPropag fork_reference
+#include "Randomizer.cpp"
+#include "Jet.cpp"
+#undef MCPropag
+namespace fork_reference {
+using namespace std;
+struct CosmoTime {};
+struct Units { double Mpc; } units;
+class MagneticField { public: virtual ~MagneticField() = default; };
+#define ASSERT assert
+@SAVED_CLASS@
+@SAVED_METHODS@
+#undef ASSERT
+struct Exception {
+    static void Throw(const char* text) { throw std::runtime_error(text); }
+};
+struct LegacyParticle {
+    long double Pdir[3]{0,0,1}, PdirStart[3]{0,0,1};
+    double Weight = 1;
+};
+// Keep phi mutable across histories, as in the original CRbeam loop.
+ForkSample Emit(double fJetAngle, double fJetTheta, double& fJetPhi, Randomizer& rand) {
+    const int fJetType = 0;
+    const double fJetParam = 0;
+    LegacyParticle particle;
+@CONE_BLOCK@
+    return {{particle.Pdir[0],particle.Pdir[1],particle.Pdir[2]},particle.Weight};
+}
+struct Cone {
+    double angle, theta, phi;
+    Randomizer random;
+    Cone(double a,double t,double p,unsigned long seed):angle(a),theta(t),phi(p),random(seed) {}
+};
+}
+namespace {
+struct NullBuffer : std::streambuf {
+    int_type overflow(int_type c) override { return traits_type::not_eof(c); }
+};
+// Suppress only reference progress messages and repeated zero-weight warnings.
+struct Silence {
+    NullBuffer buffer;
+    std::streambuf *out, *err;
+    Silence():out(std::cout.rdbuf(&buffer)),err(std::cerr.rdbuf(&buffer)) {}
+    ~Silence() { std::cout.rdbuf(out); std::cerr.rdbuf(err); }
+};
+
+}
+void ForkUnits(double mpc) { fork_reference::units.Mpc=mpc; }
+void* ForkField(const char* file,int mode) {
+    Silence quiet;
+    return new fork_reference::SavedMF(file,static_cast<fork_reference::SavedMF::FillingType>(mode));
+}
+void ForkValue(void* field,const long double* x,double* b) {
+    std::vector<double> value(3);
+    static_cast<fork_reference::SavedMF*>(field)->GetValueGauss(x,{},value);
+    for (int i=0;i<3;++i) b[i]=value[i];
+}
+double ForkScale(void* field) {
+    return static_cast<fork_reference::SavedMF*>(field)->MinVariabilityScale({});
+}
+void ForkDeleteField(void* field) { Silence quiet; delete static_cast<fork_reference::SavedMF*>(field); }
+void* ForkCone(double a,double t,double p,unsigned long seed) { return new fork_reference::Cone(a,t,p,seed); }
+ForkSample ForkNext(void* cone) {
+    Silence quiet;
+    auto& c=*static_cast<fork_reference::Cone*>(cone);
+    return fork_reference::Emit(c.angle,c.theta,c.phi,c.random);
+}
+void ForkDeleteCone(void* cone) { delete static_cast<fork_reference::Cone*>(cone); }

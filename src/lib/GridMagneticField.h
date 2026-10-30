@@ -36,6 +36,8 @@ private:
     size_t Index(size_t i, size_t j, size_t k) const;
 
     std::array<Axis, 3> axes_;
+    // Match the historical double-precision box and period arithmetic.
+    std::array<std::array<double, 2>, 3> bounds_;
     std::vector<std::array<double, 3>> values_;
     FillingType filling_;
     double minimumScale_;

@@ -1,0 +1,2641 @@
+{
+  "date": "2026-10-30",
+  "scope": "Compiled field and uniform-cone kernels only; no whole-cascade physical acceptance.",
+  "protocol": "tests/fork_compat/README.md",
+  "reference_sha256": {
+    "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+    "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+    "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+    "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+    "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+    "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+    "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+    "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b"
+  },
+  "runs": [
+    {
+      "label": "before_native",
+      "modern_parent_revision": "c5f86a4eb1503fe3c2dafd80e7f30169f9362592",
+      "modern_source_sha256": {
+        "src/lib/GridMagneticField.cpp": "ff1e6b85805387e2d756bca0e7178afbf99c2de42a428df4f97c3568b4ae14a6",
+        "src/lib/SpatialGeometry.cpp": "7e0061b06ff976e534478eede2b52456c23f5e9b683a441e665717c377d7a710"
+      },
+      "executable_adapter_sha256": null,
+      "linked_core_sha256": null,
+      "compiler": "Homebrew clang 22.1.5",
+      "full_report_sha256": "d6fbdcc76a9e2e4897852b318ee6037e3ecfc61c6c53345642a9c4586ffd77a8",
+      "input_sha256": {
+        "centered.queries": "c388730ae0b8bb49ce40a3c0c5afd3d536de680cb646f32c089c5964e6e4bac7",
+        "origin.grid": "709d8c38011298cdb05daed281aae01aa510376780021a499b44b8db552a4e83",
+        "origin.queries": "099f2eebbb16280a85443a489e8a008d8074eac473095e29e4ac0b5f91731928",
+        "centered.grid": "ec29b697a0c389e9d228625eddc4d2ec9054c2a4073e202ea9d5836a36e8d13b"
+      },
+      "confidence": {
+        "level": 0.95,
+        "method": "Bonferroni normal intervals",
+        "comparisons": 260,
+        "z_cutoff": 3.728912782896175
+      },
+      "field": [
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 880,
+          "max_absolute": 6.661338147750939e-15,
+          "max_relative": 3.673144623213325e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 1.1156250000000003,
+          "max_relative": 1,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 136,
+          "max_absolute": 0.6189133675212628,
+          "max_relative": 0.4892639001836647,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 0.640625,
+          "max_relative": 0.42531120331950206,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 0.640625,
+          "max_relative": 0.42531120331950206,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 0,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.805816267883648e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 0.25,
+          "max_relative": 0.25,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 0.8550000000000002,
+          "max_relative": 0.7862068965517243,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 0,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.604232575221482e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 0.3150000000000003,
+          "max_relative": 0.28965517241379335,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 0.3150000000000003,
+          "max_relative": 0.28965517241379335,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 881,
+          "max_absolute": 1.1102230246251565e-15,
+          "max_relative": 8.479283709707989e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 1.0906249999999997,
+          "max_relative": 1,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 137,
+          "max_absolute": 1.129120611937278,
+          "max_relative": 0.9910263193691423,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 0.565625,
+          "max_relative": 0.565625,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 0.565625,
+          "max_relative": 0.565625,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 9,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 1.3322676295501878e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 0.8999999999999992,
+          "max_relative": 0.8700100774711705,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 1.3333333333333333,
+          "max_relative": 1.3333333333333333,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 6,
+          "max_absolute": 1.1102230246251565e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 0.6666666666666665,
+          "max_relative": 0.6666666666666665,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 0.6666666666666665,
+          "max_relative": 0.6666666666666665,
+          "scale_fork": 0.5,
+          "scale_modern": 0.6666666666666666
+        }
+      ],
+      "cone": [
+        {
+          "angle_degrees": 20.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.5894741691717504,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4995484024786888,
+            "mean_modern": 0.5000731975693271,
+            "variance_fork": 0.08344518279629722,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.000524795090638297,
+            "standard_error": 0.0012909297147854738,
+            "z": 0.4065249135004281,
+            "simultaneous_95_interval": [
+              -0.004288969224645769,
+              0.005338559405922363
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 20.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.3670837531828512,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4995484024786888,
+            "mean_modern": 0.5000731975693269,
+            "variance_fork": 0.08344518279629723,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.000524795090638075,
+            "standard_error": 0.0012909297147854738,
+            "z": 0.40652491350025605,
+            "simultaneous_95_interval": [
+              -0.004288969224645991,
+              0.005338559405922141
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 90.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.5904670666762994,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868937,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0005247950906376309,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.40652491349991193,
+            "simultaneous_95_interval": [
+              -0.004288969224646437,
+              0.005338559405921699
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 90.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.3684072205828812,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868937,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0005247950906376309,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.40652491349991193,
+            "simultaneous_95_interval": [
+              -0.004288969224646437,
+              0.005338559405921699
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 180.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.513537931915266,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868926,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0005247950906377419,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.4065249134999979,
+            "simultaneous_95_interval": [
+              -0.004288969224646326,
+              0.00533855940592181
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 180.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.3118622576919736,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868937,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531324,
+            "difference": 0.0005247950906376309,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.40652491349991193,
+            "simultaneous_95_interval": [
+              -0.004288969224646437,
+              0.005338559405921699
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 5.729577951308232e-05,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 3.605767630298346,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0.9998699999999956,
+            "mean_modern": 1,
+            "variance_fork": 0.0001299843998439984,
+            "variance_modern": 0,
+            "difference": 0.00013000000000440437,
+            "standard_error": 3.605334933733597e-05,
+            "z": 3.605767630298346,
+            "simultaneous_95_interval": [
+              -4.439795205809068e-06,
+              0.0002644397952146178
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49946258462445514,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08346002445398394,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0006106129448718578,
+            "standard_error": 0.0012909871978811298,
+            "z": 0.4729814097878306,
+            "simultaneous_95_interval": [
+              -0.004203365719862401,
+              0.005424591609606117
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 13,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.00833812441080003
+        },
+        {
+          "angle_degrees": 5.729577951308232e-05,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 3.606332125369726,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0.9998699999999956,
+            "mean_modern": 1,
+            "variance_fork": 0.0001299843998439984,
+            "variance_modern": 0,
+            "difference": 0.00013000000000440437,
+            "standard_error": 3.605334933733597e-05,
+            "z": 3.605767630298346,
+            "simultaneous_95_interval": [
+              -4.439795205809068e-06,
+              0.0002644397952146178
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49946258462419796,
+            "mean_modern": 0.5000731975695683,
+            "variance_fork": 0.08346002445394311,
+            "variance_modern": 0.08320477005540684,
+            "difference": 0.0006106129453702924,
+            "standard_error": 0.0012909871978813343,
+            "z": 0.47298141017384365,
+            "simultaneous_95_interval": [
+              -0.004203365719364729,
+              0.005424591610105314
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 13,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.00833812441080003
+        },
+        {
+          "angle_degrees": 5.729577951308232e-09,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [
+            "weight",
+            "polar_mean",
+            "polar_second_moment",
+            "direction_2",
+            "polar_cdf_1",
+            "polar_cdf_2",
+            "polar_cdf_3",
+            "polar_cdf_4",
+            "polar_cdf_5",
+            "polar_cdf_6",
+            "polar_cdf_7",
+            "polar_cdf_8",
+            "polar_cdf_9",
+            "polar_cdf_10",
+            "polar_cdf_11",
+            "polar_cdf_12",
+            "polar_cdf_13",
+            "polar_cdf_14",
+            "polar_cdf_15",
+            "polar_cdf_16",
+            "polar_cdf_17",
+            "polar_cdf_18",
+            "polar_cdf_19",
+            "polar_cdf_20"
+          ],
+          "maximum_abs_z": 1384.8238434840098,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 1,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              1.0,
+              1.0
+            ],
+            "excludes_zero": true
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.500073197569327,
+            "standard_error": 0.0009121664872999513,
+            "z": 548.2257948870314,
+            "simultaneous_95_interval": [
+              0.4966718082947047,
+              0.5034745868439493
+            ],
+            "excludes_zero": true
+          },
+          "inferred_zero_weights_fork": 100000,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.005895952161966811
+        },
+        {
+          "angle_degrees": 5.729577951308232e-09,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [
+            "weight",
+            "polar_mean",
+            "polar_second_moment",
+            "direction_0",
+            "direction_1",
+            "direction_2",
+            "polar_cdf_1",
+            "polar_cdf_2",
+            "polar_cdf_3",
+            "polar_cdf_4",
+            "polar_cdf_5",
+            "polar_cdf_6",
+            "polar_cdf_7",
+            "polar_cdf_8",
+            "polar_cdf_9",
+            "polar_cdf_10",
+            "polar_cdf_11",
+            "polar_cdf_12",
+            "polar_cdf_13",
+            "polar_cdf_14",
+            "polar_cdf_15",
+            "polar_cdf_16",
+            "polar_cdf_17",
+            "polar_cdf_18",
+            "polar_cdf_19",
+            "polar_cdf_20"
+          ],
+          "maximum_abs_z": 14957966330435.133,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 1,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              1.0,
+              1.0
+            ],
+            "excludes_zero": true
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0,
+            "mean_modern": 0.5000731977959502,
+            "variance_fork": 0,
+            "variance_modern": 0.0832047695809727,
+            "difference": 0.5000731977959502,
+            "standard_error": 0.0009121664846998748,
+            "z": 548.2257966981615,
+            "simultaneous_95_interval": [
+              0.49667180853102333,
+              0.503474587060877
+            ],
+            "excludes_zero": true
+          },
+          "inferred_zero_weights_fork": 100000,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.005895951990983833
+        }
+      ]
+    },
+    {
+      "label": "corrected_native",
+      "modern_parent_revision": "c5f86a4eb1503fe3c2dafd80e7f30169f9362592",
+      "modern_source_sha256": {
+        "src/lib/GridMagneticField.cpp": "a4622e4a35669a9a8aed1eff5324b19077d1fcccabe9d6004036ede8d4ddcf7d",
+        "src/lib/GridMagneticField.h": "9f0548a951d853618f882ca0c6c522e73834067df0201164887555f3834f9b3e",
+        "src/lib/SpatialGeometry.cpp": "7e0061b06ff976e534478eede2b52456c23f5e9b683a441e665717c377d7a710"
+      },
+      "executable_adapter_sha256": {
+        "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+        "fork_api.h": "fa706c85962887c99bcaa85bc478eb930bd3f6f8d738593f7b38466bd784d8fc",
+        "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+        "reference_wrapper.cpp.in": "5c76489405c80a1202a6da5696e1097c57e97dc30bc83ff56536f8bca1984239",
+        "run.py": "93647508dc74045ed4e01c686c3b376b1832afd354ab011a3d1105a32f50230f"
+      },
+      "linked_core_sha256": "1237cf5926fbc216cf04d5ecc9cb6f5ac4da633c0a5e003587d5c8b0f8ebdae9",
+      "compiler": "Homebrew clang version 22.1.5",
+      "full_report_sha256": "6faf288b3ecc3f01bf00a7d291b8ce46042776387fef73a9ae96b9521b066da6",
+      "input_sha256": {
+        "centered.queries": "c388730ae0b8bb49ce40a3c0c5afd3d536de680cb646f32c089c5964e6e4bac7",
+        "origin.grid": "709d8c38011298cdb05daed281aae01aa510376780021a499b44b8db552a4e83",
+        "origin.queries": "099f2eebbb16280a85443a489e8a008d8074eac473095e29e4ac0b5f91731928",
+        "centered.grid": "ec29b697a0c389e9d228625eddc4d2ec9054c2a4073e202ea9d5836a36e8d13b"
+      },
+      "confidence": {
+        "level": 0.95,
+        "method": "Bonferroni normal intervals",
+        "comparisons": 260,
+        "z_cutoff": 3.728912782896175
+      },
+      "field": [
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 880,
+          "max_absolute": 6.661338147750939e-15,
+          "max_relative": 3.673144623213325e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 880,
+          "max_absolute": 6.661338147750939e-15,
+          "max_relative": 3.673144623213325e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 0,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.805816267883648e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 2.4424906541753444e-15,
+          "max_relative": 2.347138166174499e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 2.7755575615628914e-16,
+          "max_relative": 2.7755575615628914e-16,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.784039372992298e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 0,
+          "max_absolute": 7.105427357601002e-15,
+          "max_relative": 4.604232575221482e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 2.6645352591003757e-15,
+          "max_relative": 2.5605143630994537e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 2.3314683517128287e-15,
+          "max_relative": 2.3314683517128287e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.3333333333333333
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 881,
+          "max_absolute": 1.1102230246251565e-15,
+          "max_relative": 8.479283709707989e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 881,
+          "max_absolute": 1.1102230246251565e-15,
+          "max_relative": 8.479283709707989e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 13,
+          "max_absolute": 1.1102230246251565e-15,
+          "max_relative": 1.1102230246251565e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 6.661338147750939e-16,
+          "max_relative": 6.439368131096066e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 2.220446049250313e-16,
+          "max_relative": 2.220446049250313e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 7,
+          "max_absolute": 1.3322676295501878e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 8,
+          "max_absolute": 1.1102230246251565e-15,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 6.661338147750939e-16,
+          "max_relative": 6.439368131096066e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 2.220446049250313e-16,
+          "max_relative": 2.220446049250313e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        }
+      ],
+      "cone": [
+        {
+          "angle_degrees": 20.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.5894741691717504,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4995484024786888,
+            "mean_modern": 0.5000731975693271,
+            "variance_fork": 0.08344518279629722,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.000524795090638297,
+            "standard_error": 0.0012909297147854738,
+            "z": 0.4065249135004281,
+            "simultaneous_95_interval": [
+              -0.004288969224645769,
+              0.005338559405922363
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 20.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.3670837531828512,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4995484024786888,
+            "mean_modern": 0.5000731975693269,
+            "variance_fork": 0.08344518279629723,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.000524795090638075,
+            "standard_error": 0.0012909297147854738,
+            "z": 0.40652491350025605,
+            "simultaneous_95_interval": [
+              -0.004288969224645991,
+              0.005338559405922141
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 90.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.5904670666762994,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868937,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0005247950906376309,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.40652491349991193,
+            "simultaneous_95_interval": [
+              -0.004288969224646437,
+              0.005338559405921699
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 90.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.3684072205828812,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868937,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0005247950906376309,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.40652491349991193,
+            "simultaneous_95_interval": [
+              -0.004288969224646437,
+              0.005338559405921699
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 180.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.513537931915266,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868926,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0005247950906377419,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.4065249134999979,
+            "simultaneous_95_interval": [
+              -0.004288969224646326,
+              0.00533855940592181
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 180.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.3118622576919736,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247868937,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08344518279629733,
+            "variance_modern": 0.08320477005531324,
+            "difference": 0.0005247950906376309,
+            "standard_error": 0.0012909297147854742,
+            "z": 0.40652491349991193,
+            "simultaneous_95_interval": [
+              -0.004288969224646437,
+              0.005338559405921699
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627907
+        },
+        {
+          "angle_degrees": 5.729577951308232e-05,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 3.605767630298346,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0.9998699999999956,
+            "mean_modern": 1,
+            "variance_fork": 0.0001299843998439984,
+            "variance_modern": 0,
+            "difference": 0.00013000000000440437,
+            "standard_error": 3.605334933733597e-05,
+            "z": 3.605767630298346,
+            "simultaneous_95_interval": [
+              -4.439795205809068e-06,
+              0.0002644397952146178
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49946258462445514,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0.08346002445398394,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.0006106129448718578,
+            "standard_error": 0.0012909871978811298,
+            "z": 0.4729814097878306,
+            "simultaneous_95_interval": [
+              -0.004203365719862401,
+              0.005424591609606117
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 13,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.00833812441080003
+        },
+        {
+          "angle_degrees": 5.729577951308232e-05,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 3.606332125369726,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0.9998699999999956,
+            "mean_modern": 1,
+            "variance_fork": 0.0001299843998439984,
+            "variance_modern": 0,
+            "difference": 0.00013000000000440437,
+            "standard_error": 3.605334933733597e-05,
+            "z": 3.605767630298346,
+            "simultaneous_95_interval": [
+              -4.439795205809068e-06,
+              0.0002644397952146178
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49946258462419796,
+            "mean_modern": 0.5000731975695683,
+            "variance_fork": 0.08346002445394311,
+            "variance_modern": 0.08320477005540684,
+            "difference": 0.0006106129453702924,
+            "standard_error": 0.0012909871978813343,
+            "z": 0.47298141017384365,
+            "simultaneous_95_interval": [
+              -0.004203365719364729,
+              0.005424591610105314
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 13,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.00833812441080003
+        },
+        {
+          "angle_degrees": 5.729577951308232e-09,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [
+            "weight",
+            "polar_mean",
+            "polar_second_moment",
+            "direction_2",
+            "polar_cdf_1",
+            "polar_cdf_2",
+            "polar_cdf_3",
+            "polar_cdf_4",
+            "polar_cdf_5",
+            "polar_cdf_6",
+            "polar_cdf_7",
+            "polar_cdf_8",
+            "polar_cdf_9",
+            "polar_cdf_10",
+            "polar_cdf_11",
+            "polar_cdf_12",
+            "polar_cdf_13",
+            "polar_cdf_14",
+            "polar_cdf_15",
+            "polar_cdf_16",
+            "polar_cdf_17",
+            "polar_cdf_18",
+            "polar_cdf_19",
+            "polar_cdf_20"
+          ],
+          "maximum_abs_z": 1384.8238434840098,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 1,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              1.0,
+              1.0
+            ],
+            "excludes_zero": true
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0,
+            "mean_modern": 0.500073197569327,
+            "variance_fork": 0,
+            "variance_modern": 0.08320477005531322,
+            "difference": 0.500073197569327,
+            "standard_error": 0.0009121664872999513,
+            "z": 548.2257948870314,
+            "simultaneous_95_interval": [
+              0.4966718082947047,
+              0.5034745868439493
+            ],
+            "excludes_zero": true
+          },
+          "inferred_zero_weights_fork": 100000,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.005895952161966811
+        },
+        {
+          "angle_degrees": 5.729577951308232e-09,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [
+            "weight",
+            "polar_mean",
+            "polar_second_moment",
+            "direction_0",
+            "direction_1",
+            "direction_2",
+            "polar_cdf_1",
+            "polar_cdf_2",
+            "polar_cdf_3",
+            "polar_cdf_4",
+            "polar_cdf_5",
+            "polar_cdf_6",
+            "polar_cdf_7",
+            "polar_cdf_8",
+            "polar_cdf_9",
+            "polar_cdf_10",
+            "polar_cdf_11",
+            "polar_cdf_12",
+            "polar_cdf_13",
+            "polar_cdf_14",
+            "polar_cdf_15",
+            "polar_cdf_16",
+            "polar_cdf_17",
+            "polar_cdf_18",
+            "polar_cdf_19",
+            "polar_cdf_20"
+          ],
+          "maximum_abs_z": 14957966330435.133,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 1,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              1.0,
+              1.0
+            ],
+            "excludes_zero": true
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0,
+            "mean_modern": 0.5000731977959502,
+            "variance_fork": 0,
+            "variance_modern": 0.0832047695809727,
+            "difference": 0.5000731977959502,
+            "standard_error": 0.0009121664846998748,
+            "z": 548.2257966981615,
+            "simultaneous_95_interval": [
+              0.49667180853102333,
+              0.503474587060877
+            ],
+            "excludes_zero": true
+          },
+          "inferred_zero_weights_fork": 100000,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.005895951990983833
+        }
+      ]
+    },
+    {
+      "label": "corrected_linux_amd64_emulated",
+      "modern_parent_revision": "c5f86a4eb1503fe3c2dafd80e7f30169f9362592",
+      "modern_source_sha256": {
+        "src/lib/GridMagneticField.cpp": "a4622e4a35669a9a8aed1eff5324b19077d1fcccabe9d6004036ede8d4ddcf7d",
+        "src/lib/GridMagneticField.h": "9f0548a951d853618f882ca0c6c522e73834067df0201164887555f3834f9b3e",
+        "src/lib/SpatialGeometry.cpp": "7e0061b06ff976e534478eede2b52456c23f5e9b683a441e665717c377d7a710"
+      },
+      "executable_adapter_sha256": {
+        "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+        "fork_api.h": "fa706c85962887c99bcaa85bc478eb930bd3f6f8d738593f7b38466bd784d8fc",
+        "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+        "reference_wrapper.cpp.in": "5c76489405c80a1202a6da5696e1097c57e97dc30bc83ff56536f8bca1984239",
+        "run.py": "93647508dc74045ed4e01c686c3b376b1832afd354ab011a3d1105a32f50230f"
+      },
+      "linked_core_sha256": "03e46c2260225bef651a5edd7fb77426655f6fcdf6b5bdc68ceb5f1b12c4771e",
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+      "full_report_sha256": "13848f9a3eb1577b5f390c7d69ea12519daa9e24e8e0e5a81056691f6f652bdd",
+      "input_sha256": {
+        "centered.queries": "c388730ae0b8bb49ce40a3c0c5afd3d536de680cb646f32c089c5964e6e4bac7",
+        "origin.grid": "709d8c38011298cdb05daed281aae01aa510376780021a499b44b8db552a4e83",
+        "origin.queries": "099f2eebbb16280a85443a489e8a008d8074eac473095e29e4ac0b5f91731928",
+        "centered.grid": "ec29b697a0c389e9d228625eddc4d2ec9054c2a4073e202ea9d5836a36e8d13b"
+      },
+      "confidence": {
+        "level": 0.95,
+        "method": "Bonferroni normal intervals",
+        "comparisons": 260,
+        "z_cutoff": 3.728912782896175
+      },
+      "field": [
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 2,
+          "max_absolute": 1.709743457922741e-14,
+          "max_relative": 9.75379530033312e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 880,
+          "max_absolute": 1.0658141036401503e-14,
+          "max_relative": 9.010970253357378e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 0,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 2,
+          "max_absolute": 1.709743457922741e-14,
+          "max_relative": 9.75379530033312e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 880,
+          "max_absolute": 1.0658141036401503e-14,
+          "max_relative": 9.010970253357378e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 1,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 2,
+          "max_absolute": 1.709743457922741e-14,
+          "max_relative": 9.75379530033312e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 1,
+          "max_absolute": 1.6431300764452317e-14,
+          "max_relative": 9.709198883616892e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 2.886579864025407e-15,
+          "max_relative": 2.773890560024408e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 2,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 3.3306690738754696e-16,
+          "max_relative": 3.3306690738754696e-16,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 2,
+          "max_absolute": 1.709743457922741e-14,
+          "max_relative": 9.75379530033312e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 3,
+          "max_absolute": 1.709743457922741e-14,
+          "max_relative": 9.753500973962234e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 2.6645352591003757e-15,
+          "max_relative": 2.5605143630994537e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "origin",
+          "mode": 3,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 2.3314683517128287e-15,
+          "max_relative": 2.3314683517128287e-15,
+          "scale_fork": 0.33333333333333337,
+          "scale_modern": 0.33333333333333337
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 8,
+          "max_absolute": 1.2212453270876722e-15,
+          "max_relative": 1.2212453270876722e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 883,
+          "max_absolute": 9.992007221626409e-16,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 0,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 8,
+          "max_absolute": 1.2212453270876722e-15,
+          "max_relative": 1.2212453270876722e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 883,
+          "max_absolute": 9.992007221626409e-16,
+          "max_relative": 9.992007221626409e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 18,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 1,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 6,
+          "max_absolute": 0,
+          "max_relative": 0,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 8,
+          "max_absolute": 1.2212453270876722e-15,
+          "max_relative": 1.2212453270876722e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 10,
+          "max_absolute": 1.1102230246251565e-15,
+          "max_relative": 1.1102230246251565e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 3.3306690738754696e-16,
+          "max_relative": 3.3306690738754696e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 2,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 3.3306690738754696e-16,
+          "max_relative": 3.3306690738754696e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "interior",
+          "count": 1000,
+          "bitwise_equal": 8,
+          "max_absolute": 1.2212453270876722e-15,
+          "max_relative": 1.2212453270876722e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "volume",
+          "count": 1000,
+          "bitwise_equal": 9,
+          "max_absolute": 1.2212453270876722e-15,
+          "max_relative": 1.2212453270876722e-15,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "outside_or_seam",
+          "count": 18,
+          "bitwise_equal": 0,
+          "max_absolute": 4.440892098500626e-16,
+          "max_relative": 4.440892098500626e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        },
+        {
+          "grid": "centered",
+          "mode": 3,
+          "category": "face",
+          "count": 6,
+          "bitwise_equal": 0,
+          "max_absolute": 3.3306690738754696e-16,
+          "max_relative": 3.3306690738754696e-16,
+          "scale_fork": 0.5,
+          "scale_modern": 0.5
+        }
+      ],
+      "cone": [
+        {
+          "angle_degrees": 20.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.589474169171757,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247869453,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0.0834451827962965,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.0005247950906294707,
+            "standard_error": 0.0012909297147854673,
+            "z": 0.406524913493593,
+            "simultaneous_95_interval": [
+              -0.004288969224654571,
+              0.0053385594059135125
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627933
+        },
+        {
+          "angle_degrees": 20.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.367083753183977,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4995484024786946,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0.08344518279629651,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.0005247950906294152,
+            "standard_error": 0.0012909297147854673,
+            "z": 0.40652491349354997,
+            "simultaneous_95_interval": [
+              -0.004288969224654627,
+              0.005338559405913457
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627933
+        },
+        {
+          "angle_degrees": 90.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.590467066676316,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247869486,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0.08344518279629659,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.0005247950906291377,
+            "standard_error": 0.0012909297147854677,
+            "z": 0.4065249134933348,
+            "simultaneous_95_interval": [
+              -0.004288969224654906,
+              0.005338559405913181
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627933
+        },
+        {
+          "angle_degrees": 90.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.3684072205825015,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49954840247869486,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0.0834451827962966,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.0005247950906291377,
+            "standard_error": 0.0012909297147854677,
+            "z": 0.4065249134933348,
+            "simultaneous_95_interval": [
+              -0.004288969224654906,
+              0.005338559405913181
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627933
+        },
+        {
+          "angle_degrees": 180.0,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.5135379319152724,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4995484024786949,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0.08344518279629662,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.0005247950906290821,
+            "standard_error": 0.0012909297147854677,
+            "z": 0.40652491349329184,
+            "simultaneous_95_interval": [
+              -0.004288969224654961,
+              0.005338559405913126
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627933
+        },
+        {
+          "angle_degrees": 180.0,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 2.311862257691937,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 1,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 0,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              0.0,
+              0.0
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4995484024786949,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0.08344518279629662,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.0005247950906290821,
+            "standard_error": 0.0012909297147854677,
+            "z": 0.40652491349329184,
+            "simultaneous_95_interval": [
+              -0.004288969224654961,
+              0.005338559405913126
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 0,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338119800627933
+        },
+        {
+          "angle_degrees": 5.729577951308232e-05,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 3.60576763017517,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0.99987,
+            "mean_modern": 1,
+            "variance_fork": 0.00012998439984399844,
+            "variance_modern": 0,
+            "difference": 0.00012999999999996348,
+            "standard_error": 3.605334933733598e-05,
+            "z": 3.60576763017517,
+            "simultaneous_95_interval": [
+              -4.439795210249987e-06,
+              0.00026443979521017694
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.4994625846245354,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0.08346002445402421,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.0006106129447885911,
+            "standard_error": 0.0012909871978812823,
+            "z": 0.47298140972327624,
+            "simultaneous_95_interval": [
+              -0.004203365719946236,
+              0.005424591609523418
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 13,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338124410800028
+        },
+        {
+          "angle_degrees": 5.729577951308232e-05,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [],
+          "maximum_abs_z": 3.6063321250321554,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0.99987,
+            "mean_modern": 1,
+            "variance_fork": 0.00012998439984399844,
+            "variance_modern": 0,
+            "difference": 0.00012999999999996348,
+            "standard_error": 3.605334933733598e-05,
+            "z": 3.60576763017517,
+            "simultaneous_95_interval": [
+              -4.439795210249987e-06,
+              0.00026443979521017694
+            ],
+            "excludes_zero": false
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0.49946258462421994,
+            "mean_modern": 0.5000731975693239,
+            "variance_fork": 0.08346002445402516,
+            "variance_modern": 0.0832047700553123,
+            "difference": 0.0006106129451039499,
+            "standard_error": 0.001290987197881286,
+            "z": 0.47298140996755217,
+            "simultaneous_95_interval": [
+              -0.004203365719630891,
+              0.005424591609838791
+            ],
+            "excludes_zero": false
+          },
+          "inferred_zero_weights_fork": 13,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.008338124410800028
+        },
+        {
+          "angle_degrees": 5.729577951308232e-09,
+          "theta": 0.0,
+          "phi": 0.0,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [
+            "weight",
+            "polar_mean",
+            "polar_second_moment",
+            "direction_2",
+            "polar_cdf_1",
+            "polar_cdf_2",
+            "polar_cdf_3",
+            "polar_cdf_4",
+            "polar_cdf_5",
+            "polar_cdf_6",
+            "polar_cdf_7",
+            "polar_cdf_8",
+            "polar_cdf_9",
+            "polar_cdf_10",
+            "polar_cdf_11",
+            "polar_cdf_12",
+            "polar_cdf_13",
+            "polar_cdf_14",
+            "polar_cdf_15",
+            "polar_cdf_16",
+            "polar_cdf_17",
+            "polar_cdf_18",
+            "polar_cdf_19",
+            "polar_cdf_20"
+          ],
+          "maximum_abs_z": 1384.823843484015,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 1,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              1.0,
+              1.0
+            ],
+            "excludes_zero": true
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0,
+            "mean_modern": 0.500073197569324,
+            "variance_fork": 0,
+            "variance_modern": 0.08320477005531231,
+            "difference": 0.500073197569324,
+            "standard_error": 0.0009121664872999463,
+            "z": 548.225794887031,
+            "simultaneous_95_interval": [
+              0.49667180829470176,
+              0.5034745868439463
+            ],
+            "excludes_zero": true
+          },
+          "inferred_zero_weights_fork": 100000,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.005895952161966783
+        },
+        {
+          "angle_degrees": 5.729577951308232e-09,
+          "theta": 0.4,
+          "phi": 0.7,
+          "n": 100000,
+          "tested_metrics": 26,
+          "differences_excluding_zero": [
+            "weight",
+            "polar_mean",
+            "polar_second_moment",
+            "direction_0",
+            "direction_1",
+            "direction_2",
+            "polar_cdf_1",
+            "polar_cdf_2",
+            "polar_cdf_3",
+            "polar_cdf_4",
+            "polar_cdf_5",
+            "polar_cdf_6",
+            "polar_cdf_7",
+            "polar_cdf_8",
+            "polar_cdf_9",
+            "polar_cdf_10",
+            "polar_cdf_11",
+            "polar_cdf_12",
+            "polar_cdf_13",
+            "polar_cdf_14",
+            "polar_cdf_15",
+            "polar_cdf_16",
+            "polar_cdf_17",
+            "polar_cdf_18",
+            "polar_cdf_19",
+            "polar_cdf_20"
+          ],
+          "maximum_abs_z": 14957974043628.758,
+          "weight": {
+            "name": "weight",
+            "mean_fork": 0,
+            "mean_modern": 1,
+            "variance_fork": 0,
+            "variance_modern": 0,
+            "difference": 1,
+            "standard_error": 0.0,
+            "z": null,
+            "simultaneous_95_interval": [
+              1.0,
+              1.0
+            ],
+            "excludes_zero": true
+          },
+          "polar_mean": {
+            "name": "polar_mean",
+            "mean_fork": 0,
+            "mean_modern": 0.5000731975684661,
+            "variance_fork": 0,
+            "variance_modern": 0.08320477005465128,
+            "difference": 0.5000731975684661,
+            "standard_error": 0.0009121664872963229,
+            "z": 548.2257948882683,
+            "simultaneous_95_interval": [
+              0.4966718082938574,
+              0.5034745868430749
+            ],
+            "excludes_zero": true
+          },
+          "inferred_zero_weights_fork": 100000,
+          "inferred_zero_weights_modern": 0,
+          "maximum_cdf_interval_half_width": 0.005895952161966783
+        }
+      ]
+    }
+  ],
+  "supplementary_scale_tie_control": {
+    "nodes_Mpc": [
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        4
+      ]
+    ],
+    "constant_field_G": [
+      0,
+      1,
+      0
+    ],
+    "query_Mpc": [
+      1,
+      1,
+      1
+    ],
+    "measured": {
+      "category": "tie",
+      "equal": false,
+      "absolute": 0,
+      "relative": 0,
+      "scale_fork": 2,
+      "scale_modern": 1
+    }
+  },
+  "final_checks": {
+    "native_release": {
+      "passed": 234,
+      "total": 234,
+      "seconds": 18.13
+    },
+    "linux_release": {
+      "passed": 234,
+      "total": 234,
+      "seconds": 113.84
+    },
+    "linux_asan_ubsan": {
+      "passed": 234,
+      "total": 234,
+      "seconds": 164.03,
+      "leak_detection": true
+    },
+    "linux_image": "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+    "current_regression_sha256": "630025c70975b501ca9b370e46104f30fa170f9f955e77c60c5f38e7d57d2514"
+  }
+}

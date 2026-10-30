@@ -30,6 +30,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [Direct historical-fork field and cone comparison](validation/fork_kernel_comparison.md)
+
 - [OpenMP worker lifetime regression](validation/worker_lifetime.md)
 - [Photon-thinning verification](validation/photon_thinning.md)
 - [Truncated vMF verification](validation/vmf_source.md)

@@ -76,45 +76,87 @@ class GridFields : public ::testing::Test {
     void SetUp() override { if (!cosmology.IsInitialized()) cosmology.Init(); }
 };
 
-TEST_F(GridFields, NodesFacesEdgesAndAffineInterior) {
+TEST_F(GridFields, AffineInteriorAndPositiveHistoricalScale) {
     GridFile input(Grid(10)); SavedMF field(input.path.string());
-    for (coord_type x : {10.L,10.25L,11.L,12.L})
-        for (coord_type y : {10.L,10.7L,12.L})
-            for (coord_type z : {10.L,11.3L,13.L,16.L})
+    for (coord_type x : {10.25L,11.L,11.9L})
+        for (coord_type y : {10.2L,10.7L,11.9L})
+            for (coord_type z : {10.1L,11.3L,13.L,15.9L})
                 ExpectField(field,x,y,z,x,y,z);
-    EXPECT_DOUBLE_EQ(field.MinVariabilityScale(CosmoTime(0)),units.Mpc);
+    EXPECT_DOUBLE_EQ(field.MinVariabilityScale(CosmoTime(0)),2*units.Mpc/3);
     EXPECT_EQ(Query(field,11,11,11,0), Query(field,11,11,11,1));
-    const auto outside = Query(field,9.999L,11,11);
-    EXPECT_EQ(outside,(std::array<double,3>{0,0,0}));
+    EXPECT_EQ(Query(field,9.999L,11,11),(std::array<double,3>{0,0,0}));
     EXPECT_EQ(Query(field,11,12.001L,11),(std::array<double,3>{0,0,0}));
     EXPECT_EQ(Query(field,11,11,16.001L),(std::array<double,3>{0,0,0}));
-    EXPECT_DOUBLE_EQ(field.MinVariabilityScale(CosmoTime(1)), units.Mpc);
 }
 
-TEST_F(GridFields, NegativeAndFractionalDomainBoundsRemainExact) {
+TEST_F(GridFields, NegativeAndFractionalDomainsUseTheirActualExtrema) {
+    // Preserve the loader correction: the fork incorrectly initializes extrema
+    // to zero, leaving uninitialized nodes for boxes not containing the origin.
     GridFile negative(Grid(-10)); SavedMF field(negative.path.string());
-    ExpectField(field,-10,-10,-10,-10,-10,-10);
-    ExpectField(field,-8,-8,-4,-8,-8,-4);
+    ExpectField(field,-9.5L,-9.5L,-9,-9.5L,-9.5L,-9);
     GridFile fractional(Grid(0.3L)); SavedMF fractions(fractional.path.string());
-    ExpectField(fractions,0.3L,0.3L,0.3L,0.3L,0.3L,0.3L);
-    ExpectField(fractions,2.3L,2.3L,6.3L,2.3L,2.3L,6.3L);
+    ExpectField(fractions,0.8L,0.8L,1.3L,0.8L,0.8L,1.3L);
 }
 
-TEST_F(GridFields, BoundaryModesOnTranslatedDomain) {
-    GridFile input(Grid(10));
-    SavedMF nearest(input.path.string(), SavedMF::FILLING_NEAREST);
-    SavedMF repeat(input.path.string(), SavedMF::FILLING_REPEAT);
-    SavedMF mirror(input.path.string(), SavedMF::FILLING_MIRROR);
-    ExpectField(nearest,9,15,20,10,12,16);
-    ExpectField(nearest,13,8,9,12,10,10);
-    ExpectField(repeat,8.25L,14.5L,22.5L,10.25L,10.5L,10.5L);
-    ExpectField(repeat,6.25L,6.5L,4.5L,10.25L,10.5L,10.5L);
-    ExpectField(repeat,12,12,16,12,12,16); // Closed original box retains its endpoints.
-    ExpectField(mirror,12.25L,13.5L,16.5L,11.75L,10.5L,15.5L);
-    ExpectField(mirror,9.75L,9.5L,9.5L,10.25L,10.5L,10.5L);
-    ExpectField(mirror,6.25L,6.5L,-1.5L,10.25L,10.5L,10.5L);
+TEST_F(GridFields, ZeroModeTreatsEveryFaceAsOutside) {
+    GridFile input(Grid()); SavedMF field(input.path.string());
+    const double maximum[] = {2,2,6};
+    for (size_t axis=0;axis<3;++axis) for (bool upper : {false,true}) {
+        coord_type position[] = {units.Mpc,units.Mpc,units.Mpc};
+        // Boundary classification and periods retain the fork's double box.
+        position[axis] = upper ? maximum[axis]*units.Mpc : 0;
+        std::vector<double> value(3,99);
+        field.GetValueGauss(position,CosmoTime(0),value);
+        EXPECT_EQ(value,(std::vector<double>{0,0,0}));
+    }
+}
+
+TEST_F(GridFields, NearestModeRoundsAllAxesWhenAnyAxisIsOutside) {
+    GridFile input(Grid()); SavedMF field(input.path.string(),SavedMF::FILLING_NEAREST);
+    ExpectField(field,-1,0.7L,1.3L,0,0,0);
+    ExpectField(field,0,1.3L,2.1L,0,2,3);
+    ExpectField(field,1.2L,0.7L,1.3L,1.2L,0.7L,1.3L); // Interior stays trilinear.
+}
+
+TEST_F(GridFields, NearestModeClampsBeforeNarrowingExtremeCoordinates) {
+    GridFile input(Grid()); SavedMF field(input.path.string(),SavedMF::FILLING_NEAREST);
+    // On Linux, coord_type can hold finite values outside the double range.
+    // Query directly in internal units so conversion from Mpc cannot overflow.
+    const coord_type far = std::numeric_limits<coord_type>::max()/2;
+    for (bool positive : {false,true}) {
+        const coord_type position[] = {positive ? far : -far, 0.7L*units.Mpc, 1.3L*units.Mpc};
+        std::vector<double> actual(3);
+        field.GetValueGauss(position,CosmoTime(0),actual);
+        const auto expected = Affine(positive ? 2 : 0,0,0);
+        for (size_t a=0;a<3;++a) EXPECT_DOUBLE_EQ(actual[a],expected[a]);
+    }
+}
+
+TEST_F(GridFields, RepeatAndMirrorPreserveHistoricalSeamInsets) {
+    GridFile input(Grid());
+    SavedMF repeat(input.path.string(),SavedMF::FILLING_REPEAT);
+    SavedMF mirror(input.path.string(),SavedMF::FILLING_MIRROR);
+    ExpectField(repeat,-2,0,0,2.L/3,1,2);
+    ExpectField(mirror,-2,0,0,4.L/3,1,2);
+    // A box with translated limits exercises folding without seam coincidences.
+    GridFile translated(Grid(10));
+    SavedMF shiftedRepeat(translated.path.string(),SavedMF::FILLING_REPEAT);
+    SavedMF shiftedMirror(translated.path.string(),SavedMF::FILLING_MIRROR);
+    ExpectField(shiftedRepeat,8.25L,14.5L,22.5L,10.25L,10.5L,10.5L);
+    ExpectField(shiftedMirror,12.25L,13.5L,16.5L,11.75L,10.5L,15.5L);
+    ExpectField(shiftedMirror,9.75L,9.5L,9.5L,10.25L,10.5L,10.5L);
     const auto far = Query(repeat,1e200L,-1e200L,1e200L);
     for (double b : far) EXPECT_TRUE(std::isfinite(b));
+}
+
+TEST_F(GridFields, ScaleTiesTakeTheTrueMinimum) {
+    // x and y both have extent/count=1; z has extent/count=2.
+    // The fork's strict a<b && a<c comparisons incorrectly return 2 here.
+    std::ostringstream data;
+    for (int i=0;i<2;++i) for (int j=0;j<2;++j) for (int k=0;k<2;++k)
+        data << 2*i << ' ' << 2*j << ' ' << 4*k << " 0 1 0\n";
+    GridFile input(data.str()); SavedMF field(input.path.string());
+    EXPECT_DOUBLE_EQ(field.MinVariabilityScale(CosmoTime(0)),units.Mpc);
 }
 
 TEST_F(GridFields, RejectsMalformedAndIncompleteInput) {

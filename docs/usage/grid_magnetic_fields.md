@@ -54,30 +54,45 @@ performed and no physical field model is inferred from the file.
 
 ## Boundary modes
 
-The original box is closed, including its faces and corners. An exact node
-at the maximum endpoint retains that endpoint's value. Extensions apply
-outside the box independently on each axis:
+To reproduce the historical `SavedMF` model, trilinear interpolation applies
+strictly inside the box. Touching any face invokes the selected extension
+for **all three coordinates**:
 
-| Mode | Outside the original box |
+| Mode | On or outside the original box |
 | --- | --- |
-| `SavedMF::FILLING_ZERO` (default) | Return the zero vector if any coordinate is outside. |
-| `SavedMF::FILLING_NEAREST` | Clamp each coordinate to the nearest box face, then interpolate. |
-| `SavedMF::FILLING_REPEAT` | Wrap each coordinate modulo the box width. |
-| `SavedMF::FILLING_MIRROR` | Fold coordinates with a period twice the box width. |
+| `SavedMF::FILLING_ZERO` (default) | Return the zero vector. |
+| `SavedMF::FILLING_NEAREST` | Round every coordinate to the nearest Cartesian node, clamping outside indices. Halfway ties round toward the higher index. |
+| `SavedMF::FILLING_REPEAT` | Wrap every coordinate modulo its box width. |
+| `SavedMF::FILLING_MIRROR` | Fold every coordinate with a period twice its box width. |
 
-Nearest extension retains interpolation in the remaining axes; it does not
-round to the nearest node. Mirror extension folds positions and does not
-reverse magnetic component signs. Periodic endpoints are not automatically
-made equal: incompatible opposite faces produce a seam. Zero extension can
-also be discontinuous at the boundary. Choose data and boundary modes
-appropriate to the intended physical model.
+Repeat and mirror retain the fork's seam rule: after mapping, a coordinate
+at/below the lower face moves inward by `width/node_count`; a coordinate
+at/above the upper face moves inward by the same amount. Mirror folds
+positions without reversing component signs. These displacements can be a
+substantial fraction of a cell. They are compatibility behavior, not an
+exact periodic interpolation across matching endpoints.
 
-`MinVariabilityScale` returns the smallest node spacing in internal length
-units at every position and time, including zero-field regions. It never
-returns a zero sentinel. The existing deflector can therefore use its
-normal step subdivision, including for trajectories entering the box. This
-scale alone does not locate an exact boundary crossing or establish
+Box limits and periods use the fork's double-precision arithmetic in internal
+units, including the order of subtraction before the remainder. This matters
+at a seam: a rounding difference in the remainder can select a finite inset.
+Interpolation retains the numerically stable weighted-corner formulation.
+Nearest extension rounds the two other axes too, even when they are inside.
+All modes may therefore be discontinuous. Choose the boundary mode with this
+field model in mind; the propagator does not locate exact face crossings.
+
+`MinVariabilityScale` returns `min(width_x/Nx, width_y/Ny, width_z/Nz)` in
+internal length units at every position and time, including zero-field
+regions. This restores the historical extent/node-count convention, with a
+correct minimum when axes tie. The fork incorrectly selected the z scale
+for some ties. A zero sentinel outside the box is deliberately not restored:
+the modern deflector requires a positive scale for subdivision, including
+trajectories entering the field. This scale alone does not establish
 trajectory convergence near a discontinuity.
+
+The robust loader still uses actual extrema and rejects malformed/incomplete
+grids. It does not reproduce the fork's zero-initialized extrema or undefined
+uninitialized-node behavior. See the [direct comparison and exceptions](
+../validation/fork_kernel_comparison.md).
 
 ## Composition and ownership
 
