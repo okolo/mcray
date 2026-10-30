@@ -13,6 +13,17 @@ executable round-trip case is exercised rather than skipped. NumPy 1.26.4 and
 PyYAML 6.0.3 are installed in a project-local venv; NumPy's minimum supported
 postprocessing version is declared in tools/postprocess/requirements.txt.
 
+A separate Linux amd64 ASan+UBSan job instruments C, C++ and Fortran code
+with GCC AddressSanitizer and UndefinedBehaviorSanitizer in RelWithDebInfo
+(`-O1 -g`, frame pointers retained). Executables use non-PIE linking to avoid
+ASan shadow-memory/ASLR collisions. It builds every target and runs the full
+short CTest suite with leak detection enabled and both sanitizers configured
+to stop on the first error. Reports flow into CTest logs and the retained
+JUnit/diagnostic artifact; no suppressions or excluded tests are configured.
+System libraries are not rebuilt with instrumentation. This job does not run
+Python suites, which remain in the Release job, or ThreadSanitizer; ASan/UBSan
+success is not evidence that arbitrary data races are absent.
+
 The checked revision, architecture, compiler/CMake and Python package versions
 are logged. PR runs check GitHub's proposed merge revision; the actual SHA is
 in environment.log. GoogleTest remains pinned by its release archive hash in
@@ -22,7 +33,7 @@ commit SHAs. The job has read-only repository permissions, does not use provider
 secrets, and does not publish GitHub reviews or push changes. Logs, the resolved
 Python requirements and CTest JUnit results are retained as an artifact for
 14 days, including on failure. Large build outputs and numerical tables are
-not uploaded. The job has a 25-minute timeout and two build/test workers.
+not uploaded. Each job has a 25-minute timeout and two build/test workers.
 
 The independent AI-review workflow remains a separate check. Its approval
 is not evidence that a C++ build ran: that job previously lacked the required

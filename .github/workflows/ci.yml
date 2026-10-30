@@ -101,3 +101,74 @@ jobs:
             build/ci/**/ctest-results.xml
             build/ci/Testing/Temporary/LastTest.log
             build/ci/Testing/Temporary/LastTestsFailed.log
+
+  sanitizers:
+    name: Linux amd64 ASan+UBSan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    env:
+      OMP_NUM_THREADS: '2'
+      OPENBLAS_NUM_THREADS: '1'
+      ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+    steps:
+      - name: Checkout tested revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake gfortran libgsl-dev \
+            libboost-filesystem-dev libboost-system-dev libyaml-cpp-dev libssl-dev
+
+      - name: Configure instrumented tests
+        run: |
+          mkdir -p build/sanitizers/tmp
+          export TMPDIR="$GITHUB_WORKSPACE/build/sanitizers/tmp"
+          {
+            git rev-parse HEAD
+            uname -m
+            g++ --version
+            gfortran --version
+            cmake --version
+            printenv ASAN_OPTIONS UBSAN_OPTIONS
+          } | tee build/sanitizers/environment.log
+          # Apply instrumentation to C, C++, Fortran and executable linking.
+          # Non-PIE executables avoid ASan shadow-memory/ASLR collisions.
+          sanitizer_flags='-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer -fno-pie'
+          cmake -S src/app/crbeam -B build/sanitizers \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=ON \
+            -DCMAKE_C_FLAGS_RELWITHDEBINFO="$sanitizer_flags" \
+            -DCMAKE_CXX_FLAGS_RELWITHDEBINFO="$sanitizer_flags" \
+            -DCMAKE_Fortran_FLAGS_RELWITHDEBINFO="$sanitizer_flags" \
+            -DCMAKE_EXE_LINKER_FLAGS='-fsanitize=address,undefined -no-pie' \
+            2>&1 | tee build/sanitizers/configure.log
+
+      - name: Build all instrumented targets
+        run: |
+          export TMPDIR="$GITHUB_WORKSPACE/build/sanitizers/tmp"
+          cmake --build build/sanitizers --parallel 2 2>&1 | tee build/sanitizers/build.log
+
+      - name: Run complete short CTest suite under ASan and UBSan
+        run: |
+          export TMPDIR="$GITHUB_WORKSPACE/build/sanitizers/tmp"
+          ctest --test-dir build/sanitizers --output-on-failure --parallel 2 \
+            --output-junit "$GITHUB_WORKSPACE/build/sanitizers/ctest-results.xml" \
+            2>&1 | tee build/sanitizers/ctest.log
+
+      - name: Retain sanitizer diagnostics
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: linux-amd64-asan-ubsan-${{ github.run_attempt }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            build/sanitizers/*.log
+            build/sanitizers/CMakeCache.txt
+            build/sanitizers/**/ctest-results.xml
+            build/sanitizers/Testing/Temporary/LastTest.log
+            build/sanitizers/Testing/Temporary/LastTestsFailed.log
