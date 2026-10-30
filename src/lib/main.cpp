@@ -27,6 +27,7 @@
 
 
 #include <cstdlib>
+#include <memory>
 #include <time.h>
 #include "Test.h"
 
@@ -52,7 +53,10 @@ int main(int argc, char** argv) {
 	}
 	catch(Exception* ex)
 	{
-		std::cerr << ex->Message() << std::endl;
+        // Legacy exceptions are thrown as owning pointers. This terminal
+        // handler consumes them, including failures before output is created.
+        const std::unique_ptr<Exception> error(ex);
+		std::cerr << error->Message() << std::endl;
 		result = 1;
 	}
 	if(!result){

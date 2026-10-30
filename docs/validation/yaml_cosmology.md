@@ -59,6 +59,7 @@ again in 17.54 s, and the inherited review-infrastructure suite passed
 feature, its example, documentation and tests; review infrastructure is
 unchanged by this feature.
 
+
 The Linux runs used the existing offline Ubuntu image
 `sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6`
 under amd64 emulation on the arm64 workstation. These are not native Linux
@@ -88,6 +89,28 @@ asserted by these deterministic controls. Local ignored logs, reference
 executable hashes and inputs are retained under `build/checks`; ordinary CI
 uses the self-contained C++ tests and does not require the previous binary.
 
+## Hosted sanitizer failure and exception ownership
+
+The first PR #14 hosted run
+[41124334704](https://github.com/okolo/mcray/actions/runs/41124334704)
+passed Release 241/241 but failed the sanitizer case
+`ConfigurationTest.CosmologyUnrepresentableRateFailsBeforeOutput`.
+The application correctly rejected the Hubble rate before creating output,
+but LeakSanitizer detected 93 leaked bytes: the terminal handler in
+`src/lib/main.cpp` printed an owning `Utils::Exception*` without deleting it.
+This pre-existing error-path leak was exposed by the new regression.
+
+The handler now takes ownership with `std::unique_ptr`, preserving the error
+message and failure exit status. The same subprocess regression continues
+to reject sanitizer diagnostics; no suppression, assertion or leak-detection
+setting was relaxed. The earlier emulated sanitizer run did not report this
+leak and therefore did not establish its absence on native Linux.
+
+After the ownership fix, the complete rebuilt macOS Release suite passed
+241/241 in 17.58 s. Native Linux sanitizer CI remains the decisive regression
+check for this leak; successful emulated checks alone do not replace it.
+
+
 ## Reproduction
 
 Configure/build with the supported toolchain, then run:
@@ -102,6 +125,7 @@ The checked production-source hashes are:
 | File | SHA-256 |
 | --- | --- |
 
+| `src/lib/main.cpp` | `7dc59cbeadaa96e5c896a439d2b2ce158ff56526299e070ea8ea4ab6d8d9dc9b` |
 | `src/lib/Cosmology.h` | `23aaa2a6e66907393b80f54f369faad87f2a49102314aec57ea6d1ee34663c18` |
 | `src/lib/Cosmology.cpp` | `72f0246254e150a3384b3c14ab8549debc6c689e162f031cac19f0213ecbef1d` |
 | `src/app/crbeam/Configuration.cpp` | `bcd0cfbf67e4941439bd287129b42e2c7f709a340ed3ec4e923507b7ab301f22` |
