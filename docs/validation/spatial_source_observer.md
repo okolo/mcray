@@ -10,6 +10,7 @@ with the historical fork or an independent propagation code.
 | macOS arm64, Clang 22.1.5 Release build | Passed |
 | Complete native short CTest suite | 184/184 passed |
 | Final-source native configuration/geometry/output cases | 30/30 passed |
+| Python 3.12.14, NumPy 2.5.3, PyYAML 6.0.3 | 6/6 passed, including executable round trips |
 | Published example configuration and delay command | Passed locally |
 | Ubuntu 22.04 Linux amd64 C++ ASan/UBSan build and targeted cases | 30/30 passed |
 
@@ -40,6 +41,15 @@ flight does not change the scale. Tiny positive flight retains the original
 choice and a non-exponential header. The optional fork columns retain their
 positions and FlightMpc is last.
 
+Python checks cover scientific notation, empty/single-row input, malformed
+rows, old params and modern YAML records, dimensions of primary directions,
+source translation, distinct radial/axis delay references, and per-particle
+flight times that differ from the file scale. Delay calculation refuses older
+files without per-particle FlightMpc. Two executable round trips check real
+birth-hit and sphere-exit files through the loader and delay implementation.
+The example was run from bin so the existing working-directory table lookup
+finds bin/tables; the public instructions state this requirement.
+
 Local diagnostic artifacts are retained outside Git under
 `build/spatial-verification`: build/test logs, source-manifest.json, the Linux
 check script, the example's config/run/table files, and calculated delays.
@@ -54,3 +64,11 @@ coordinate/time convention, nor establish a cosmological arrival-time
 conversion for the geometric excess-time tools. Ordinary output remains the
 existing modern schema; fork-compatible output is selected by nondefault
 spatial settings.
+
+After the Python tools were copied into tools/postprocess on 2026-10-30,
+the loader and delay implementation became file_helpers.py and flight_delay.py
+there. The previous modern paths are compatibility wrappers. All six Python
+checks, including executable round trips, passed again; both command paths
+and the legacy FileHelpers import were checked. C++ sources were unchanged
+by this relocation. The retained manifest above describes the preceding
+implementation check, before these Python path changes.

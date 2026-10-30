@@ -92,3 +92,48 @@ For S from `T/Mpc`, reconstruct coordinates in Mpc as
 `x = column(x/T)*S`, `y = column(y/T)*S`,
 `z = (1-column(1-(z/T)))*S`. The stored complement can still lose precision
 when z/T is near zero; increased text precision does not eliminate cancellation.
+
+## Python loading and delay
+
+The maintained analysis scripts live in [tools/postprocess](../../tools/postprocess/README.md).
+Install NumPy and PyYAML for these optional analysis tools. They are not build
+or runtime dependencies of CRbeam.
+
+```python
+import sys
+sys.path.insert(0, 'tools/postprocess')
+from file_helpers import CRbeamFile
+f = CRbeamFile('output/spatial-observer/z0/proton')
+x_kpc = f.x
+initial_direction_z = f['source_z']  # dimensionless
+radial_delay_Mpc = f.delay_Mpc()
+plane_delay_Mpc = f.delay_Mpc('axis', [0, 0, 1])
+```
+
+The loader accepts scientific notation in headers, empty and single-row tables,
+and named optional columns. It reads the adjacent effective config.yaml for
+both modern CLI and YAML runs; old tab-separated params files are supported
+as a fallback. Legacy source/observer parameter aliases exposed by the loader
+use kpc. Source position from a spatial-format header takes precedence.
+Table and header values use NumPy longdouble, subject to platform precision.
+
+`delay_Mpc('radial')` computes `FlightMpc - |X-X_source|/Mpc`.
+`delay_Mpc('axis', axis)` computes
+`FlightMpc - dot(X-X_source, normalized_axis)/Mpc`, the excess relative to a
+plane through the endpoint perpendicular to that axis. These quantities use
+the existing engine's time and coordinate conventions, without extrapolating
+the trajectory to another observer or applying a cosmological arrival-time
+conversion. They are distinct observables. No delay is inferred from the
+normalization scale; older files without FlightMpc are rejected for this
+calculation because their per-particle times are unavailable.
+
+```sh
+python3 tools/postprocess/flight_delay.py output/spatial-observer/z0/proton
+python3 tools/postprocess/flight_delay.py output/spatial-observer/z0/proton --reference axis --axis 0 0 1
+MCRAY_CRBEAM="$PWD/build/Release/CRbeam" python3 tests/test_spatial_output.py
+```
+
+The command writes energy, weight and delay in Mpc to stdout. The old rotateMC
+assumptions (zero source position, +z pencil, and interpreting 1-z/T as a delay)
+do not apply to general spatial runs. Old plotting/launch scripts require
+adaptation to the new settings and are not copied wholesale.

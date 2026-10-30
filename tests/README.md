@@ -472,3 +472,15 @@ target exports production coefficients without sampling histories. These tools
 also provide [combined PD+decay energy-state transport](deterministic/COUPLED.md)
 with explicit grid and stiff-solver controls. Neither tool issues acceptance
 verdicts.
+
+## Python postprocessing checks
+
+Run `PYTHONDONTWRITEBYTECODE=1 python3 tests/test_mc_rotate.py` from the
+repository root with NumPy installed. These 18 deterministic checks compare
+sphere-extrapolated delays with analytic and 100-digit Decimal references,
+exercise tiny angles and output precision, compare vectorized geometry with
+scalar matrices, verify block-size-independent output, and diagnose invalid
+input with its actual file line number. Test
+temporary files remain inside build/mc-rotate-tests. See
+[the results and scope](../docs/validation/mc_rotate.md). They do not require
+a C++ build or PyYAML and do not replace propagation validation.

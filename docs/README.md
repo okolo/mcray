@@ -27,6 +27,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [Stable legacy mc_rotate delay checks](validation/mc_rotate.md)
 - [Spatial source, observer and output checks](validation/spatial_source_observer.md)
 - [Grid magnetic field implementation checks](validation/grid_magnetic_fields.md)
 - [Grid magnetic field CLI and YAML checks](validation/grid_magnetic_field_input.md)
