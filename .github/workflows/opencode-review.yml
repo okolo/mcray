@@ -91,6 +91,7 @@ jobs:
           OPENCODE_REVIEW_RESULT: ${{ runner.temp }}/opencode-review-result.json
           OPENCODE_CONFIG_CONTENT: |
             {
+              "default_agent": "reviewer",
               "permission": {
                 "external_directory": {
                   "*": "deny",

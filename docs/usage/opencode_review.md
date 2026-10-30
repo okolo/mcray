@@ -61,6 +61,10 @@ approval if required consultation is not completed, its metadata is missing,
 or the requirement/status is inconsistent. Metadata describes what the primary
 reports; use Actions logs to verify that GLM actually ran. Runtime agent
 configuration is inline so switching PR branches cannot remove it.
+Set both the Action's `agent: reviewer` input and runtime
+`default_agent: reviewer`: OpenCode CLI v1.19.5's GitHub handler omits the
+agent from its prompt request and therefore uses the configured default.
+Do not rely on the Action input alone to select the restricted primary agent.
 
 The formal review heading is `AI review`; it identifies the primary model and
 the architectural consultation status. Only the primary writes
