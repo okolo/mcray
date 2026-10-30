@@ -89,7 +89,7 @@ enum ClineParams
     PNparticles,PBatchSize,PSeed,
     PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PPDMissingData,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
-	POutput,POverwriteOutput,PThinning,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,PMagneticModel,PMagneticFile,PMagneticBoundary,PSourcePosition,PSourceAngular,PSourceAxis,PSourceHalfAngle,PEndRedshift,PObserver,PObserverCenter,PObserverRadius,PObserverStop,PPrimaryDirection
+	POutput,POverwriteOutput,PThinning,PThinningModel,PThinningThreshold,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,PMagneticModel,PMagneticFile,PMagneticBoundary,PSourcePosition,PSourceAngular,PSourceAxis,PSourceHalfAngle,PEndRedshift,PObserver,PObserverCenter,PObserverRadius,PObserverStop,PPrimaryDirection
 };
 #define xstr(s) str(s)
 #define str(s) #s
@@ -180,7 +180,9 @@ static CmdInfo commands[] = {
 		{ POutput,    CmdInfo::FLAG_ARGUMENT, "-o",   "--output",   NULL,    "Output directory path (must not exist, will be created)" },
 		{ POverwriteOutput,    CmdInfo::FLAG_NULL,     "-oo",   "--overwrite",   NULL,   "overwrite output dir if exists" },
 		{ PThinning,    CmdInfo::FLAG_ARGUMENT, "-t",   "--thinning",   "0.9",    "Alpha thinning" },
-		{ PRescalePPP,    CmdInfo::FLAG_ARGUMENT,   "-pt",   "--ppp-thinning",   "10",   "PPP Rescale Coefficient (double > 0, actual number of secondaries per interaction)" },
+		{ PThinningModel, CmdInfo::FLAG_ARGUMENT, "", "--thinning-model", "energy", "Thinning policy: energy (legacy) or photon" },
+        { PThinningThreshold, CmdInfo::FLAG_ARGUMENT, "", "--thinning-threshold-eV", "", "Photon thinning threshold in eV (requires photon model)" },
+        { PRescalePPP,    CmdInfo::FLAG_ARGUMENT,   "-pt",   "--ppp-thinning",   "10",   "PPP Rescale Coefficient (double > 0, actual number of secondaries per interaction)" },
 
 		{ PEGMF,    CmdInfo::FLAG_ARGUMENT, "-mf",   "--EGMF",   "1e-15",    "Extragalactic magnetic field in Gauss" },
 		{ PEGMFLmin,    CmdInfo::FLAG_ARGUMENT, "-mflmin",   "--lminEGMF",   "0.05",    "Extragalactic magnetic field minimum scale in Mpc at z=0" },
@@ -689,11 +691,21 @@ int CRbeam::run() try
 	ParticleStack particles;
 	PropagationEngine pe(particles, result, rand.CreateIndependent());
 
-	EnergyBasedThinning thinning(alphaThinning, BlackList);
-	thinning.EnableFor(Electron);
-	thinning.EnableFor(Positron);
-	thinning.EnableFor(Photon);
-	pe.SetThinning(&thinning);
+	const auto thinningConfig = fConfiguration.Effective()["sampling"]["thinning"];
+    const bool photonThinning = thinningConfig["model"] &&
+        thinningConfig["model"].as<std::string>() == "photon";
+    std::unique_ptr<IThinning> thinning;
+    if (photonThinning) {
+        thinning = std::make_unique<PhotonThinning>(alphaThinning,
+            thinningConfig["threshold_eV"].as<double>() * units.eV);
+    } else {
+        auto energy = std::make_unique<EnergyBasedThinning>(alphaThinning, BlackList);
+        energy->EnableFor(Electron);
+        energy->EnableFor(Positron);
+        energy->EnableFor(Photon);
+        thinning = std::move(energy);
+    }
+    pe.SetThinning(thinning.get());
 	pe.AddInteraction(new RedShift());
     if (fNuclearPrimary && fPhotodisintegration == "PSB")
         pe.AddInteraction(new PhotoDisintegration(backgrI));
@@ -853,8 +865,8 @@ int CRbeam::run() try
         if(i%fBatchSize==0 || i==fNoParticles){
             std::cerr << "batch " << (i-1)/fBatchSize + 1 << " of " << ceil(fNoParticles/(double)fBatchSize) << std::endl;
             pe.RunMultithread();
-            if (fNuclearPrimary && pe.FailureCount())
-                Exception::Throw("Nuclear propagation failed; partial output must not be used (failed cascades=" + ToString(pe.FailureCount()) + ")");
+            if ((fNuclearPrimary || photonThinning) && pe.FailureCount())
+                Exception::Throw(std::string(fNuclearPrimary ? "Nuclear" : "Photon thinning") + " propagation failed; partial output must not be used (failed cascades=" + ToString(pe.FailureCount()) + ")");
             result.Flush();
             if(result.AbortRequested())
                 break; //handling Ctrl-C

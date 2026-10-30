@@ -644,3 +644,141 @@ TEST_F(ConfigurationTest,
   EXPECT_EQ(cfg["propagation"]["end_redshift"].as<double>(), .005);
   EXPECT_TRUE(cfg["output"]["primary_direction"].as<bool>());
 }
+
+namespace {
+TEST_F(ConfigurationTest, PhotonThinningCliYamlAndSnapshotRetainExplicitPolicy) {
+  auto cfg = YAML::Load(Common());
+  cfg["schema_version"] = 2;
+  cfg["sampling"]["thinning"]["model"] = "photon";
+  cfg["sampling"]["thinning"]["alpha"] = 2.5;
+  cfg["sampling"]["thinning"]["threshold_eV"] = 1e12;
+  cfg["output"]["directory"] = (root / "photon-yaml").string();
+  auto path = Write(YAML::Dump(cfg));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  const auto data = Read(root / "photon-yaml/z0/proton");
+  ASSERT_FALSE(data.empty());
+  auto saved = YAML::LoadFile((root / "photon-yaml/config.yaml").string());
+  const auto thinning = saved["sampling"]["thinning"];
+  EXPECT_EQ(thinning["model"].as<std::string>(), "photon");
+  EXPECT_DOUBLE_EQ(thinning["alpha"].as<double>(), 2.5);
+  EXPECT_DOUBLE_EQ(thinning["threshold_eV"].as<double>(), 1e12);
+  Parse({"--particle", "proton", "--z", "1e-8", "--nparticles", "12", "--seed", "123456",
+         "--batch", "12", "--background", "0", "--EGMF", "0", "--noEMcascade",
+         "--thinning-model", "photon", "--thinning", "2.5", "--thinning-threshold-eV", "1e12",
+         "--output", (root / "photon-cli").string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "photon-cli/z0/proton"), data);
+  saved["output"]["directory"] = (root / "photon-replay").string();
+  path = Write(YAML::Dump(saved));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "photon-replay/z0/proton"), data);
+}
+TEST_F(ConfigurationTest, PhotonThinningRejectsInvalidCliAndYamlBeforeOutput) {
+  for (const auto& options : std::vector<std::vector<std::string>>{
+        {"--thinning", "-1"}, {"--thinning", "2"}, {"-t", "2junk"}, {"-t", "nan"},
+        {"--magnetic-field", "none", "--thinning", "0.5junk"},
+        {"--thinning-model", "unknown"}, {"--thinning-model", "photon"},
+        {"--thinning-threshold-eV", "1e12"},
+        {"--thinning-model", "energy", "--thinning-threshold-eV", "1e12"},
+        {"--thinning-model", "photon", "--thinning-threshold-eV", "-1"},
+        {"--thinning-model", "photon", "--thinning-threshold-eV", "1junk"},
+        {"--thinning-model", "photon", "--thinning-threshold-eV", "nan"},
+        {"--thinning-model", "photon", "--thinning-threshold-eV", "1e12", "--thinning", "10.1"},
+        {"--thinning-model", "photon", "--thinning-threshold-eV", "1e12", "-t", "2junk"},
+        {"--thinning-model", "energy", "--thinning", "2"},
+        {"--thinning-model", "energy", "--thinning-model", "photon"}}) {
+    Error([&] { Parse(options); }, "Configuration");
+  }
+  for (const auto& settings : {"{model: photon}", "{model: unknown}",
+        "{model: energy, threshold_eV: 1e12}", "{model: photon, threshold_eV: 0}",
+        "{model: photon, threshold_eV: .inf}", "{model: photon, threshold_eV: 1e12, alpha: -1}",
+        "{model: photon, threshold_eV: 1e12, alpha: 11}",
+        "{model: photon, threshold_eV: '1e12'}"}) {
+    SCOPED_TRACE(settings);
+    const auto path = Write(std::string("schema_version: 2\nsampling: {thinning: ") + settings + "}\n");
+    Error([&] { Parse({path.string()}); }, "Configuration");
+  }
+  Error([&] { Parse({Write("schema_version: 1\nsampling: {thinning: {model: photon, threshold_eV: 1e12}}\n").string()}); }, "unknown configuration key");
+}
+TEST_F(ConfigurationTest, ExplicitEnergyPolicyPreservesLegacySeededOutput) {
+  std::vector<std::string> options{"--particle", "electron", "--z", "1e-3", "--emax", "1e13",
+      "--emin", "1e10", "--nparticles", "20", "--seed", "723", "--batch", "20",
+      "--background", "0", "--EGMF", "0", "--output", (root / "legacy-energy").string()};
+  Parse(options);
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(program->EffectiveConfiguration()["schema_version"].as<int>(), 1);
+  const auto legacy = Read(root / "legacy-energy/z0/photon");
+  ASSERT_FALSE(legacy.empty());
+  options.back() = (root / "explicit-energy").string();
+  options.insert(options.end(), {"--thinning-model", "energy"});
+  Parse(options);
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "explicit-energy/z0/photon"), legacy);
+}
+} // namespace
+
+namespace {
+TEST_F(ConfigurationTest, PhotonThinningIsActiveInRealCascadeAndReplaysAcrossInterfaces) {
+  auto cfg = YAML::Load(Common());
+  cfg["schema_version"] = 2;
+  cfg["source"]["redshift"] = .001;
+  cfg["source"]["particle"]["type"] = "electron";
+  cfg["source"]["spectrum"]["type"] = "monoenergetic";
+  cfg["source"]["spectrum"]["energy_eV"] = 1e13;
+  // Four independent primaries suffice for this interface/replay check; the
+  // separate Bernoulli moment test supplies the statistical ensemble.
+  cfg["simulation"]["primaries"] = 4;
+  cfg["simulation"]["batch_size"] = 4;
+  cfg["simulation"]["minimum_energy_eV"] = 1e10;
+  cfg["electromagnetic"]["cascade"] = true;
+  cfg["sampling"]["thinning"]["model"] = "photon";
+  cfg["sampling"]["thinning"]["threshold_eV"] = 1e12;
+  cfg["sampling"]["thinning"]["alpha"] = 0;
+  cfg["output"]["directory"] = (root / "no-photon-thinning").string();
+  auto path = Write(YAML::Dump(cfg));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  const auto unthinned = Read(root / "no-photon-thinning/z0/photon");
+  ASSERT_FALSE(unthinned.empty());
+  cfg["sampling"]["thinning"]["alpha"] = 1;
+  cfg["output"]["directory"] = (root / "active-photon").string();
+  path = Write(YAML::Dump(cfg));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  const auto active = Read(root / "active-photon/z0/photon");
+  ASSERT_FALSE(active.empty());
+  EXPECT_NE(active, unthinned);
+  std::istringstream rows(active);
+  std::string line;
+  bool corrected = false;
+  while (std::getline(rows, line)) {
+    if (line.empty() || line[0] == '#') continue;
+    double energy, weight;
+    ASSERT_TRUE(bool(std::istringstream(line) >> energy >> weight));
+    corrected = corrected || weight > 1;
+  }
+  EXPECT_TRUE(corrected);
+  Parse({"--particle", "electron", "--z", ".001", "--emax", "1e13", "--emin", "1e10",
+         "--nparticles", "4", "--seed", "123456", "--batch", "4", "--background", "0", "--EGMF", "0",
+         "--thinning-model", "photon", "--thinning", "1", "--thinning-threshold-eV", "1e12",
+         "--output", (root / "active-photon-cli").string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "active-photon-cli/z0/photon"), active);
+  auto saved = YAML::LoadFile((root / "active-photon/config.yaml").string());
+  saved["output"]["directory"] = (root / "active-photon-replay").string();
+  path = Write(YAML::Dump(saved));
+  Parse({path.string()});
+  ASSERT_EQ(program->run(), 0);
+  EXPECT_EQ(Read(root / "active-photon-replay/z0/photon"), active);
+  cfg["sampling"]["thinning"]["alpha"] = 10;
+  cfg["sampling"]["thinning"]["threshold_eV"] = 1e300;
+  cfg["output"]["directory"] = (root / "failed-photon").string();
+  path = Write(YAML::Dump(cfg));
+  Parse({path.string()});
+  Error([&] { program->run(); }, "partial output must not be used");
+  const auto failed = YAML::LoadFile((root / "failed-photon/run.yaml").string());
+  EXPECT_EQ(failed["status"].as<std::string>(), "failed");
+}
+} // namespace

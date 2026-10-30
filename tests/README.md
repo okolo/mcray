@@ -499,3 +499,9 @@ it. The empty stack isolates lifetime handling from simulation physics/RNG.
 Run `ctest --test-dir build/Release -R unit.concurrent. --output-on-failure`.
 The automatic [Linux build/test workflow](../docs/usage/ci.md) runs it as part
 of the complete short suite on every PR.
+
+The `unit.thinning.*` suite checks optional photon-threshold thinning,
+including fixed Bernoulli moment controls, RNG bypass and fatal numerical
+errors. Its contract and frozen short-check settings are documented in
+[photon thinning](../docs/usage/photon_thinning.md). The configuration suite
+checks CLI/YAML/snapshot selection and preservation of the energy policy.

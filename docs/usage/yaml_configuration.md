@@ -28,6 +28,7 @@ approved approximations are unchanged.
 - `schema_version: 1` or `2` is mandatory. Version 1 retains its original
   magnetic-field behavior. Version 2 adds explicitly selected grid/none/sum
   fields; see [the magnetic-field contract](grid_magnetic_fields.md).
+  It also supports the optional [photon-thinning policy](photon_thinning.md).
   Unknown/duplicate keys, invalid enum values,
   unsupported types, nonfinite numbers and invalid ranges are errors.
 - Booleans are `true`/`false`. Numeric values must be numbers, not quoted

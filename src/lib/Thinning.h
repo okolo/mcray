@@ -38,6 +38,7 @@ namespace mcray
 
 class IThinning {
 public:
+    virtual ~IThinning() = default;
 	//must be thread-safe
     virtual void Run(std::vector<Particle>& aParticles, Randomizer& aRandomizer) = 0;
 };
@@ -56,6 +57,17 @@ public:
 private:
     double				fAlpha;
 	std::vector<bool>	fEnableFor;
+};
+
+// Independent Bernoulli sampling of secondary photons below a fixed energy.
+// Immutable settings permit sharing between engines; each worker supplies RNG.
+class PhotonThinning : public IThinning {
+public:
+    PhotonThinning(double alpha, double threshold);
+    void Run(std::vector<Particle>& particles, Randomizer& randomizer) override;
+private:
+    const double alpha_;
+    const double threshold_;
 };
 
 }

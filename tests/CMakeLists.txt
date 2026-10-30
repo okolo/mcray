@@ -59,9 +59,17 @@ target_link_libraries(crbeam_input_tests PRIVATE GTest::gtest_main mcray crbeam_
     ${BOOST_SYS_LIBRARY} ${BOOST_FS_LIBRARY} ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY} ${CMAKE_DL_LIBS})
 target_compile_definitions(crbeam_input_tests PRIVATE
     CRBEAM_FULL_EXAMPLE="${CMAKE_CURRENT_SOURCE_DIR}/../examples/config.full.yaml")
+# These interface/regression cases run several real EM cascades. Give
+# emulated/sanitized builds headroom without changing statistical tolerances.
+set(thinning_cascade_filter "ConfigurationTest.PhotonThinningIsActiveInRealCascadeAndReplaysAcrossInterfaces:ConfigurationTest.ExplicitEnergyPolicyPreservesLegacySeededOutput")
 gtest_discover_tests(crbeam_input_tests TEST_PREFIX "integration."
+    TEST_FILTER "-${thinning_cascade_filter}"
     DISCOVERY_TIMEOUT 30 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
     PROPERTIES TIMEOUT 30 LABELS "integration")
+gtest_discover_tests(crbeam_input_tests TEST_PREFIX "integration."
+    TEST_FILTER "${thinning_cascade_filter}"
+    DISCOVERY_TIMEOUT 30 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../bin"
+    PROPERTIES TIMEOUT 180 LABELS "integration")
 
 add_executable(nuclear_comparison nuclear_comparison.cpp)
 target_link_libraries(nuclear_comparison PRIVATE GTest::gtest ${GSL_LIBRARY} ${GSLCBLAS_LIBRARY})
@@ -130,3 +138,9 @@ target_include_directories(propagation_lifetime_tests PRIVATE ../src/lib)
 target_link_libraries(propagation_lifetime_tests PRIVATE GTest::gtest_main mcray)
 gtest_discover_tests(propagation_lifetime_tests TEST_PREFIX "unit.concurrent."
     PROPERTIES TIMEOUT 30 LABELS "unit;concurrency")
+
+add_executable(photon_thinning_tests photon_thinning.cpp)
+target_include_directories(photon_thinning_tests PRIVATE ../src/lib)
+target_link_libraries(photon_thinning_tests PRIVATE GTest::gtest_main mcray)
+gtest_discover_tests(photon_thinning_tests TEST_PREFIX "unit.thinning."
+    PROPERTIES TIMEOUT 30 LABELS "unit;sampling")

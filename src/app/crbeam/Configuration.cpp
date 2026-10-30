@@ -80,7 +80,7 @@ const Binding bindings[] = {
     {"magnetic_field.realization", "--randomEGMF", "switch",
      "shared|per_primary"},
     {"magnetic_field.deflection_accuracy", "--accEGMF", "integer", ""},
-    {"sampling.thinning.alpha", "--thinning", "fraction", ""},
+    {"sampling.thinning.alpha", "--thinning", "thinning_alpha", ""},
     {"sampling.pair_production_resampling", "--ppp-thinning", "positive", ""},
     {"output.directory", "--output", "path", ""},
     {"output.overwrite", "--overwrite", "boolean", ""},
@@ -222,7 +222,8 @@ std::set<std::string> Fields(bool versionTwo = false) {
           "source.angular_distribution.half_angle_deg",
           "propagation.end_redshift", "observer.model", "observer.center_Mpc",
           "observer.radius_Mpc", "observer.stop_when",
-          "output.primary_direction"})
+          "output.primary_direction", "sampling.thinning.model",
+          "sampling.thinning.threshold_eV"})
       fields.insert(field);
   return fields;
 }
@@ -343,6 +344,50 @@ void NormalizeSpatial(YAML::Node effective, const YAML::Node &input) {
   // Construct the same runtime settings now, so invalid unit conversions fail
   // before output.
   const SpatialConfiguration checked(effective);
+}
+// Keep the version-1 effective schema unchanged. Version 2 explicitly names
+// the policy, so config.yaml replay cannot accidentally select another model.
+void NormalizeThinning(YAML::Node effective) {
+  const std::string prefix = "sampling.thinning.";
+  const auto modelNode = Get(effective, prefix + "model");
+  const std::string model = modelNode ? StringValue(modelNode, prefix + "model") : "energy";
+  if (model != "energy" && model != "photon")
+    Invalid(prefix + "model", "choices: energy|photon");
+  const double alpha = Numeric(Get(effective, prefix + "alpha"), prefix + "alpha");
+  if (alpha < 0 || alpha > (model == "photon" ? 10 : 1))
+    Invalid(prefix + "alpha", model == "photon" ? "require 0..10" : "require 0..1");
+  const auto threshold = Get(effective, prefix + "threshold_eV");
+  if (model == "photon") {
+    if (!threshold)
+      Invalid(prefix + "threshold_eV", "required for photon model");
+    const double value = Numeric(threshold, prefix + "threshold_eV");
+    const double internal = value * mcray::units.eV;
+    if (!(value > 0) || !(internal > 0) || !std::isfinite(internal))
+      Invalid(prefix + "threshold_eV", "must be positive and representable in internal units");
+    Put(effective, prefix + "threshold_eV", value);
+  } else if (threshold)
+    Invalid(prefix + "threshold_eV", "requires photon model");
+  Put(effective, prefix + "model", model);
+  Put(effective, prefix + "alpha", alpha);
+}
+bool ThinningCli(CmdLine& cli, YAML::Node effective) {
+  const bool extended = cli.has_param("--thinning-model") || cli.has_param("--thinning-threshold-eV");
+  for (const auto* option : {"--thinning-model", "--thinning-threshold-eV", "--thinning"}) {
+    if (!cli.has_param(option))
+      continue;
+    const auto parameter = cli.get_param(option);
+    if (!parameter.value || !*parameter.value)
+      Invalid(option, "requires a nonempty argument");
+    if (std::string(option) == "--thinning-model")
+      Put(effective, "sampling.thinning.model", std::string(parameter.value));
+    else
+      Put(effective, std::string(option) == "--thinning" ? "sampling.thinning.alpha" :
+          "sampling.thinning.threshold_eV", Numeric(YAML::Node(parameter.value), option));
+  }
+  if (!extended)
+    return false;
+  NormalizeThinning(effective);
+  return true;
 }
 bool SpatialCli(CmdLine &cli, YAML::Node effective) {
   struct Option {
@@ -619,20 +664,33 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
       for (const char* option : {"--magnetic-field","--magnetic-field-file","--magnetic-field-boundary",
           "--source-position-Mpc","--source-angular-model","--source-axis","--source-half-angle-deg",
           "--end-redshift","--observer","--observer-center-Mpc","--observer-radius-Mpc",
-          "--observer-stop-when","--output-primary-direction"})
+          "--observer-stop-when","--output-primary-direction",
+          "--thinning-model","--thinning-threshold-eV"})
         if (std::count(fOriginal.begin()+1,fOriginal.end(),std::string(option)) > 1)
-          Invalid(std::string(option).rfind("--magnetic-",0)==0 ? "magnetic_field" : "spatial_geometry",
-              std::string("duplicate option ")+option);
+          Invalid(std::string(option).rfind("--magnetic-", 0) == 0 ? "magnetic_field" :
+                  std::string(option).rfind("--thinning-", 0) == 0 ? "sampling.thinning" : "spatial_geometry",
+                  std::string("duplicate option ") + option);
       const auto field = MagneticFieldFromCli(cli, fEffective["magnetic_field"]);
       if (field.IsDefined()) {
         fEffective["schema_version"] = 2;
         fEffective["magnetic_field"] = field;
         MagneticLegacyArguments(field,fArguments);
       }
-      if (SpatialCli(cli,fEffective) && fEffective["schema_version"].as<int>()==1) {
+      const bool spatialCli = SpatialCli(cli, fEffective);
+      const bool thinningCli = ThinningCli(cli, fEffective);
+      if ((spatialCli || thinningCli) && fEffective["schema_version"].as<int>()==1) {
         const YAML::Node missing(YAML::NodeType::Undefined);
         fEffective["magnetic_field"]=NormalizeMagneticField(missing,fEffective["magnetic_field"],fs::current_path().string());
         fEffective["schema_version"]=2;
+      }
+      if (fEffective["schema_version"].as<int>() == 2)
+        NormalizeThinning(fEffective);
+      else if (cli.has_param("--thinning")) {
+        // Enforce the legacy policy's existing range in Release too, without
+        // adding version-2 fields to an ordinary legacy configuration.
+        const double alpha = Get(fEffective, "sampling.thinning.alpha").as<double>();
+        if (alpha < 0 || alpha > 1)
+          Invalid("--thinning", "require 0..1 for energy model");
       }
     } else {
       fInputFile = Absolute(argv[file], fs::current_path());
@@ -658,6 +716,7 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
       if (version == 2) {
         fEffective["magnetic_field"] = magnetic;
         NormalizeSpatial(fEffective,input);
+        NormalizeThinning(fEffective);
       }
       fArguments.push_back(argv[0]);
       auto add = [&](const std::string &key, const std::string &value) {
@@ -718,7 +777,7 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
           const double v = Numeric(n, b.path);
           if ((kind == "positive" && v <= 0) ||
               (kind == "nonnegative" && v < 0) ||
-              (kind == "fraction" && (v < 0 || v > 1)))
+              (kind == "thinning_alpha" && version == 1 && (v < 0 || v > 1)))
             Invalid(b.path, "outside allowed numeric range");
           add(b.option, Number(v));
         }
