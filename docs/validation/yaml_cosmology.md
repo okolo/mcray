@@ -52,6 +52,13 @@ change, all seven affected cosmology cases passed again on macOS Release
 (0.34 s), Linux Release (7.81 s), and Linux ASan/UBSan (12.12 s). No production
 code changed after the full-suite results above.
 
+Before publication, main `4ee069b` (including PRs #12 and #13) was merged
+into the feature branch. The rebuilt macOS Release suite passed 241/241
+again in 17.54 s, and the inherited review-infrastructure suite passed
+32/32 Python tests. The final diff against main contains only the cosmology
+feature, its example, documentation and tests; review infrastructure is
+unchanged by this feature.
+
 The Linux runs used the existing offline Ubuntu image
 `sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6`
 under amd64 emulation on the arm64 workstation. These are not native Linux
