@@ -777,7 +777,7 @@ TEST_F(ConfigurationTest, PhotonThinningIsActiveInRealCascadeAndReplaysAcrossInt
   cfg["output"]["directory"] = (root / "failed-photon").string();
   path = Write(YAML::Dump(cfg));
   Parse({path.string()});
-  Error([&] { program->run(); }, "partial output must not be used");
+  Error([&] { program->run(); }, "Propagation failed; partial output must not be used");
   const auto failed = YAML::LoadFile((root / "failed-photon/run.yaml").string());
   EXPECT_EQ(failed["status"].as<std::string>(), "failed");
 }

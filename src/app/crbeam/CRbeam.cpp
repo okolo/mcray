@@ -866,7 +866,9 @@ int CRbeam::run() try
             std::cerr << "batch " << (i-1)/fBatchSize + 1 << " of " << ceil(fNoParticles/(double)fBatchSize) << std::endl;
             pe.RunMultithread();
             if ((fNuclearPrimary || photonThinning) && pe.FailureCount())
-                Exception::Throw(std::string(fNuclearPrimary ? "Nuclear" : "Photon thinning") + " propagation failed; partial output must not be used (failed cascades=" + ToString(pe.FailureCount()) + ")");
+                Exception::Throw(std::string(fNuclearPrimary ? "Nuclear propagation" : "Propagation") +
+                    " failed; partial output must not be used (failed cascades=" +
+                    ToString(pe.FailureCount()) + ")");
             result.Flush();
             if(result.AbortRequested())
                 break; //handling Ctrl-C
