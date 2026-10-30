@@ -1,7 +1,8 @@
 # Independent OpenCode review
 
 The [review workflow](../../.github/workflows/opencode-review.yml) uses
-`openrouter/z-ai/glm-5.3` to independently review pull requests. It runs on
+`openrouter/deepseek/deepseek-v4.1-flash` as the primary reviewer and
+`openrouter/z-ai/glm-5.3` as the `architecture-review` subagent. It runs on
 GitHub-hosted Ubuntu runners, with a 25-minute job timeout. It does not replace
 the project's numerical validation or human review.
 
@@ -33,6 +34,41 @@ No OIDC permission is requested.
 Automatic session sharing is disabled.
 
 ## Triggers and scope
+
+### Model routing
+
+The primary `reviewer` handles the complete diff, checks, final structured
+verdict, and summary. It delegates complex questions about public interfaces,
+cross-module contracts, ownership/lifecycle, concurrency/RNG behavior, and
+numerical/physical invariants to `architecture-review`. Changes to the review
+pipeline's model routing, permissions, SHA checks, or approval publication
+also require consultation. Routine documentation, formatting, and isolated
+fixes do not require a second model unless they expose such a concern.
+
+The primary sends the frozen head/base SHAs, relevant diff, code/contracts,
+command results when needed, and a specific question to a foreground Task,
+then waits and verifies the findings. GLM uses reading/search tools only:
+edits, shell commands, and further delegation are denied. It returns analysis
+to the primary; it never posts reviews or writes the final verdict. Both
+models use the existing OpenRouter secret; no extra GitHub token is needed.
+
+Routing is a model decision guided by the prompt, not a deterministic file
+classifier. The final JSON must include `architecture_review` with a boolean
+`required`, a `status` of `not_required`, `completed`, `failed`, or
+`inconclusive`, and a nonempty `summary`. For consultations the summary records
+the real GLM result and task/session ID when provided. The publisher rejects
+approval if required consultation is not completed, its metadata is missing,
+or the requirement/status is inconsistent. Metadata describes what the primary
+reports; use Actions logs to verify that GLM actually ran. Runtime agent
+configuration is inline so switching PR branches cannot remove it.
+
+The formal review heading is `AI review`; it identifies the primary model and
+the architectural consultation status. Only the primary writes
+`OPENCODE_REVIEW_RESULT`, and the existing publisher validates SHAs and submits
+the single formal verdict. An incomplete required consultation prevents a new
+approval; it does not withdraw an existing approval for unchanged code.
+
+### Events
 
 Review runs when a non-draft same-repository PR is opened, updated, reopened,
 or marked ready for review. Repository owners, members, and collaborators
@@ -118,3 +154,5 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/scripts -p 'te
 References: [OpenCode GitHub integration](https://opencode.ai/docs/github/),
 [OpenRouter models](https://openrouter.ai/models?q=z-ai),
 [GitHub review API](https://docs.github.com/en/rest/pulls/reviews#create-a-review-for-a-pull-request).
+[OpenCode agents](https://opencode.ai/docs/agents/) describes per-agent models
+and task permissions.

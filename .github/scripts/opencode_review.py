@@ -62,7 +62,8 @@ def prepare(repository, number, context_path, output_path):
 
 
 def review_payload(context, verdict, current):
-    fields = {"head_sha", "base_sha", "review_complete", "verdict", "blocking_findings", "summary"}
+    fields = {"head_sha", "base_sha", "review_complete", "verdict", "blocking_findings", "summary",
+              "architecture_review"}
     if not isinstance(verdict, dict) or set(verdict) != fields:
         raise ValueError("Missing or unexpected fields in the OpenCode verdict")
     if (verdict["head_sha"] != context["head_sha"]
@@ -92,8 +93,28 @@ def review_payload(context, verdict, current):
         raise ValueError("REQUEST_CHANGES requires concrete blocking findings")
     if blockers and decision != "REQUEST_CHANGES":
         raise ValueError("Blocking findings require REQUEST_CHANGES")
-    body = (f"{MARKER}\n## Independent OpenCode review — GLM-5.3 via OpenRouter\n\n"
-            f"Head: `{context['head_sha']}`\nBase: `{context['base_sha']}`\n\n{summary}")
+    architecture = verdict["architecture_review"]
+    if (not isinstance(architecture, dict)
+            or set(architecture) != {"required", "status", "summary"}
+            or type(architecture["required"]) is not bool
+            or not isinstance(architecture["summary"], str)
+            or not architecture["summary"].strip()
+            or len(architecture["summary"]) > 8000):
+        raise ValueError("Expected a structured architectural consultation result")
+    status = architecture["status"]
+    if status not in ("not_required", "completed", "failed", "inconclusive"):
+        raise ValueError("Unknown architectural consultation status")
+    if ((architecture["required"] and status == "not_required")
+            or (not architecture["required"] and status != "not_required")):
+        raise ValueError("Inconsistent architectural consultation requirement/status")
+    if decision == "APPROVE" and architecture["required"] and status != "completed":
+        raise ValueError("Cannot approve without completed required architectural consultation")
+    body = (f"{MARKER}\n## AI review\n\n"
+            f"Head: `{context['head_sha']}`\nBase: `{context['base_sha']}`\n\n"
+            f"Primary reviewer: DeepSeek V4.1 Flash via OpenRouter.\n\n{summary}\n\n"
+            f"### Architectural consultation\n\n"
+            f"{'GLM-5.3: ' if architecture['required'] else ''}{status}. "
+            f"{architecture['summary']}")
     if blockers:
         body += "\n\n### Blocking findings\n\n" + "\n".join(f"- {item}" for item in blockers)
     if len(body) > 60000:
