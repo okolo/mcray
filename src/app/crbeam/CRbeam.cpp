@@ -89,7 +89,7 @@ enum ClineParams
     PNparticles,PBatchSize,PSeed,
     PRedshift,PFilamentZ,PEnergy,PMinEnergy,PPowerLaw,PMinSourceEnergy,PPrimary,PParticle,PA,PZ,PPhotodisintegration,PTalysData,PNuclearDecay,PNuclearPPP,PNuclearGZK,PGzkResiduals,PPDPhotons,PDecayPhotons,PPDPhotonYields,PPDMissingData,PNoEMcascade,PSourceEvolM,
 	PBackground,PBackgroundMult,PExtraBackground,PExtraBackgroundPhysical,PEBLCut,PMonoCmb,PFixedCmbT,PExtDeltaZconst,PExtPowerLow,PExtDeltaZexp,
-	POutput,POverwriteOutput,PThinning,PThinningModel,PThinningThreshold,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,PMagneticModel,PMagneticFile,PMagneticBoundary,PSourcePosition,PSourceAngular,PSourceAxis,PSourceHalfAngle,PEndRedshift,PObserver,PObserverCenter,PObserverRadius,PObserverStop,PPrimaryDirection
+	POutput,POverwriteOutput,PThinning,PThinningModel,PThinningThreshold,PRescalePPP,PEGMF,PEGMFLmin,PEGMFLmax,PEGMFNmodes,PRandomEGMF,PTurbulentEGMF,PDeflectionAccuracy,PTauPrint,POutputSuffix,PMagneticModel,PMagneticFile,PMagneticBoundary,PSourcePosition,PSourceAngular,PSourceAxis,PSourceHalfAngle,PSourceVmfKappa,PEndRedshift,PObserver,PObserverCenter,PObserverRadius,PObserverStop,PPrimaryDirection
 };
 #define xstr(s) str(s)
 #define str(s) #s
@@ -97,9 +97,10 @@ enum ClineParams
 
 static CmdInfo commands[] = {
         { PSourcePosition, CmdInfo::FLAG_ARGUMENT, "", "--source-position-Mpc", "0,0,0", "Comoving source position: x,y,z in Mpc" },
-        { PSourceAngular, CmdInfo::FLAG_ARGUMENT, "", "--source-angular-model", "pencil", "Source angular distribution: pencil or cone" },
+        { PSourceAngular, CmdInfo::FLAG_ARGUMENT, "", "--source-angular-model", "pencil", "Source angular distribution: pencil, cone or vmf" },
         { PSourceAxis, CmdInfo::FLAG_ARGUMENT, "", "--source-axis", "0,0,1", "Source direction: finite nonzero x,y,z vector (normalized)" },
         { PSourceHalfAngle, CmdInfo::FLAG_ARGUMENT, "", "--source-half-angle-deg", "0", "Cone half-angle in degrees, from 0 to 180" },
+        { PSourceVmfKappa, CmdInfo::FLAG_ARGUMENT, "", "--source-vmf-kappa", "", "Dimensionless vmf concentration, finite and nonnegative; vmf requires explicit half-angle and kappa" },
         { PEndRedshift, CmdInfo::FLAG_ARGUMENT, "", "--end-redshift", "0", "End redshift: nonnegative and below source redshift" },
         { PObserver, CmdInfo::FLAG_ARGUMENT, "", "--observer", "none", "Spatial observer: none or sphere" },
         { PObserverCenter, CmdInfo::FLAG_ARGUMENT, "", "--observer-center-Mpc", "0,0,0", "Comoving sphere center: x,y,z in Mpc" },

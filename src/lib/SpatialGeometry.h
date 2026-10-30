@@ -13,17 +13,18 @@ using SpatialVector = std::array<coord_type, 3>;
 // Samples a normalized angular distribution without modifying primary weights.
 class SourceGeometry {
 public:
-  enum class AngularModel : int { Pencil, Cone };
+  enum class AngularModel : int { Pencil, Cone, Vmf };
   SourceGeometry(SpatialVector position, SpatialVector axis,
                  AngularModel model = AngularModel::Pencil,
-                 double halfAngleDegrees = 0);
+                 double halfAngleDegrees = 0, double kappa = 0);
   static SpatialVector NormalizeAxis(SpatialVector axis);
   void Initialize(Particle &particle, Randomizer &random) const;
 
 private:
+  coord_type AngularOffset(coord_type uniform) const;
   SpatialVector position_, axis_, transverse_, binormal_;
   AngularModel model_;
-  coord_type coneWidth_;
+  coord_type coneWidth_, kappa_, vmfMass_ = 0;
 };
 
 // One immutable observer is shared by stopping, step selection and output.

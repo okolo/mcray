@@ -519,3 +519,9 @@ including fixed Bernoulli moment controls, RNG bypass and fatal numerical
 errors. Its contract and frozen short-check settings are documented in
 [photon thinning](../docs/usage/photon_thinning.md). The configuration suite
 checks CLI/YAML/snapshot selection and preservation of the energy policy.
+
+The `unit.vmf.*` suite checks normalized truncated-vMF source sampling, exact
+cone/pencil RNG limits and primary metadata. Its quantile reference uses
+header-only Boost.Multiprecision (100 decimal digits); its frozen CDF ensemble
+uses the settings in [vMF verification](../docs/validation/vmf_source.md).
+Configuration checks cover CLI/YAML/snapshot replay and ballistic output.
