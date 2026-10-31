@@ -138,3 +138,7 @@ resolution, confidence allocation, seeds and sample budget. These deterministic
 controls do not provide that agreement. Source/field coupling, conditional
 arrival distributions, observer ensembles and matched EM cascades remain
 subsequent work.
+
+The separately approved [source/observer cost pilot](fork_source_observer_pilot.md)
+now exercises the common source samplers. It does not replace or enlarge this
+frozen deterministic matrix, and does not provide final statistical acceptance.
