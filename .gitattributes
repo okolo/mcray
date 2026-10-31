@@ -1,0 +1,2 @@
+# Preserve historical source bytes, including original line endings.
+* -text -filter
