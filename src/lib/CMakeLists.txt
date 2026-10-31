@@ -88,6 +88,8 @@ GridMagneticField.cpp
 GridMagneticField.h
 SpatialGeometry.cpp
 SpatialGeometry.h
+Jet.cpp
+Jet.h
 Filter.cpp
 Filter.h
 GammaPP.cpp

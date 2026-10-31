@@ -1,13 +1,15 @@
-# Truncated von Mises-Fisher source
+# Fork-compatible weighted vMF source
 
-The optional `vmf` source samples an axisymmetric von Mises-Fisher angular
-profile conditioned on a cone. It preserves the incoming primary weight,
-energy and identity. The angular density integrates to one inside the chosen
-cone, so changing kappa or the opening does not rescale the source's total
-angular normalization. The existing energy/redshift sampling weights retain
-their meanings. This describes one jet; no second opposite jet is added.
+The `vmf` model follows CRbeam_v0: sample a direction uniformly in the
+configured cone, then multiply the incoming primary weight by `vMF_weight`.
+It does not directly sample a cone-conditioned vMF probability distribution
+and does not preserve total angular weight when kappa or opening changes.
+This restores the original contract at the user's request on 2026-10-31,
+superseding the normalized conditional-vMF implementation from PR #12.
 
-## Input
+## CLI and YAML
+
+The existing names and schema version 2 are retained:
 
 ```sh
 CRbeam --particle electron --z 0.01 --emax 1e13 \
@@ -15,8 +17,6 @@ CRbeam --particle electron --z 0.01 --emax 1e13 \
   --source-half-angle-deg 10 --source-vmf-kappa 100 \
   --seed 123 --output vmf-run
 ```
-
-The equivalent angular settings in YAML schema version 2 are:
 
 ```yaml
 source:
@@ -27,87 +27,82 @@ source:
     kappa: 100
 ```
 
-[examples/vmf_source.yaml](../../examples/vmf_source.yaml) is a complete
-configuration. It uses the existing CMB processes with EBL and magnetic field
-disabled and includes primary-direction output.
+The [complete example](../../examples/vmf_source.yaml) enables primary-direction
+output. Kappa must be explicitly supplied and finite, and may be positive,
+negative or zero, as allowed by the original weight function. A negative
+value favors the opposite pole. Half-angle must be explicitly supplied in
+[0,180] degrees. A finite nonzero axis is normalized. Kappa remains forbidden
+with pencil/cone models. Schema version 1 does not accept vmf/kappa.
+Effective settings are saved in config.yaml and run.yaml identifies code and
+execution provenance. This changes results for existing nonzero-kappa vMF
+configurations from the superseded normalized implementation; replay must
+use the original recorded code revision when that old behavior is intended.
+No second normalized-vMF mode or new selector is introduced.
 
-| Setting | Contract |
-| --- | --- |
-| `model` / `--source-angular-model` | Adds `vmf` alongside unchanged `pencil` and `cone`. |
-| `kappa` / `--source-vmf-kappa` | Required explicitly for vmf, finite and >=0, dimensionless. Forbidden with other CLI/YAML models, even if zero. |
-| `half_angle_deg` / `--source-half-angle-deg` | Required explicitly for vmf, finite in [0,180]. Hard outer cutoff, not a standard deviation. |
-| `axis` / `--source-axis` | Existing normalized nonzero finite vector; default [0,0,1]. |
+## Original sampling and weight contract
 
-An explicitly supplied zero opening gives the axis direction for any finite
-kappa. Kappa=0 gives the uniform-in-solid-angle cone. Positive kappa
-concentrates emission toward the axis, and a 180-degree opening covers the
-full sphere. Negative kappa is unsupported. Missing, duplicated, malformed,
-nonfinite or inapplicable settings fail before output creation. Version 1
-retains its original schema and does not accept this angular model/parameter.
-
-The effective model, normalized axis, opening and kappa are saved in
-config.yaml. run.yaml retains the existing configuration hash. The model
-uses the existing spatial-output path, including zero opening, with no new
-columns. `output.primary_direction` / `--output-primary-direction` retains
-its current optional meaning; see [the spatial contract](spatial_source_observer.md).
-Readers can inspect the complete angular settings through config.yaml.
-The legacy +z-pencil assumptions of mc_rotate do not extend to these sources.
-
-## Distribution and sampler
-
-For unit axis a and direction n, write u=1-a dot n and
-U=1-cos(theta_max)=2*sin(theta_max/2)^2. For U>0 and kappa>0:
+For unit axis a, direction n, u=1-a dot n and U=1-cos(theta_max), the proposal
+is uniform in solid angle on the cone: q=1/(2*pi*U). Each active draw uses two
+random values, one for u and one for azimuth. The weight update is:
 
 ```text
-f_Omega(n) = kappa*exp(-kappa*u) / (2*pi*(1-exp(-kappa*U))),  0<=u<=U.
-H(u)       = (1-exp(-kappa*u)) / (1-exp(-kappa*U)).
+if abs(kappa) < 1e-14:
+    multiplier = 1
+else:
+    multiplier = kappa*exp(-kappa*u) / (2*pi*(1-exp(-2*kappa)))
+weight *= multiplier
 ```
 
-The azimuth is uniform. For kappa=0 the density is 1/(2*pi*U); for U=0 the
-source is the deterministic axis. The density is with respect to solid angle,
-dOmega=dphi*du. Its normalization is conditional on the chosen cone; it is
-not an unnormalized full-sphere intensity restricted to that cone.
-
-For a uniform draw r, the implementation samples
+This is the original full-sphere density multiplier. Do not multiply by
+2*pi*U, divide by q, replace the denominator by 1-exp(-kappa*U), or otherwise
+renormalize the total source. The special small-kappa branch is preserved
+exactly, including its jump from multiplier 1 to a limit of 1/(4*pi).
+For positive kappa and opening U>0, the expected angular multiplier is:
 
 ```text
-u = -log1p(-r*(-expm1(-kappa*U))) / kappa.
+(1-exp(-kappa*U)) / (2*pi*U*(1-exp(-2*kappa))).
 ```
 
-It uses the existing orthonormal frame and direction normalization. Sine is
-computed as sqrt(u*(2-u)), preserving transverse components when 1-u rounds
-to one. For a positive opening there are exactly two RNG draws: offset and
-azimuth. Kappa=0 reuses the existing cone arithmetic, giving identical
-directions and next RNG value for the same modern inputs. Zero opening uses
-no draws and matches the pencil direction. Legacy pencil/cone arithmetic,
-RNG and defaults are preserved.
+Thus changing source parameters can change absolute flux. Angularly
+normalized observables and absolute weighted output must be distinguished.
+Large concentration with a broad uniform proposal can have very high weight
+variance; it does not acquire the variance properties of direct vMF sampling.
+Initialize multiplies the current weight once; each primary starts with the
+weight from its energy/redshift sampler, as in the fork source loop.
 
-The constructor caches the truncated mass. When kappa*U<=epsilon(coord_type),
-the relative uniform-limit correction is below the coordinate precision and
-the sampler uses r*U. Large kappa*U is handled without overflowing the product
-or computing a positive exponential. Near zero, log1p is evaluated with the
-rapidly convergent identity log(1+x)=2*atanh(x/(2+x)), stopping when the sum
-no longer changes. This avoids observed small-argument x87-emulation loss
-of precision; larger arguments use the standard function. Possible edge
-rounding is bounded by U.
-No rejection loop, PDF epsilon, probability floor, weight correction or
-arbitrary physical kappa cap is introduced.
+The fork activates angular customization only for opening >1e-14 radians.
+Vmf retains this activation threshold: zero/smaller openings consume no
+angular random draws and leave the weight unchanged, regardless of kappa.
+The already accepted explicit-axis interface still orients the pencil along
+its axis; the fork's ignored zero-opening rotation is not restored. Ordinary
+pencil/cone behavior and their RNG consumption are unchanged. For active
+opening and small kappa, vMF and cone use exactly the same modern directions
+and next RNG value for the same inputs.
 
-For the new model, a positive opening whose width underflows to zero is an
-input error. Finite coordinate/RNG precision still limits extreme tails and
-very narrow structures. For a rotated axis, angular perturbations smaller
-than its representable component spacing can disappear. Large finite kappa
-therefore does not promise an exactly resolved angular profile at arbitrary
-scales. Equal seeds also do not promise identical histories across platforms.
+## Code structure and numerical exceptions
 
-The C++ SourceGeometry API adds AngularModel::Vmf and an optional kappa
-constructor argument (zero is the unused default for other C++ models).
-Substantial implementation stays in SpatialGeometry.cpp; the immutable
-settings are safe to query with worker-local RNGs and particles.
+`src/lib/Jet.h` and `Jet.cpp` restore the original `vMF_weight` function name
+and angle-based entry point. A small axis overload adapts the existing
+vector-axis CLI. SourceGeometry keeps the recognizable fork sequence:
+uniform cone direction, then vMF weight multiplication. There is no inverse
+vMF CDF, conditional-mass cache or direct-vMF sampler. Current particle
+identity, ownership and RNG interfaces are retained.
 
-The fork's vMF branch sampled uniform cone directions and multiplied their
-weights by a full-sphere density. This implementation follows the approved
-normalized source contract above; it does not reproduce those absolute
-weights, Gaussian-in-1-cos(theta) sampling, or the fork's RNG streams.
+The original formula is evaluated with documented numeric corrections:
 
-For short-check scope and results, see [vMF verification](../validation/vmf_source.md).
+- `expm1` prevents cancellation in 1-exp(-2*kappa) near the threshold.
+- Reflecting the cosine for negative kappa avoids overflowing exp(+2*abs(kappa)).
+- Unit-vector dot products may be clipped only for small rounding beyond a
+  pole; substantial range violations are errors. Stable cone-width/sine
+  arithmetic and the existing source frame remain.
+- Log-space fallback retains a representable density when exp(-kappa*u)
+  alone underflows. A truly unrepresentable tail remains zero.
+- Nonfinite inputs, unrepresentable multipliers or overflow of the resulting
+  primary weight fail explicitly; they are not resampled or renormalized.
+
+These changes repair arithmetic, not angular normalization. Energy, identity,
+ancestry and time are preserved. Gaussian jets remain outside this port.
+See [the original-contract verification](../validation/vmf_fork_contract.md)
+for direct reference comparisons and regression scope. The earlier
+[normalized-model checks](../validation/vmf_source.md) remain a historical
+record and do not validate the restored weighted contract.

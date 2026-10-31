@@ -1,4 +1,5 @@
 #include "SpatialGeometry.h"
+#include "Jet.h"
 #include <algorithm>
 #include <array>
 #include <boost/multiprecision/cpp_dec_float.hpp>
@@ -77,7 +78,7 @@ TEST(VmfSource, ZeroOpeningMatchesPencilWithoutRandomDraws) {
   }
 }
 TEST(VmfSource, ConstructorRejectsInvalidAndInapplicableParameters) {
-  for (double kappa : {-1., std::numeric_limits<double>::infinity(),
+  for (double kappa : {std::numeric_limits<double>::infinity(),
                         std::numeric_limits<double>::quiet_NaN()})
     Fatal([&] { SourceGeometry source({}, {0,0,1}, Model::Vmf, 10, kappa); });
   for (double angle : {-1., 181., std::numeric_limits<double>::infinity(),
@@ -86,11 +87,9 @@ TEST(VmfSource, ConstructorRejectsInvalidAndInapplicableParameters) {
   Fatal([] { SourceGeometry source({}, {0,0,1}, Model::Cone, 10, 1); });
   Fatal([] { SourceGeometry source({}, {0,0,1}, Model::Pencil, 0, 1); });
   Fatal([] { SourceGeometry source({}, {0,0,0}, Model::Vmf, 10, 1); });
-  const double tiny = std::numeric_limits<double>::denorm_min();
-  if (!(Width(tiny) > 0))
-    Fatal([&] { SourceGeometry source({}, {0,0,1}, Model::Vmf, tiny, 1); });
+
 }
-TEST(VmfSource, QuantilesMatchIndependentHundredDigitReference) {
+TEST(VmfSource, UniformConeProposalMatchesIndependentHundredDigitReference) {
   // Reference arithmetic is independent of the production expm1/log1p path.
   // 512 ulps relative allows trig/frame rounding in recovered chord offsets;
   // all selected offsets are normal in both double and extended long double.
@@ -104,14 +103,11 @@ TEST(VmfSource, QuantilesMatchIndependentHundredDigitReference) {
     Particle particle(Photon, 0);
     const High half = High(angle) * acos(High(-1)) / 360;
     const High width = 2 * sin(half) * sin(half);
-    const High concentration(kappa), product = concentration * width;
-    // exp(-1000)<1e-434, below the 100-digit reference precision.
-    const High mass = product > 1000 ? High(1) : High(1 - exp(-product));
     for (int draw = 0; draw < 8; ++draw) {
       const High uniform(reference.Rand());
       const High azimuth = 2 * acos(High(-1)) * High(reference.Rand());
-      const High expected = kappa == 0 ? High(uniform * width) :
-          High(-log(High(1) - uniform * mass) / concentration);
+      const High expected = uniform * width;
+      particle.Weight = 1;
       source.Initialize(particle, random);
       const auto value = expected.convert_to<coord_type>();
       const auto tolerance = 512 * std::numeric_limits<coord_type>::epsilon();
@@ -127,7 +123,7 @@ TEST(VmfSource, QuantilesMatchIndependentHundredDigitReference) {
     EXPECT_EQ(random.Rand(), reference.Rand());
   }
 }
-TEST(VmfSource, NonuniformSamplingPreservesNuclearPrimaryMetadata) {
+TEST(VmfSource, WeightedProposalPreservesNuclearMetadataAndMultipliesWeight) {
   SourceGeometry source({1,2,3}, {1,-2,3}, Model::Vmf, 30, 100);
   Particle primary(56u, .01);
   primary.Energy = 1e20 * units.eV;
@@ -143,7 +139,8 @@ TEST(VmfSource, NonuniformSamplingPreservesNuclearPrimaryMetadata) {
   EXPECT_EQ(primary.SourceParticle, original.SourceParticle);
   EXPECT_EQ(primary.interactionData[0], original.interactionData[0]);
   EXPECT_EQ(primary.Ninteractions, original.Ninteractions);
-  EXPECT_EQ(primary.Weight, original.Weight);
+  const auto axis = SourceGeometry::NormalizeAxis({1,-2,3});
+  EXPECT_EQ(primary.Weight, original.Weight * vMF_weight(axis.data(),primary.Pdir,100));
   EXPECT_EQ(primary.Energy, original.Energy);
   EXPECT_EQ(primary.MassNumber(), 56u);
   EXPECT_EQ(primary.AtomicNumber(), 26u);
@@ -158,7 +155,9 @@ TEST(VmfSource, ExtremeFiniteConcentrationsHaveFiniteUnitDirections) {
       Randomizer random(452), reference(452);
       Particle particle(Photon, 0);
       for (int draw = 0; draw < 20; ++draw) {
+        particle.Weight = 1;
         source.Initialize(particle, random);
+        EXPECT_TRUE(std::isfinite(particle.Weight));
         coord_type norm = 0;
         for (auto component : particle.Pdir) {
           EXPECT_TRUE(std::isfinite(component));
@@ -172,9 +171,73 @@ TEST(VmfSource, ExtremeFiniteConcentrationsHaveFiniteUnitDirections) {
   }
 }
 
+TEST(VmfSource, WeightMatchesIndependentFullSphereDensityWithOriginalZeroBranch) {
+  const coord_type axis[3]{0,0,1};
+  for (double kappa : {0., .5e-14, -.5e-14, 1e-14, -1e-14, 1e-12,
+                       -1e-12, 1., -1., 100., -100., 1000., -1000.,
+                       std::numeric_limits<double>::max(),-std::numeric_limits<double>::max()}) {
+    for (double cosine : {-1.,-.5,0.,.5,1.}) {
+      coord_type pdir[3]{std::sqrt(std::max(0.,1-cosine*cosine)),0,cosine};
+      const auto value=vMF_weight(axis,pdir,kappa);
+      High expected=1;
+      if(std::abs(kappa)>=1e-14) {
+        const High k=abs(High(kappa)), offset=1-High(kappa<0?-cosine:cosine);
+        const High mass=k>1000?High(1):High(1-exp(-2*k));
+        expected=k*offset>10000?High(0):High(k*exp(-k*offset)/(2*acos(High(-1))*mass));
+      }
+      const double reference=expected.convert_to<double>();
+      const double tolerance=512*std::numeric_limits<double>::epsilon()*reference;
+      EXPECT_NEAR(value,reference,tolerance) << kappa << ", " << cosine;
+    }
+  }
+}
+TEST(VmfSource, ZeroBranchDiscontinuityAndDensityTailRemainVisible) {
+  const coord_type axis[3]{0,0,1},pole[3]{0,0,1};
+  EXPECT_EQ(vMF_weight(axis,pole,0),1);
+  EXPECT_EQ(vMF_weight(axis,pole,std::nextafter(1e-14,0.)),1);
+  EXPECT_NEAR(vMF_weight(axis,pole,1e-14),1/(4*std::acos(-1.)),1e-14);
+  // The original exp(-750) underflows although kappa*exp(-750) is representable.
+  const coord_type tail[3]{std::sqrt(1-.99925*.99925),0,.99925};
+  EXPECT_GT(vMF_weight(axis,tail,1e6),0);
+}
+TEST(VmfSource, ActivationCutoffDoesNotConsumeRandomNumbersOrChangeWeights) {
+  SourceGeometry source({}, {1,-2,3}, Model::Vmf, 1e-14*180/std::acos(-1.)/2,100);
+  Randomizer random(87),reference(87);
+  Particle p(Photon,0); p.Weight=7;
+  source.Initialize(p,random);
+  EXPECT_EQ(p.Weight,7);
+  EXPECT_EQ(random.Rand(),reference.Rand());
+}
+TEST(VmfSource, SignedKappaUsesSameProposalAsConeAndOnlyChangesWeights) {
+  for(double kappa : {-100.,-1.,0.,1.,100.}) {
+    SourceGeometry cone({}, {1,-2,3},Model::Cone,20);
+    SourceGeometry vmf({}, {1,-2,3},Model::Vmf,20,kappa);
+    Randomizer first(78),second(78);
+    Particle a(Photon,0),b=a;
+    const auto axis=SourceGeometry::NormalizeAxis({1,-2,3});
+    for(int i=0;i<100;++i) {
+      a.Weight=b.Weight=2;
+      cone.Initialize(a,first); vmf.Initialize(b,second);
+      for(size_t j=0;j<3;++j) EXPECT_EQ(a.Pdir[j],b.Pdir[j]);
+      EXPECT_EQ(b.Weight,2*vMF_weight(axis.data(),b.Pdir,kappa));
+    }
+    EXPECT_EQ(first.Rand(),second.Rand());
+  }
+}
+
+TEST(VmfSource, InvalidWeightsAndDirectionsFailInsteadOfChangingNormalization) {
+  const coord_type axis[3]{0,0,1},bad[3]{0,0,2};
+  Fatal([&] { vMF_weight(axis,bad,1); });
+  Fatal([&] { vMF_weight(axis,axis,std::numeric_limits<double>::quiet_NaN()); });
+  SourceGeometry source({}, {0,0,1},Model::Vmf,10,100);
+  Particle p(Photon,0); p.Weight=std::numeric_limits<double>::max();
+  Randomizer random(78);
+  Fatal([&] { source.Initialize(p,random); });
+}
+
 using Parameters = std::tuple<double,double,int>; // kappa, degrees, axis index
 class VmfDistribution : public ::testing::TestWithParam<Parameters> {};
-TEST_P(VmfDistribution, FixedCdfEnsembleIsUniformAndWeightsArePreserved) {
+TEST_P(VmfDistribution, UniformProposalAndOriginalWeightMultiplier) {
   const auto [kappa, angle, axisIndex] = GetParam();
   const SpatialVector axis = SourceGeometry::NormalizeAxis(
       axisIndex == 0 ? SpatialVector{0,0,1} : SpatialVector{1,-2,3});
@@ -188,9 +251,10 @@ TEST_P(VmfDistribution, FixedCdfEnsembleIsUniformAndWeightsArePreserved) {
   std::array<int,binCount> bins{};
   coord_type sum = 0;
   const coord_type width = Width(angle), eps = std::numeric_limits<coord_type>::epsilon();
-  const coord_type mass = kappa == 0 ? 0 : -std::expm1(-coord_type(kappa)*width);
   for (int i = 0; i < count; ++i) {
+    particle.Weight = 3;
     source.Initialize(particle, random);
+    EXPECT_EQ(particle.Weight,3*vMF_weight(axis.data(),particle.Pdir,kappa));
     const auto offset = Offset(particle, axis);
     coord_type norm = 0;
     for (auto component : particle.Pdir) norm += component * component;
@@ -198,8 +262,7 @@ TEST_P(VmfDistribution, FixedCdfEnsembleIsUniformAndWeightsArePreserved) {
     EXPECT_GE(offset, 0);
     // Chord recovery has absolute error O(eps*sqrt(U)) for a rotated axis.
     EXPECT_LE(offset, width + 64 * eps * (std::sqrt(width) + eps));
-    const coord_type cdf = kappa == 0 ? offset / width :
-        -std::expm1(-coord_type(kappa)*offset) / mass;
+    const coord_type cdf = offset / width;
     ASSERT_GE(cdf, 0);
     ASSERT_LE(cdf, 1 + 64 * eps / std::sqrt(width));
     const int bin = std::min(binCount-1, int(cdf*binCount));
@@ -211,7 +274,6 @@ TEST_P(VmfDistribution, FixedCdfEnsembleIsUniformAndWeightsArePreserved) {
     EXPECT_NEAR(occupancy, count * probability,
                 6 * std::sqrt(count * probability * (1-probability)));
   EXPECT_NEAR(sum/count, .5, 6/std::sqrt(coord_type(12)*count));
-  EXPECT_EQ(particle.Weight, 3);
   EXPECT_EQ(particle.Energy, 1e12 * units.eV);
   EXPECT_EQ(particle.id, id);
   for (size_t i = 0; i < 3; ++i) EXPECT_EQ(particle.X[i], coord_type(i+1));

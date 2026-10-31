@@ -10,7 +10,8 @@ namespace mcray {
 
 using SpatialVector = std::array<coord_type, 3>;
 
-// Samples a normalized angular distribution without modifying primary weights.
+// Pencil/cone preserve weights. Vmf uses the original uniform-cone proposal
+// and multiplies the primary weight by the full-sphere vMF density.
 class SourceGeometry {
 public:
   enum class AngularModel : int { Pencil, Cone, Vmf };
@@ -21,10 +22,11 @@ public:
   void Initialize(Particle &particle, Randomizer &random) const;
 
 private:
-  coord_type AngularOffset(coord_type uniform) const;
   SpatialVector position_, axis_, transverse_, binormal_;
   AngularModel model_;
-  coord_type coneWidth_, kappa_, vmfMass_ = 0;
+  coord_type coneWidth_;
+  double kappa_;
+  bool vmfActive_;
 };
 
 // One immutable observer is shared by stopping, step selection and output.

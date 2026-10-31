@@ -13,6 +13,7 @@ import transport
 import observer
 import source_observer_pilot as pilot
 import source_observer_ensemble as ensemble
+import vmf as vmf_probe
 
 
 def row():
@@ -26,6 +27,19 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_vmf_point_design_separates_ordinary_and_numerical_controls(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            points,count=vmf_probe.inputs(Path(a))
+            other,other_count=vmf_probe.inputs(Path(b))
+            self.assertEqual(count,87); self.assertEqual(other_count,count)
+            self.assertEqual(points.read_bytes(),other.read_bytes())
+            rows=[line.split() for line in points.read_text().splitlines()]
+            self.assertEqual(sum(row[0]=='ordinary' for row in rows),70)
+            self.assertEqual(sum(row[0]=='cancellation' for row in rows),12)
+            self.assertEqual(sum(row[0]=='range' for row in rows),5)
+            self.assertIn(-100.,{float(row[3]) for row in rows})
+            self.assertIn(1e-14,{float(row[3]) for row in rows})
+
     def test_collection_deadline_kills_child_and_keeps_no_successful_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory); (root/'tmp').mkdir()

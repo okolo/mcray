@@ -8,7 +8,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 - [Automated Linux build and short tests](usage/ci.md)
 - [Source geometry, sphere observers and spatial output](usage/spatial_source_observer.md)
-- [Truncated vMF angular source](usage/vmf_source.md)
+- [Fork-compatible weighted vMF source](usage/vmf_source.md)
 - [Grid magnetic fields, composition and CLI/YAML input](usage/grid_magnetic_fields.md)
 - [YAML configuration, CLI compatibility and run records](usage/yaml_configuration.md)
 - [Cosmology settings](usage/cosmology.md)
