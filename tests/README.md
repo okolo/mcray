@@ -540,3 +540,9 @@ charged-particle trajectories, with analytic constant-field controls and a
 frozen step-refinement matrix. It reports numerical differences, not physical
 acceptance. Its self-contained harness guards run with
 `python3 tests/test_fork_transport.py -v` and need no historical checkout.
+
+The [observer prerequisite](fork_compat/OBSERVER.md) compares strict membership,
+step limits and interaction-free stopping with the pinned historical observer.
+Its self-contained guards use that same Python CI entry point. The C++ spatial
+suite also rejects variable-rate half-steps that cannot advance absolute time;
+a bounded watchdog prevents the old failure from hanging the regression.

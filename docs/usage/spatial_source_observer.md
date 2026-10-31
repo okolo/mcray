@@ -48,6 +48,12 @@ One shared immutable observer controls termination, step limiting and the
 recorded `in_target` flag. The API permits a later observer implementation;
 crossing events and multiple-hit logging are not implemented.
 
+The variable-rate engine also rejects a complete step whose two half-moves
+cannot advance the represented absolute time. The failed history is counted
+and discarded rather than looping indefinitely or inventing a time increment.
+See the [historical observer/stopping diagnostic](../validation/fork_observer_comparison.md)
+for precision limits, end-time rounding and comparison scope.
+
 See [the runnable configuration](../../examples/spatial_observer.yaml):
 
 ```sh
