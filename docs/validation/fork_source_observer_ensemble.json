@@ -1,0 +1,1120 @@
+{
+  "schema": 1,
+  "date": "2026-10-31",
+  "revision": "d3b7611aa3b69c46e72c41bc91aa0354625472d9",
+  "dirty_at_collection": false,
+  "reference_snapshot": "e1fc71f613efe7fecf3210e15339c34814245cd4",
+  "reference_sha256": {
+    "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+    "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+    "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+    "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+    "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+    "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+    "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+    "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+    "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+    "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+    "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+    "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+    "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+    "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+    "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+    "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+    "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+  },
+  "adapter_sha256": {
+    "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+    "README.md": "c06c5e1fe08176f08f9b48d880b2a33d65e08ba4ea9cfb8bfa8d2b5cb9e43fd1",
+    "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+    "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+    "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+    "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+    "fork_api.h": "fa706c85962887c99bcaa85bc478eb930bd3f6f8d738593f7b38466bd784d8fc",
+    "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+    "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+    "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+    "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+    "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+    "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+    "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+    "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+    "reference_wrapper.cpp.in": "5c76489405c80a1202a6da5696e1097c57e97dc30bc83ff56536f8bca1984239",
+    "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+    "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+    "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+    "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+    "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+    "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+    "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+    "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+    "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+    "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+    "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617"
+  },
+  "linked_core_sha256": "aff4dd0b12bad4d17f45f6bfd7b362ff5f888d7e56f40bf98a74a76cc524fe60",
+  "production_sha256": {
+    "src/lib/Background.cpp": "d7bded21ce882eeb7ba88fa0dc050bd1aa4eac6af92d71404301169f3cb362c3",
+    "src/lib/Background.h": "b4bf5e6fc24da647f13527bf1aa0e3ab8448dbe315376c908cbd8bc469390887",
+    "src/lib/Cosmology.cpp": "72f0246254e150a3384b3c14ab8549debc6c689e162f031cac19f0213ecbef1d",
+    "src/lib/Cosmology.h": "23aaa2a6e66907393b80f54f369faad87f2a49102314aec57ea6d1ee34663c18",
+    "src/lib/Debug.cpp": "f605b00811174712e48faa12aea470d858ca26b42e91de540e50f7cf5c6abda6",
+    "src/lib/Debug.h": "11ff8298ea7b6813f7f2c5ca04a0e8d517949936111854a774aaef01105f6787",
+    "src/lib/Deflection1D.cpp": "41c8d5007bfed53a33af32e8d30c2c1f6432b1945e4f01dbb02b2c4e44337d34",
+    "src/lib/Deflection1D.h": "20125a77978a3ecc678b2f1b64738c2e4c85cfd283962702dc46d61f8aadada1",
+    "src/lib/Deflection3D.cpp": "90d479648b6272479b7070a1be8c2884d6360ea75680af97a5ba7f1313a503e2",
+    "src/lib/Deflection3D.h": "7b2bec49872f6d17c5613a8f7fd9d817f07b7e65fe6dea3dba4228b86aa41def",
+    "src/lib/EMSecondarySampling.cpp": "28b4bf4ef188c2fd1e7597d6f27b24a968ba974df7f226ffc31c9c832f47717a",
+    "src/lib/EMSecondarySampling.h": "1358f7a1d90582055e650fcde292644a99d8a0286e7a211c13107d26d160ed32",
+    "src/lib/ElmagTest.cpp": "e743467d3bbd410c2bf9cf6738ad902d0843195d38c7b29131abd397241016e2",
+    "src/lib/ElmagTest.h": "4ddaa6bc1586f115f0113e4b1f71a2ba54e97bd33263c16930d3efeb60d96f7b",
+    "src/lib/ExampleUserMain.cpp": "34e3af2855f447166d9ad08d50f23c242ddb85638a402ed6d58d1cbf9d3a5ff0",
+    "src/lib/Filter.cpp": "60815681860af5dd5afc0c1dade621f93c5333a51563ec90f916a604247cb197",
+    "src/lib/Filter.h": "c40392f0e2374d8360e7d7777e317685152603a18f16148e46868467a20b1735",
+    "src/lib/GZK.cpp": "98a89544716b569041b7e08b9b1f8fbda0a46b1182d18f6eb679b28bd8d9f3da",
+    "src/lib/GZK.h": "a0cc1fa716ad884ad7a0d07c4cffd83f30576c88a94a468333f2a44e0daf013f",
+    "src/lib/GammaPP.cpp": "311f324a4761768b4721f3ac48b1a05539b4e933a74a4b59918e8ce75849d36d",
+    "src/lib/GammaPP.h": "448fd86f3031cde7d8a8abb0237b8fc00f7cd5d0617a70b68b54ac76aba32932",
+    "src/lib/GridMagneticField.cpp": "5c46a7619936777a3a33dd94eb9b9371079025f5d50d2147764fbf127e3eeddc",
+    "src/lib/GridMagneticField.h": "9f0548a951d853618f882ca0c6c522e73834067df0201164887555f3834f9b3e",
+    "src/lib/ICS.cpp": "9342cf3f0c7b25a5a3f061b82926fac92fb70b49b23cf973cdfa9bf711778d92",
+    "src/lib/ICS.h": "404cf5ea1199becc27354feb8716f016c5c1558902badf4870a6d16f7d7687e2",
+    "src/lib/Inoue12IROSpectrum.cpp": "849ed7c0373e60ef8e7b860c7c61c47cddc0cc4f1ce18c42db1f8c3e1d75699b",
+    "src/lib/Inoue12IROSpectrum.h": "ab5e857cca101bf32ba528d982f682afdc20638bc893813f5a6277056eebfc70",
+    "src/lib/Interaction.cpp": "821ca3d44261fb70885f8c11b32f03e469829b2781ce4a200552e2d0669775be",
+    "src/lib/Interaction.h": "a980ba79542cf3d8dc9ff81dba24a5b8178792a84e9ff50b45f50f396bbc79fb",
+    "src/lib/Logger.cpp": "1f8f66497943071b851bc8fa8b4f124e50300028617d9a8900c5beaa6f369a8a",
+    "src/lib/Logger.h": "044a9988a0416550862dd8e5ee628f3afefb200d84b68373240a41de54f4b070",
+    "src/lib/MathUtils.cpp": "b2142ac079167f81825d1ed527af48494f7bef8d66565c2e2d5bbd53ad4ae542",
+    "src/lib/MathUtils.h": "d5d70b84ac108b9ecd207341e6b040b188a5fe3429003e9a894c7b6e0f36d34a",
+    "src/lib/NeutronDecay.cpp": "294fd4884035423d55004eb211b65f66301a274dfd2516005eb37fe6f811efb8",
+    "src/lib/NeutronDecay.h": "a2eca4f311b7d6ed22f5ef19a47ce72c26ee5d896e97faadcf03482f53c6b687",
+    "src/lib/NuclearDecay.cpp": "810a61e3710d23acd81fe9bc744dd08defcebd8830c98158f34df5237d37d0a2",
+    "src/lib/NuclearDecay.h": "1e1fd7a255aa7be5ce98725dd12af97b6fbbf53c61b12ebd811c1c0d36da5070",
+    "src/lib/NuclearPPP.h": "2d8cbea540fdd6e93aa141ae23e5468b027a8d5f681e7beafea1111e346455c0",
+    "src/lib/NuclearPhoton.h": "a0e478776221516cb10a4c2cdae0038282229ad6da7c52d78d1d3b23acdc8660",
+    "src/lib/Nucleus.cpp": "ba5fffa1994188b8b7c3ccdc681010c1fc62ca14d14473502a7d0feb5771f08e",
+    "src/lib/Nucleus.h": "5ec8c56fb960493017257596191a1495423bc0f01a04fd747952c199f0a1431d",
+    "src/lib/Output.cpp": "97deb8e4534b0103949005fce208926437c5f818a3b6f597b9afb6f01771c2d1",
+    "src/lib/Output.h": "7452350e04b77aeddda796c8274473e15b85e167d03ebfe08d05dcc2d282049f",
+    "src/lib/PPP.cpp": "ae4a17a148bd8cf2449d45d7d3a64e6b7c751e31a03a37bcbf121646095ad575",
+    "src/lib/PPP.h": "c8175b35b88835de6ce5e717b0f46e0323776b3378a8b6f9adc3cf8587545ed4",
+    "src/lib/Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea",
+    "src/lib/Particle.h": "f3fc0d309f5b1fcdb8404bcfb2e1887bf96b35d9a60aa3cb5daaf8b2cf5b291e",
+    "src/lib/ParticleStack.cpp": "750df8f2052fc2dd6e0e7dc6bf8f73c8897d8f4283faf260faa5b438dc9b66a3",
+    "src/lib/ParticleStack.h": "4e0d4a2760e147c5c8a9a1aa08f657ee5444a37657cceeaf37aeaa9c14c9137c",
+    "src/lib/PhotoDisintegration.cpp": "609ff40a2ee05b0d02619bd6fa726a031e575d9eb3b82f5aae696b971dd48261",
+    "src/lib/PhotoDisintegration.h": "72089c6a7311accc7500d466135fb8206f5b62d5bc7dab8ad51912f7fea8484b",
+    "src/lib/PrecisionTests.cpp": "ae0c217229be7d3420ba1c7c4aa8b5fdf93edcedbd96f3880616d9d0ae7bc66c",
+    "src/lib/PrecisionTests.h": "25397cf5739d0ad8a53658e2e87200175ddb26a93dd3eeadb7a7a9a6563d9a63",
+    "src/lib/PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec",
+    "src/lib/PropagationEngine.h": "e35848a9ce4890aa000bb1aca78f855578bcf50da45f8bdb69c7e38e10580ab4",
+    "src/lib/ProtonPP.cpp": "de9070eb54e725807e842bc3d4808730565e53c06950b634a323240b0d6cd4dd",
+    "src/lib/ProtonPP.h": "f2f86c59d8c07636eacc3dd842efa32f78c7b88b453080526cdd0755c406431e",
+    "src/lib/Randomizer.cpp": "5b7a4ac2b620ed9280fd3ea8e6f6d326bee7e86bf92a073a57336a830b1979a2",
+    "src/lib/Randomizer.h": "f9482ffe2b81b93550a845ac9015e3a163556c0d28dc168217e9deb16644d545",
+    "src/lib/Sophia.cpp": "99d60ee747a535ccc558e0c4851e89f6e91ba74175eee99a57ace8663f562567",
+    "src/lib/Sophia.h": "f5b2f366f705dadfc30de4c8f6456c3ab4bda5c1155e56d88b306ed705147dc0",
+    "src/lib/SpatialGeometry.cpp": "7e0061b06ff976e534478eede2b52456c23f5e9b683a441e665717c377d7a710",
+    "src/lib/SpatialGeometry.h": "eca89187039cff963d89a9cd6558c3a865c460a17c7204d4a7ecf85767029d79",
+    "src/lib/SpatialOutput.cpp": "e16c300aaa2faf4524355d5f2bc2b04c3d36a71a32cbbb7e0d0aa207e0c63a87",
+    "src/lib/SpatialOutput.h": "770409708b3866a020aa2d171b3164752950e5b98c49f19a348448660a519990",
+    "src/lib/Stecker16Background.cpp": "2d682701b388a083576e9c03aa03ef978fa24988adf3116042d4c90123d68162",
+    "src/lib/Stecker16Background.h": "8fc33803dfb1510a1aaa597f5ba0698e79c9443557bb20e1a784707b3c6af7d7",
+    "src/lib/SteckerEBL.cpp": "50d6a0e77b9849a0571fe03fdbd9859c9386f0b565c68be85247fe503e316817",
+    "src/lib/SteckerEBL.h": "d731e358a918eef52413a5df2290b4453708345f6df67b851998290ee94fc522",
+    "src/lib/TableBackgrounds.cpp": "8d23f54f7f88e8919271bed2df577c23161714bef6e27357b3eff22051d8c775",
+    "src/lib/TableBackgrounds.h": "c227cbc3274bf5356fe9c69aa3f44319a1c66c80187e941b800d00472ef34ce3",
+    "src/lib/TableFunction.cpp": "af0b8118eee6e9f283314d2c52b40b0c4156bb8b0ff8a73dbe18c5903f1e1b80",
+    "src/lib/TableFunction.h": "4f4d56e81b5299417069dfa7ecb1d12ead15214304dd57c9ca898823bacd33a6",
+    "src/lib/TableReader.cpp": "749444cd49599a3bdc0833ab3265595e2cc5ba9ca97c81b4e6ac9c0e9e959433",
+    "src/lib/TableReader.h": "d75cfdf4c43fc2b659649bab354315765a0ac0bb60816af2f3e5c9f809762c52",
+    "src/lib/TalysPhotoDisintegration.cpp": "8658d76c2cf554f7bbe1c4855b120a1a75a6ce400febc297ee6cd72caa89266c",
+    "src/lib/TalysPhotoDisintegration.h": "63f93cf5c6502680596910bfee85bca8cd94d441739b85c63e3b6a5399b0c34e",
+    "src/lib/Test.cpp": "01961a3135865ab60c3472be894533b1dc4f4e40b5e387f98470c264b6281ca8",
+    "src/lib/Test.h": "679d043aebbcea419b54c3ff1489a6bb8d6b053b9f1bd1672dca00746389aea4",
+    "src/lib/Thinning.cpp": "4cf59b88b8858d59793cbe339547a6b2f077ad287a69df9b9f6eb0372966848a",
+    "src/lib/Thinning.h": "20930eb662ac79e78158e4e28a8044a0988aaf13e25932732f3b5f6183e343e3",
+    "src/lib/Units.cpp": "e0f990a7e7d439b3427e6a02e5b4e8e39facfa8df713b26e552b7dee813d4de9",
+    "src/lib/Units.h": "bf0ddc92bc5611a3b7839ece2a32473d45b826a5031c714e0231d1aa7c93b22e",
+    "src/lib/Utils.cpp": "25d74a3007c566f3eb9e3a3d2232b8aa86fb312c1a9332ecbdb32b0bc4530efc",
+    "src/lib/Utils.h": "d201d5879588abce6e24dec1d9a994d6f3101c1ebfbd9cc358a0529bf663af63",
+    "src/lib/main.cpp": "7dc59cbeadaa96e5c896a439d2b2ce158ff56526299e070ea8ea4ab6d8d9dc9b",
+    "src/lib/z2t.cpp": "cf7a6252fc0fc2d9cbc55c0888beec9a8359ff72f32ce1ace6eddc6a04acca24"
+  },
+  "design": {
+    "schema": 1,
+    "protocol": "SOURCE_OBSERVER_ENSEMBLE.md",
+    "alpha": 0.05,
+    "family_size": 39,
+    "cases": [
+      {
+        "name": "pencil_z",
+        "half_angle_degrees": 0,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2004101,
+        "modern_seed": 2004102,
+        "count": 8000000
+      },
+      {
+        "name": "cone_z",
+        "half_angle_degrees": 20,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2004103,
+        "modern_seed": 2004104,
+        "count": 8000000
+      },
+      {
+        "name": "cone_rotated",
+        "half_angle_degrees": 20,
+        "theta": 0.4,
+        "phi": 0.7,
+        "fork_seed": 2004105,
+        "modern_seed": 2004106,
+        "count": 8000000
+      }
+    ],
+    "arrival_thresholds_Mpc": [
+      0.092,
+      0.094,
+      0.096,
+      0.098
+    ],
+    "coordinate_scale_Mpc": 0.25,
+    "observable_names": [
+      "hit",
+      "arrival_0.092",
+      "arrival_0.094",
+      "arrival_0.096",
+      "arrival_0.098",
+      "position_x",
+      "position_y",
+      "position_z",
+      "direction_x",
+      "direction_y",
+      "direction_z"
+    ],
+    "observable_widths": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "total_histories": 48000000,
+    "cosmology": {
+      "hubble_km_s_Mpc": 70,
+      "omega_lambda": 0.7,
+      "source_z": 0.01
+    },
+    "energy_eV": 1000000000000.0,
+    "initial_weight": 1,
+    "source_position_Mpc": [
+      0,
+      0,
+      0
+    ],
+    "observer_radius_Mpc": 0.01,
+    "observer_distance_Mpc": 0.1,
+    "observer": "strict inside sphere",
+    "duration_Mpc": 0.2,
+    "interactions": [],
+    "fields": false,
+    "rate_path": "constant",
+    "propagation_seed_modern": 17,
+    "mode": "final"
+  },
+  "environment": {
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "compiler": "Homebrew clang version 22.1.5",
+    "logical_cpus": 10,
+    "workers": 6,
+    "start_utc": "2026-10-31T09:22:02Z",
+    "max_seconds": 14400
+  },
+  "report": {
+    "mode": "final",
+    "streams": [
+      {
+        "case": "pencil_z",
+        "implementation": "fork",
+        "histories": 8000000,
+        "hits": 8000000,
+        "failures": 0,
+        "emitted_weight": 8000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_historical_steps": 1,
+        "sums": [
+          8000000,
+          8000000,
+          8000000,
+          8000000,
+          8000000,
+          0,
+          0,
+          2880000.0000000005,
+          0,
+          0,
+          8000000
+        ],
+        "wall_seconds": 35.355739625,
+        "raw_sha256": "505b03357039fca9407a2238ccd480867173cc357315e8cf329b8c2247e86469",
+        "gzip_sha256": "337c36486406fe9b6cca5562a93053f7e22bd875cd62ca165aa6e5782a82c14d",
+        "gzip_bytes": 27613151,
+        "raw_lines": 8000000
+      },
+      {
+        "case": "cone_z",
+        "implementation": "fork",
+        "histories": 8000000,
+        "hits": 665842,
+        "failures": 0,
+        "emitted_weight": 8000000,
+        "past_end_histories": 1269,
+        "max_positive_end_error_Mpc": 9.998733455164332e-06,
+        "max_historical_steps": 2034,
+        "sums": [
+          665842,
+          259052,
+          451693,
+          580815,
+          650300,
+          509.78875814225705,
+          50.11139203783064,
+          5923030.856398272,
+          618.4773258474455,
+          69.12494306426726,
+          7758823.234777415
+        ],
+        "wall_seconds": 65.716779875,
+        "raw_sha256": "c4691ec95ac4cc622af6fe8aa5f0473593047c28da65cb6da17ae3a8e2487920",
+        "gzip_sha256": "2e01113d60b4068e97c22324e98c4420db197b687e3676ec3fe200ea58ee0379",
+        "gzip_bytes": 754358339,
+        "raw_lines": 8000000
+      },
+      {
+        "case": "cone_rotated",
+        "implementation": "fork",
+        "histories": 8000000,
+        "hits": 665284,
+        "failures": 0,
+        "emitted_weight": 8000000,
+        "past_end_histories": 1397,
+        "max_positive_end_error_Mpc": 9.993341882115699e-06,
+        "max_historical_steps": 2198,
+        "sums": [
+          665284,
+          258919,
+          451600,
+          580296,
+          649986,
+          1764573.996037932,
+          1486726.6728775147,
+          5455312.82150638,
+          2311371.447551276,
+          1947410.2417820762,
+          7145875.920380794
+        ],
+        "wall_seconds": 66.977611334,
+        "raw_sha256": "fa70ab718cb3429edc53486ca8f425ce1a91395552db670ecf653bf0e6fff4fe",
+        "gzip_sha256": "d45f0c5a1d52e5b82b0a5ba869f56fb2eb61b97c46db8806fc04e7baf47e249c",
+        "gzip_bytes": 742842811,
+        "raw_lines": 8000000
+      },
+      {
+        "case": "pencil_z",
+        "implementation": "modern",
+        "histories": 8000000,
+        "hits": 8000000,
+        "failures": 0,
+        "emitted_weight": 8000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_historical_steps": 0,
+        "sums": [
+          8000000,
+          8000000,
+          8000000,
+          8000000,
+          8000000,
+          0,
+          0,
+          2880000.0000000005,
+          0,
+          0,
+          8000000
+        ],
+        "wall_seconds": 77.156419917,
+        "raw_sha256": "f5ca574788999b7000d4d199c006b7ba8f03dc17199f87790a17faea4dfd0424",
+        "gzip_sha256": "d5017a9bdc8fa6e6ab91d9860a8bc8da2bd9fdbf880afbc9d2c373a6664518e2",
+        "gzip_bytes": 27613089,
+        "raw_lines": 8000000
+      },
+      {
+        "case": "cone_z",
+        "implementation": "modern",
+        "histories": 8000000,
+        "hits": 665387,
+        "failures": 0,
+        "emitted_weight": 8000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_historical_steps": 0,
+        "sums": [
+          665387,
+          258864,
+          452062,
+          580942,
+          650110,
+          283.8412422245775,
+          309.6383288383905,
+          5923186.467944434,
+          353.1182875250109,
+          374.1980949808063,
+          7758788.648601888
+        ],
+        "wall_seconds": 125.695666792,
+        "raw_sha256": "fb9fb5270470a7b0ca799cebda6c26a7ca249908f0c10bbb9891e2c448278363",
+        "gzip_sha256": "0b1a931964a864beeacd8bdcbf0630d4b4698dd9a7c0b44cb5d15d1b30e9a8b2",
+        "gzip_bytes": 732287023,
+        "raw_lines": 8000000
+      },
+      {
+        "case": "cone_rotated",
+        "implementation": "modern",
+        "histories": 8000000,
+        "hits": 666163,
+        "failures": 0,
+        "emitted_weight": 8000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_historical_steps": 0,
+        "sums": [
+          666163,
+          260350,
+          452581,
+          581564,
+          650927,
+          1764538.1285287873,
+          1485612.6450199906,
+          5455301.813940654,
+          2311495.655427502,
+          1946105.81006605,
+          7146323.663374165
+        ],
+        "wall_seconds": 126.729060083,
+        "raw_sha256": "a3319c301b033792fc5941bb76d1bad91091230fdae241536277de832989fb67",
+        "gzip_sha256": "84a7a8b78a4bdebfcfab4cae7c5d49b9fe4789d65d62f83e988e9d80ab65554c",
+        "gzip_bytes": 720523378,
+        "raw_lines": 8000000
+      }
+    ],
+    "confidence_level": 0.95,
+    "simultaneous_family_size": 39,
+    "method": "Two-sided Hoeffding bounds with union bound; untruncated intervals.",
+    "differences": [
+      {
+        "case": "pencil_z",
+        "observable": "hit",
+        "difference": 0.0,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009586736345234742,
+          0.0009586736345234742
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "arrival_0.092",
+        "difference": 0.0,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009586736345234742,
+          0.0009586736345234742
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "arrival_0.094",
+        "difference": 0.0,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009586736345234742,
+          0.0009586736345234742
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "arrival_0.096",
+        "difference": 0.0,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009586736345234742,
+          0.0009586736345234742
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "arrival_0.098",
+        "difference": 0.0,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009586736345234742,
+          0.0009586736345234742
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "position_x",
+        "difference": 0.0,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019173472690469484,
+          0.0019173472690469484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "position_y",
+        "difference": 0.0,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019173472690469484,
+          0.0019173472690469484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "position_z",
+        "difference": 0.0,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019173472690469484,
+          0.0019173472690469484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "direction_x",
+        "difference": 0.0,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019173472690469484,
+          0.0019173472690469484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "direction_y",
+        "difference": 0.0,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019173472690469484,
+          0.0019173472690469484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z",
+        "observable": "direction_z",
+        "difference": 0.0,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019173472690469484,
+          0.0019173472690469484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "hit",
+        "difference": -5.687500000001178e-05,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.001015548634523486,
+          0.0009017986345234624
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "arrival_0.092",
+        "difference": -2.3500000000002685e-05,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.000982173634523477,
+          0.0009351736345234715
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "arrival_0.094",
+        "difference": 4.6125000000001026e-05,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009125486345234732,
+          0.0010047986345234753
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "arrival_0.096",
+        "difference": 1.587499999999853e-05,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009427986345234757,
+          0.0009745486345234727
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "arrival_0.098",
+        "difference": -2.3750000000002935e-05,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0009824236345234772,
+          0.0009349236345234712
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "position_x",
+        "difference": -2.8243439489709938e-05,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019455907085366582,
+          0.0018891038295572385
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "position_y",
+        "difference": 3.244086710006999e-05,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0018849064019468783,
+          0.0019497881361470184
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "position_z",
+        "difference": 1.9451443270201985e-05,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0018978958257767464,
+          0.0019367987123171504
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "direction_x",
+        "difference": -3.316987979030432e-05,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019505171488372528,
+          0.001884177389256644
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "direction_y",
+        "difference": 3.813414398956738e-05,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.001879213125057381,
+          0.001955481413036516
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z",
+        "observable": "direction_z",
+        "difference": -4.323271940886997e-06,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019216705409878354,
+          0.0019130239971060614
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "hit",
+        "difference": 0.00010987499999999539,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0008487986345234788,
+          0.0010685486345234697
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "arrival_0.092",
+        "difference": 0.00017887500000000195,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0007797986345234722,
+          0.0011375486345234762
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "arrival_0.094",
+        "difference": 0.0001226250000000012,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.000836048634523473,
+          0.0010812986345234755
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "arrival_0.096",
+        "difference": 0.00015849999999999198,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0008001736345234822,
+          0.0011171736345234663
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "arrival_0.098",
+        "difference": 0.00011762500000001008,
+        "half_width": 0.0009586736345234742,
+        "interval": [
+          -0.0008410486345234641,
+          0.0010762986345234844
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "position_x",
+        "difference": -4.48343864309364e-06,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.001921830707690042,
+          0.0019128638304038547
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "position_y",
+        "difference": -0.0001392534821905156,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.002056600751237464,
+          0.0017780937868564328
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "position_z",
+        "difference": -1.3759457158091237e-06,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019187232147627575,
+          0.0019159713233311392
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "direction_x",
+        "difference": 1.5525984528252934e-05,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0019018212845186954,
+          0.0019328732535752013
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "direction_y",
+        "difference": -0.00016305396450327914,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0020804012335502277,
+          0.0017542933045436692
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated",
+        "observable": "direction_z",
+        "difference": 5.596787417139204e-05,
+        "half_width": 0.0019173472690469484,
+        "interval": [
+          -0.0018613793948755563,
+          0.0019733151432183406
+        ],
+        "contains_zero": true
+      }
+    ],
+    "hit_fractions": [
+      {
+        "case": "pencil_z",
+        "implementation": "fork",
+        "fraction": 1.0,
+        "half_width": 0.0006778846279163024,
+        "interval": [
+          0.9993221153720837,
+          1.0006778846279163
+        ]
+      },
+      {
+        "case": "pencil_z",
+        "implementation": "modern",
+        "fraction": 1.0,
+        "half_width": 0.0006778846279163024,
+        "interval": [
+          0.9993221153720837,
+          1.0006778846279163
+        ]
+      },
+      {
+        "case": "cone_z",
+        "implementation": "fork",
+        "fraction": 0.08323025,
+        "half_width": 0.0006778846279163024,
+        "interval": [
+          0.0825523653720837,
+          0.08390813462791631
+        ]
+      },
+      {
+        "case": "cone_z",
+        "implementation": "modern",
+        "fraction": 0.083173375,
+        "half_width": 0.0006778846279163024,
+        "interval": [
+          0.08249549037208369,
+          0.0838512596279163
+        ]
+      },
+      {
+        "case": "cone_rotated",
+        "implementation": "fork",
+        "fraction": 0.0831605,
+        "half_width": 0.0006778846279163024,
+        "interval": [
+          0.08248261537208369,
+          0.0838383846279163
+        ]
+      },
+      {
+        "case": "cone_rotated",
+        "implementation": "modern",
+        "fraction": 0.083270375,
+        "half_width": 0.0006778846279163024,
+        "interval": [
+          0.08259249037208369,
+          0.0839482596279163
+        ]
+      }
+    ],
+    "detected_differences": [],
+    "compatible_at_reported_resolution": true,
+    "scope": "Frozen observables only; no exact or full physical-equivalence claim.",
+    "elapsed_seconds": 139.85832479200326
+  },
+  "retained_directory": "build/checks/source-observer-ensemble-final-native",
+  "artifacts_sha256": {
+    "source-observer-ensemble": "8195aa2cdad1eb430ef9e5304446d809df315ae810e7ad3ef77f2cf942bf1283",
+    "Utils.h": "b4dd34a495838f65b9b63ade571cb82061e2aeb09bd79b5aa3678cb6feb3152e",
+    "Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+    "cone_rotated-modern.json": "2a094a6bf93b066270f46b0add7455bd80dcc5b71b250e2b0f73c8569076dd02",
+    "compiler-version.txt": "7fd92963bd53fe1d5cb8fc6cd497f4d32fda57d7f5e0a98fddf2d2fabd5420f8",
+    "cone_z-modern.log": "66d3181d44b043b8215143998ce43544f18d7105a9473510f3dcea851c84e98a",
+    "report.json": "6ed0e1f4fdca21d8a8d7b813f29503e978aa7d0398ac914dcbb46d246426eaf1",
+    "Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+    "metadata.tar.gz": "726e4b8c335c297e781e543309c16f80d1b7397670b3c14b2198e80751b7dc1b",
+    "pencil_z-fork.json": "2ed7f143eaa4fcce43058c3e2e3ce819a21166c4bcbc3d51be3e6443acbaf8f2",
+    "compile-command.json": "6e0013d457c072299b890568723d95072538477fbdde70bbdaa105c4ffffa988",
+    "cone_rotated-modern.log": "66d3181d44b043b8215143998ce43544f18d7105a9473510f3dcea851c84e98a",
+    "overshoot-audit.json": "f935a9eb5158117442b2fb1a493eb91e5583cc23f3e6f1e34830374e95650d71",
+    "cone_rotated-fork.json": "f7be107f661d655a08122269a84393e1292c9e017de7e16f78488d908f148a15",
+    "pencil_z-fork.log": "66d3181d44b043b8215143998ce43544f18d7105a9473510f3dcea851c84e98a",
+    "pencil_z-modern.json": "aa04bb373cb1573aa74a3d855375e38da587221a960ec7d6ad4a8b4388bc255b",
+    "compile.log": "d4e8be10726b92cbe306c963e84c96effce016b13921bbdbed89653359d7e91d",
+    "ensemble.cases": "995d3eb05bebc6a773dd4527bd232255b04b90fa16249cea6fa49d16fbd86124",
+    "cone_rotated-fork.verified.json": "8ada1df4e553c6b4dd18e08dad72957a359385203dc7894c2819bde4fdb9e807",
+    "pencil_z-fork.verified.json": "3809b0abddc1388c44673559671527f0295bc5775bf77fa71674607cf8bcec4f",
+    "inputs.json": "c152a5082c4fee8077acbcdde4d2e8dd92b1e84d4e7daf1a80c0911ff3ecf412",
+    "cone_rotated-fork.log": "66d3181d44b043b8215143998ce43544f18d7105a9473510f3dcea851c84e98a",
+    "observer_reference.cpp": "4ab3ffcb53600c0ad7b0123479a3eb1e9e65ec47168fc1e54d5f68d4547d6a16",
+    "cone_z-fork.log": "66d3181d44b043b8215143998ce43544f18d7105a9473510f3dcea851c84e98a",
+    "manifest.json": "8b8d850993b069d9641a67ba79eb28aa415d878dfc8ff11fed851b937cbfc16e",
+    "pencil_z-modern.verified.json": "3bac0559d645d3f5673b5c7b6626e1a844d17ba6dd9c7f252d7dd03cf8cc229d",
+    "cone_z-modern.verified.json": "85683462fedca7abea260043fd48327fd55ff05fa80c8f1777b9daa6d2f13a00",
+    "Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+    "reference.cpp": "57fb6f9128cabd09c3f06676f191a7628edf6fcff76ed256a50a1c9f87408543",
+    "cone_z-fork.verified.json": "270d191df9443b7e4f3e137410756a5554c53148f5afa57cc6a75a613c2f321a",
+    "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e",
+    "cone_z-fork.json": "b0af41e6d93725f39c9f62d5af5e6d7b978a404345f54ac272713796051ea4cc",
+    "pencil_z-modern.log": "66d3181d44b043b8215143998ce43544f18d7105a9473510f3dcea851c84e98a",
+    "Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+    "transport_reference.cpp": "045341cef080bbb747b3465fba67244d5b36cf3b8eea33da65b7b298c40e5d31",
+    "cone_z-modern.json": "7a608bd615b11560dc8bc7b4d762485a83768eefc538a26151e920047f020699",
+    "cone_rotated-modern.verified.json": "3266b781b8cbdc3ad3537df693e4eab517d82d8a5c06a91bebd2ac83378b6af6"
+  },
+  "checks": {
+    "cpp_tests_passed": 244,
+    "cpp_log_sha256": "55dcf3ac2cd4d36affe65827f0d4bf2695c6278d5a3230f7ce7ab282a0acd9a0",
+    "python_tests_passed": 16,
+    "python_log_sha256": "9e093a33c574bb5ab03ac9728cec720d4773de06a6651e8a98fe00219c6a5444",
+    "native_fixture": {
+      "primary_records_compared": 6000,
+      "raw_records_equal_to_pilot": true,
+      "independent_aggregates_equal": true,
+      "aggregate_roundoff_tolerance": 1e-10
+    },
+    "final_fixture_driver_log_sha256": "377af417ff9641ccc1a52f0dd2631ba34f16e458927d19e9c39465d2af62609c",
+    "sanitizer_fixture": {
+      "mode": "Emulated offline Ubuntu 22.04 Linux amd64 ASan+UBSan with leak detection.",
+      "image": "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+      "histories": 6000,
+      "diagnostics": 0,
+      "failed_streams": 0,
+      "linked_core_sha256": "34602efcc0d6bd7772767a3177e57ccb3b874700ef62e816e964a27e94e1093a",
+      "files_sha256": {
+        "pencil_z-modern.jsonl": "7f421f1aeafc5ae10bb3f0cf8e9b1d89d4b44c2ac3173dd5d84dddb4786d6330",
+        "cone_z-modern.jsonl": "5ca05969794058f0d4cdd6384e63613926f071781ee39f64b76bbe6386443eca",
+        "source-observer-ensemble": "1f751a752dd98659e878a1f01bee29205cd5fbeaa341c488d88688b0a323afc3",
+        "Utils.h": "b4dd34a495838f65b9b63ade571cb82061e2aeb09bd79b5aa3678cb6feb3152e",
+        "Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+        "cone_rotated-modern.json": "7e2746299999ce8aed7babf111e00450b2fafc4cf84db9fa9e2dc467c528e478",
+        "pencil_z-fork.jsonl": "4d58329e9a114b436df8fc3b6485427f47cd089372f0fb36755985e8e1197b1a",
+        "compiler-version.txt": "8d6e704227c739386853b14c98257428d8ffbffd817517db0b2e088d28c773f6",
+        "cone_z-modern.log": "90f4347ea76f654238c2cfc214126930959425dd996be413e0187a3fc072b06c",
+        "report.json": "ca760a6ab20e793c3611809b3762e27c7139d113325ec1de879c347cb2c9d1c9",
+        "Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+        "pencil_z-fork.json": "e9a9b9ceb36b633972b21905c40f8e620b5a2b5d27c354751a225c628fb868a7",
+        "compile-command.json": "3dc08f114e1f5e72816f8157bcf041a4d0c92921bfd095b6ea9c45d31ad61547",
+        "cone_rotated-modern.log": "90f4347ea76f654238c2cfc214126930959425dd996be413e0187a3fc072b06c",
+        "cone_rotated-fork.json": "a21d97f955ae1958aab80e22409507452245188532411af897d9dc4e421e4cbe",
+        "pencil_z-fork.log": "90f4347ea76f654238c2cfc214126930959425dd996be413e0187a3fc072b06c",
+        "pencil_z-modern.json": "43f81a6e6a2b6f8298fc787939bf35b8ec279de64d9d16d707c9c692d22f5366",
+        "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ensemble.cases": "74fb6b0bc75d324e1edaa90b21e6b6fedf8a03a60e9457f26e4893838d124ccd",
+        "cone_rotated-fork.log": "90f4347ea76f654238c2cfc214126930959425dd996be413e0187a3fc072b06c",
+        "cone_rotated-fork.jsonl": "5a83b5a8937957107a4adad4efbb33e4601ec9962cd60d0c1cc8c6cfdd616f18",
+        "observer_reference.cpp": "4ab3ffcb53600c0ad7b0123479a3eb1e9e65ec47168fc1e54d5f68d4547d6a16",
+        "cone_z-fork.log": "90f4347ea76f654238c2cfc214126930959425dd996be413e0187a3fc072b06c",
+        "Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+        "reference.cpp": "57fb6f9128cabd09c3f06676f191a7628edf6fcff76ed256a50a1c9f87408543",
+        "cone_z-fork.jsonl": "b2d580871518ecd5b979b92799ce716ecfb3af3bf93b06a1e462aff2269ebd63",
+        "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e",
+        "cone_z-fork.json": "cea7f75a151700343e8aff429f4129f52b039b16879d6a67b4f5197515ac9549",
+        "pencil_z-modern.log": "90f4347ea76f654238c2cfc214126930959425dd996be413e0187a3fc072b06c",
+        "Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+        "cone_rotated-modern.jsonl": "bfeae36afb15937613eafae93ee729576d8414ca7f14575333045e6ed392b59a",
+        "transport_reference.cpp": "045341cef080bbb747b3465fba67244d5b36cf3b8eea33da65b7b298c40e5d31",
+        "cone_z-modern.json": "efa5db9e22d2aa99c0d27983147ae48aaba4810bebc91fae23f94e1591910405"
+      }
+    }
+  },
+  "overshoot_audit": [
+    {
+      "case": "cone_z",
+      "past_end_histories": 1269,
+      "past_end_hits": 0,
+      "max_positive_end_error_Mpc": 9.998733455164332e-06,
+      "examples": [
+        {
+          "record": "history",
+          "case": "cone_z",
+          "implementation": "fork",
+          "primary": 14715,
+          "weight": 1,
+          "direction": [
+            0.14427159655969443,
+            0.010343208396393652,
+            0.9894840698395228
+          ],
+          "flight": {
+            "hit": false,
+            "past_end": true,
+            "flight_Mpc": 0.20000594068085548,
+            "end_error_Mpc": 5.940680854155665e-06,
+            "end_error_ulps": 786865381,
+            "position_Mpc": [
+              0.028855176383448748,
+              0.002068703124978705,
+              0.1979026921769626
+            ]
+          },
+          "historical_steps": 12
+        },
+        {
+          "record": "history",
+          "case": "cone_z",
+          "implementation": "fork",
+          "primary": 21985,
+          "weight": 1,
+          "direction": [
+            -0.30283765162290405,
+            0.08394164581553251,
+            0.9493382731446701
+          ],
+          "flight": {
+            "hit": false,
+            "past_end": true,
+            "flight_Mpc": 0.20000432368383878,
+            "end_error_Mpc": 4.323683837453271e-06,
+            "end_error_ulps": 572688083,
+            "position_Mpc": [
+              -0.0605688396988434,
+              0.016788692100244605,
+              0.18987175926749095
+            ]
+          },
+          "historical_steps": 6
+        },
+        {
+          "record": "history",
+          "case": "cone_z",
+          "implementation": "fork",
+          "primary": 22064,
+          "weight": 1,
+          "direction": [
+            0.18051521864273973,
+            -0.09459739331802454,
+            0.9790125581502
+          ],
+          "flight": {
+            "hit": false,
+            "past_end": true,
+            "flight_Mpc": 0.20000020881200295,
+            "end_error_Mpc": 2.0881200162569814e-07,
+            "end_error_ulps": 27657930,
+            "position_Mpc": [
+              0.03610308142229356,
+              -0.01891949841667673,
+              0.19580271605961996
+            ]
+          },
+          "historical_steps": 9
+        }
+      ]
+    },
+    {
+      "case": "cone_rotated",
+      "past_end_histories": 1397,
+      "past_end_hits": 0,
+      "max_positive_end_error_Mpc": 9.993341882115699e-06,
+      "examples": [
+        {
+          "record": "history",
+          "case": "cone_rotated",
+          "implementation": "fork",
+          "primary": 861,
+          "weight": 1,
+          "direction": [
+            0.43763270861352976,
+            0.10158186218716887,
+            0.8933973011075041
+          ],
+          "flight": {
+            "hit": false,
+            "past_end": true,
+            "flight_Mpc": 0.20000687495500705,
+            "end_error_Mpc": 6.874955005721348e-06,
+            "end_error_ulps": 910613484,
+            "position_Mpc": [
+              0.0875295504278889,
+              0.020317070808166218,
+              0.17868560228775265
+            ]
+          },
+          "historical_steps": 11
+        },
+        {
+          "record": "history",
+          "case": "cone_rotated",
+          "implementation": "fork",
+          "primary": 2284,
+          "weight": 1,
+          "direction": [
+            0.5022329285221883,
+            0.43668364604614557,
+            0.746370872143247
+          ],
+          "flight": {
+            "hit": false,
+            "past_end": true,
+            "flight_Mpc": 0.20000190098472406,
+            "end_error_Mpc": 1.9009847227363238e-06,
+            "end_error_ulps": 251792531,
+            "position_Mpc": [
+              0.10044754044155704,
+              0.08733755933816456,
+              0.14927559326826745
+            ]
+          },
+          "historical_steps": 7
+        },
+        {
+          "record": "history",
+          "case": "cone_rotated",
+          "implementation": "fork",
+          "primary": 3331,
+          "weight": 1,
+          "direction": [
+            0.17424117671967054,
+            0.35602895067695234,
+            0.9180868143129018
+          ],
+          "flight": {
+            "hit": false,
+            "past_end": true,
+            "flight_Mpc": 0.2000009060573575,
+            "end_error_Mpc": 9.060573561975587e-07,
+            "end_error_ulps": 120010683,
+            "position_Mpc": [
+              0.03484839321643666,
+              0.07120611271804562,
+              0.183618194701906
+            ]
+          },
+          "historical_steps": 16
+        }
+      ]
+    }
+  ]
+}
