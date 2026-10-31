@@ -546,3 +546,8 @@ step limits and interaction-free stopping with the pinned historical observer.
 Its self-contained guards use that same Python CI entry point. The C++ spatial
 suite also rejects variable-rate half-steps that cannot advance absolute time;
 a bounded watchdog prevents the old failure from hanging the regression.
+
+The separate [source/observer cost pilot](fork_compat/SOURCE_OBSERVER_PILOT.md)
+freezes 1000 primaries per implementation and profile for cost/failure diagnostics.
+Its self-contained Python guards use the same CI entry point above. It does not
+start the final statistical ensemble.

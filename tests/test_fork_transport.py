@@ -9,6 +9,7 @@ from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parent/'fork_compat'))
 import transport
 import observer
+import source_observer_pilot as pilot
 
 
 def row():
@@ -22,6 +23,42 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_cost_pilot_freezes_separate_seeds_counts_and_geometry(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            path,design=pilot.inputs(Path(a))
+            self.assertEqual(design,pilot.inputs(Path(b))[1])
+            self.assertEqual(design['total_histories'],6000)
+            self.assertEqual([case['count'] for case in design['cases']],[1000]*3)
+            seeds=[case[key] for case in design['cases'] for key in ('fork_seed','modern_seed')]
+            self.assertEqual(len(set(seeds)),6)
+            self.assertEqual(design['observer_radius_Mpc'],.01)
+            self.assertEqual(design['observer_distance_Mpc'],.1)
+            self.assertEqual(design['input_sha256'],transport.kernels.digest(path))
+
+    def test_cost_pilot_rejects_partial_duplicate_nonfinite_and_missing_timings(self):
+        design=dict(cases=[dict(name='tiny',count=2)],purpose='Cost only')
+        rows=[]
+        for implementation in ('fork','modern'):
+            for i in range(2):
+                rows.append(dict(record='history',case='tiny',implementation=implementation,
+                    primary=i,weight=1,direction=[0,0,1],historical_steps=1,
+                    flight=dict(hit=i==0,past_end=False,end_error_Mpc=0,position_Mpc=[0,0,.1])))
+            rows.append(dict(record='timing',case='tiny',implementation=implementation,compute_seconds=.1))
+        result=pilot.summarize(rows,design)
+        self.assertEqual(result['histories'],4)
+        self.assertEqual(result['groups'][0]['hits'],1)
+        self.assertEqual(result['groups'][1]['emitted_weight'],2)
+        self.assertNotIn('accepted',result)
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            pilot.summarize(rows[1:],design)
+        with self.assertRaisesRegex(ValueError,'Duplicate'):
+            pilot.summarize(rows+[rows[0]],design)
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            pilot.summarize(rows[:-1],design)
+        broken=copy.deepcopy(rows); broken[0]['weight']=float('nan')
+        with self.assertRaisesRegex(ValueError,'Nonfinite'):
+            pilot.summarize(broken,design)
+
     def test_observer_design_is_fixed_and_does_not_sample_sources(self):
         with tempfile.TemporaryDirectory() as directory:
             cases,design=observer.inputs(Path(directory))

@@ -5,6 +5,8 @@ see [deterministic transport comparison](TRANSPORT.md). The field/source
 comparison below remains independently runnable and unchanged in scope.
 For strict sphere membership, step limits and interaction-free stopping,
 see the [observer diagnostic](OBSERVER.md).
+The separately approved [source/observer cost pilot](SOURCE_OBSERVER_PILOT.md)
+adds the common pencil/ordinary-cone source samplers without an acceptance verdict.
 
 This optional diagnostic compiles the actual historical `SavedMF` implementation
 and uniform-cone initialization block (`fJetType=0`), rather than a transcription

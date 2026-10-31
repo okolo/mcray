@@ -125,7 +125,7 @@ def main():
     reference=extract(fork,output)
     cases,design=inputs(output)
     prefix=shlex.split(args.command_prefix)
-    sources=[output/'observer_reference.cpp',HERE/'observer_compare.cpp',
+    sources=[output/'observer_reference.cpp',HERE/'observer_compare.cpp',HERE/'observer_modern.cpp',
              ROOT/'src/lib/GridMagneticField.cpp',ROOT/'src/lib/Deflection3D.cpp',
              ROOT/'src/lib/SpatialGeometry.cpp',ROOT/'src/lib/PropagationEngine.cpp']
     metadata=dict(reference_sha256=reference,
