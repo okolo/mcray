@@ -3,6 +3,10 @@
 For the subsequent interaction-free charged-particle trajectory diagnostic,
 see [deterministic transport comparison](TRANSPORT.md). The field/source
 comparison below remains independently runnable and unchanged in scope.
+For strict sphere membership, step limits and interaction-free stopping,
+see the [observer diagnostic](OBSERVER.md).
+The separately approved [source/observer cost pilot](SOURCE_OBSERVER_PILOT.md)
+adds the common pencil/ordinary-cone source samplers without an acceptance verdict.
 
 This optional diagnostic compiles the actual historical `SavedMF` implementation
 and uniform-cone initialization block (`fJetType=0`), rather than a transcription
@@ -91,3 +95,11 @@ whole-program acceptance verdict. It does not retune counts, bins or intervals
 after observing outcomes.
 
 See [results and limitations](../../docs/validation/fork_kernel_comparison.md).
+
+The approved [source/observer ensemble](SOURCE_OBSERVER_ENSEMBLE.md) freezes
+the 39-interval family and 48-million-history count. Its compressed streaming
+runner defaults to a fixture replay; final collection requires explicit mode.
+
+`vmf.py` compares the actual original Jet.cpp weight with the restored modern
+Jet.cpp on fixed directions, separately retaining cancellation/range controls.
+It does not rerun cone/observer ensembles or claim cascade equivalence.

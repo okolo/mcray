@@ -311,8 +311,6 @@ void NormalizeSpatial(YAML::Node effective, const YAML::Node &input) {
     if (!kappaNode)
       Invalid("source.angular_distribution.kappa", "required for vmf");
     kappa = Numeric(kappaNode, "source.angular_distribution.kappa");
-    if (kappa < 0)
-      Invalid("source.angular_distribution.kappa", "must be nonnegative");
   } else if (kappaNode)
     Invalid("source.angular_distribution.kappa", "requires vmf model");
   const double half = number("source.angular_distribution.half_angle_deg", 0);

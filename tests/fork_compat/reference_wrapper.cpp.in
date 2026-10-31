@@ -76,3 +76,8 @@ ForkSample ForkNext(void* cone) {
     return fork_reference::Emit(c.angle,c.theta,c.phi,c.random);
 }
 void ForkDeleteCone(void* cone) { delete static_cast<fork_reference::Cone*>(cone); }
+
+double ForkVmfWeight(double theta,double phi,const long double* direction,double kappa) {
+    long double copy[3]{direction[0],direction[1],direction[2]};
+    return fork_reference::vMF_weight(theta,phi,copy,kappa);
+}

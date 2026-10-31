@@ -100,7 +100,7 @@ static CmdInfo commands[] = {
         { PSourceAngular, CmdInfo::FLAG_ARGUMENT, "", "--source-angular-model", "pencil", "Source angular distribution: pencil, cone or vmf" },
         { PSourceAxis, CmdInfo::FLAG_ARGUMENT, "", "--source-axis", "0,0,1", "Source direction: finite nonzero x,y,z vector (normalized)" },
         { PSourceHalfAngle, CmdInfo::FLAG_ARGUMENT, "", "--source-half-angle-deg", "0", "Cone half-angle in degrees, from 0 to 180" },
-        { PSourceVmfKappa, CmdInfo::FLAG_ARGUMENT, "", "--source-vmf-kappa", "", "Dimensionless vmf concentration, finite and nonnegative; vmf requires explicit half-angle and kappa" },
+        { PSourceVmfKappa, CmdInfo::FLAG_ARGUMENT, "", "--source-vmf-kappa", "", "Dimensionless signed vmf parameter, finite; uniform-cone proposal with fork-compatible weights; vmf requires explicit half-angle and kappa" },
         { PEndRedshift, CmdInfo::FLAG_ARGUMENT, "", "--end-redshift", "0", "End redshift: nonnegative and below source redshift" },
         { PObserver, CmdInfo::FLAG_ARGUMENT, "", "--observer", "none", "Spatial observer: none or sphere" },
         { PObserverCenter, CmdInfo::FLAG_ARGUMENT, "", "--observer-center-Mpc", "0,0,0", "Comoving sphere center: x,y,z in Mpc" },

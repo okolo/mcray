@@ -210,3 +210,19 @@ compilation. Its 756 deterministic cases are bounded diagnostics, not a Monte
 Carlo ensemble or physical-equivalence verdict. An archive-access or hash
 failure is a reproduction limit, never a successful check. Report the actual
 checks and findings independently; this reference does not prescribe a verdict.
+
+
+## Preserve the historical feature structure
+
+The migration goal is maximum fidelity to the selected fork functionality,
+except for demonstrable errors. Prefer small ports preserving algorithms,
+weight/normalization conventions, module/file boundaries, function names and
+recognizable control flow. This lets the original fork developers continue
+work here. Limit adaptations to current APIs, ownership, build integration
+and documented defect fixes; avoid unrelated rewrites. Record concrete reasons
+for unavoidable differences. A cleaner implementation or normalized density
+is not sufficient reason to replace an original contract. New physical or
+normalization choices require agreement. In particular, the user restored
+the original uniform-cone-plus-vMF-weight contract on 2026-10-31, superseding
+the earlier normalized conditional-vMF implementation. Preserve current
+features outside the selected migration scope.

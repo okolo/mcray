@@ -520,10 +520,10 @@ errors. Its contract and frozen short-check settings are documented in
 [photon thinning](../docs/usage/photon_thinning.md). The configuration suite
 checks CLI/YAML/snapshot selection and preservation of the energy policy.
 
-The `unit.vmf.*` suite checks normalized truncated-vMF source sampling, exact
+The `unit.vmf.*` suite checks fork-compatible uniform-cone vMF proposals, exact
 cone/pencil RNG limits and primary metadata. Its quantile reference uses
 header-only Boost.Multiprecision (100 decimal digits); its frozen CDF ensemble
-uses the settings in [vMF verification](../docs/validation/vmf_source.md).
+uses the settings in [vMF contract verification](../docs/validation/vmf_fork_contract.md).
 Configuration checks cover CLI/YAML/snapshot replay and ballistic output.
 
 ## Historical fork differential probe
@@ -540,3 +540,19 @@ charged-particle trajectories, with analytic constant-field controls and a
 frozen step-refinement matrix. It reports numerical differences, not physical
 acceptance. Its self-contained harness guards run with
 `python3 tests/test_fork_transport.py -v` and need no historical checkout.
+
+The [observer prerequisite](fork_compat/OBSERVER.md) compares strict membership,
+step limits and interaction-free stopping with the pinned historical observer.
+Its self-contained guards use that same Python CI entry point. The C++ spatial
+suite also rejects variable-rate half-steps that cannot advance absolute time;
+a bounded watchdog prevents the old failure from hanging the regression.
+
+The separate [source/observer cost pilot](fork_compat/SOURCE_OBSERVER_PILOT.md)
+freezes 1000 primaries per implementation and profile for cost/failure diagnostics.
+Its self-contained Python guards use the same CI entry point above. It does not
+start the final statistical ensemble.
+
+The [frozen source/observer ensemble](fork_compat/SOURCE_OBSERVER_ENSEMBLE.md)
+adds independent per-case processes, compressed raw retention and simultaneous
+intervals. Its self-contained confidence/failure guards run through the same
+Python test entry point; ordinary CI does not collect the large ensemble.

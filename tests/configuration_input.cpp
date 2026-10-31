@@ -880,7 +880,6 @@ TEST_F(ConfigurationTest, VmfCliYamlSnapshotAndBallisticOutputAreConsistent) {
     while (row >> value) values.push_back(value);
     ASSERT_EQ(values.size(), columns.size());
     auto get = [&](const std::string& name) { return values.at(columns.at(name)); };
-    EXPECT_EQ(get("weight"), 1);
     const std::array<long double,3> direction{get("Px/P"),get("Py/P"),1-get("1-(Pz/P)")};
     const std::array<long double,3> position{get("x/T")*scale,get("y/T")*scale,(1-get("1-(z/T)"))*scale};
     const std::array<long double,3> start{1,-2,3};
@@ -894,10 +893,27 @@ TEST_F(ConfigurationTest, VmfCliYamlSnapshotAndBallisticOutputAreConsistent) {
           (std::abs(start[i]) + get("FlightMpc") + 1);
       EXPECT_LE(std::abs(position[i] - start[i] - direction[i]*get("FlightMpc")), tolerance);
     }
+    const long double expectedWeight=100*std::exp(100*(dot-1))/(2*std::acos(-1.L)*(-std::expm1(-200.L)));
+    EXPECT_NEAR(get("weight"),expectedWeight,
+                512*std::numeric_limits<mcray::coord_type>::epsilon()*100*expectedWeight);
     EXPECT_GE(dot, std::cos(10*std::acos(-1.L)/180) - 1e-14);
     ++count;
   }
   EXPECT_EQ(count, 12u);
+}
+TEST_F(ConfigurationTest, VmfSignedKappaIsAcceptedByCliYamlAndReplay) {
+  Parse({"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","-1"});
+  EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["source"]["angular_distribution"]["kappa"].as<double>(),-1);
+  auto cfg=YAML::Load(Common()); cfg["schema_version"]=2;
+  cfg["source"]["particle"]["type"]="neutrinoE";
+  cfg["source"]["angular_distribution"]=YAML::Load("{model: vmf, half_angle_deg: 10, kappa: -1}");
+  cfg["output"]["directory"]=(root/"vmf-negative").string();
+  auto path=Write(YAML::Dump(cfg)); Parse({path.string()});
+  EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["source"]["angular_distribution"]["kappa"].as<double>(),-1);
+  ASSERT_EQ(program->run(),0);
+  EXPECT_FALSE(Read(root/"vmf-negative/z0/neutrinoE").empty());
+  auto saved=YAML::LoadFile((root/"vmf-negative/config.yaml").string());
+  EXPECT_DOUBLE_EQ(saved["source"]["angular_distribution"]["kappa"].as<double>(),-1);
 }
 TEST_F(ConfigurationTest, VmfRejectsMissingInvalidAndInapplicableSettings) {
   for (const auto& options : std::vector<std::vector<std::string>>{
@@ -906,7 +922,6 @@ TEST_F(ConfigurationTest, VmfRejectsMissingInvalidAndInapplicableSettings) {
       {"--source-angular-model","vmf","--source-half-angle-deg","10"},
       {"--source-vmf-kappa","0"},
       {"--source-angular-model","cone","--source-half-angle-deg","10","--source-vmf-kappa","0"},
-      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","-1"},
       {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","nan"},
       {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1junk"},
       {"--source-angular-model","vmf","--source-half-angle-deg","181","--source-vmf-kappa","1"},
@@ -915,7 +930,7 @@ TEST_F(ConfigurationTest, VmfRejectsMissingInvalidAndInapplicableSettings) {
     Error([&] { Parse(options); }, "Configuration");
   for (const auto* settings : {"{model: vmf}", "{model: vmf, kappa: 1}",
       "{model: vmf, half_angle_deg: 10}", "{model: cone, kappa: 0}",
-      "{model: pencil, kappa: 0}", "{model: vmf, half_angle_deg: 10, kappa: -1}",
+      "{model: pencil, kappa: 0}",
       "{model: vmf, half_angle_deg: 10, kappa: .inf}",
       "{model: vmf, half_angle_deg: 10, kappa: '1'}",
       "{model: vmf, half_angle_deg: 10, kappa: 1, kappaa: 2}",

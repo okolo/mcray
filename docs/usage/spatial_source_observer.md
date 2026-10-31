@@ -11,7 +11,7 @@ that format, including when replayed from config.yaml.
 | `--source-angular-model pencil\|cone\|vmf` | `source.angular_distribution.model` | `pencil` |
 | `--source-axis x,y,z` | `source.angular_distribution.axis` | `[0, 0, 1]`, finite nonzero direction, normalized |
 | `--source-half-angle-deg angle` | `source.angular_distribution.half_angle_deg` | `0` for cone; vmf requires an explicit value in [0,180] |
-| `--source-vmf-kappa value` | `source.angular_distribution.kappa` | Required finite nonnegative concentration for vmf; forbidden with other models |
+| `--source-vmf-kappa value` | `source.angular_distribution.kappa` | Required finite signed parameter for vmf; forbidden with other models |
 | `--end-redshift z` | `propagation.end_redshift` | `0`, nonnegative and below source redshift |
 | `--observer none\|sphere` | `observer.model` | `none` |
 | `--observer-center-Mpc x,y,z` | `observer.center_Mpc` | `[0, 0, 0]`, sphere only |
@@ -27,9 +27,10 @@ coordinate transformation is applied.
 
 A cone samples uniformly in solid angle about its axis. Pencil and zero-width
 cone sources consume no extra random values; geometry does not change primary
-energy, weight or identity. The optional [truncated vMF profile](vmf_source.md)
-also preserves weights; kappa=0 matches the uniform cone and zero opening
-matches the pencil direction/RNG behavior. Gaussian profiles remain outside
+energy, weight or identity. The optional [fork-compatible vMF source](vmf_source.md)
+uses a uniform-cone proposal followed by the original density weight multiplier.
+Its small-kappa branch preserves weight; inactive opening preserves the pencil
+direction/RNG behavior. Gaussian profiles remain outside
 the implemented source models.
 
 ## Sphere semantics
@@ -47,6 +48,12 @@ simulation time. A step below representable time resolution is an error.
 One shared immutable observer controls termination, step limiting and the
 recorded `in_target` flag. The API permits a later observer implementation;
 crossing events and multiple-hit logging are not implemented.
+
+The variable-rate engine also rejects a complete step whose two half-moves
+cannot advance the represented absolute time. The failed history is counted
+and discarded rather than looping indefinitely or inventing a time increment.
+See the [historical observer/stopping diagnostic](../validation/fork_observer_comparison.md)
+for precision limits, end-time rounding and comparison scope.
 
 See [the runnable configuration](../../examples/spatial_observer.yaml):
 

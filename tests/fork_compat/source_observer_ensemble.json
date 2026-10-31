@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "protocol": "SOURCE_OBSERVER_ENSEMBLE.md",
+  "alpha": 0.05,
+  "family_size": 39,
+  "cases": [
+    {
+      "name": "pencil_z",
+      "half_angle_degrees": 0,
+      "theta": 0,
+      "phi": 0,
+      "fork_seed": 2004101,
+      "modern_seed": 2004102,
+      "count": 8000000
+    },
+    {
+      "name": "cone_z",
+      "half_angle_degrees": 20,
+      "theta": 0,
+      "phi": 0,
+      "fork_seed": 2004103,
+      "modern_seed": 2004104,
+      "count": 8000000
+    },
+    {
+      "name": "cone_rotated",
+      "half_angle_degrees": 20,
+      "theta": 0.4,
+      "phi": 0.7,
+      "fork_seed": 2004105,
+      "modern_seed": 2004106,
+      "count": 8000000
+    }
+  ],
+  "arrival_thresholds_Mpc": [
+    0.092,
+    0.094,
+    0.096,
+    0.098
+  ],
+  "coordinate_scale_Mpc": 0.25,
+  "observable_names": [
+    "hit",
+    "arrival_0.092",
+    "arrival_0.094",
+    "arrival_0.096",
+    "arrival_0.098",
+    "position_x",
+    "position_y",
+    "position_z",
+    "direction_x",
+    "direction_y",
+    "direction_z"
+  ],
+  "observable_widths": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "total_histories": 48000000,
+  "cosmology": {
+    "hubble_km_s_Mpc": 70,
+    "omega_lambda": 0.7,
+    "source_z": 0.01
+  },
+  "energy_eV": 1000000000000.0,
+  "initial_weight": 1,
+  "source_position_Mpc": [
+    0,
+    0,
+    0
+  ],
+  "observer_radius_Mpc": 0.01,
+  "observer_distance_Mpc": 0.1,
+  "observer": "strict inside sphere",
+  "duration_Mpc": 0.2,
+  "interactions": [],
+  "fields": false,
+  "rate_path": "constant",
+  "propagation_seed_modern": 17
+}
