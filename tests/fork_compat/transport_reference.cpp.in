@@ -1,0 +1,152 @@
+// Historical numerical bodies are inserted verbatim after input-hash checks.
+#include "transport_api.h"
+#include "Cosmology.h"
+#include "Units.h"
+#include <fstream>
+#include <memory>
+#include <set>
+#include <stdexcept>
+// Both versions use the same header guard. Modern declarations are complete;
+// reopen it only to compile the pinned RNG in its isolated namespace.
+#undef RANDOMIZER_H
+#define MCPropag transport_reference
+#include "Randomizer.cpp"
+#undef MCPropag
+
+namespace transport_reference {
+using namespace std;
+using mcray::cosmo_time;
+// Extraction verifies that the complete old/new CosmoTime classes and unit
+// implementations are identical after comment/namespace normalization.
+using mcray::CosmoTime;
+using mcray::units;
+#undef ASSERT
+#define ASSERT(x) do { if (!(x)) throw runtime_error("Historical assertion: " #x); } while (false)
+struct Exception {
+    static void Throw(const string& text) { throw runtime_error(text); }
+};
+@PARTICLE_ENUM@
+// Nuclear branches are retained verbatim but deliberately unreachable.
+namespace Interactions {
+struct CNucleus {
+    static int getA(ParticleType) { throw runtime_error("Nuclei outside diagnostic scope"); }
+    static int getZ(ParticleType) { throw runtime_error("Nuclei outside diagnostic scope"); }
+};
+}
+#undef NOT_IMPLEMENTED
+#define NOT_IMPLEMENTED throw runtime_error("Unsupported historical particle");
+struct Particle {
+    ParticleType Type;
+    double Energy;
+    long double X[3]{}, Pdir[3]{};
+    CosmoTime Time;
+    ofstream* Tracer = nullptr;
+    void* interactionData[16]{};
+    static const double MassesMeV[EndLightParticle];
+    static const int ElectricCharges[EndLightParticle];
+    static double Mass(ParticleType);
+    static double ElectricCharge(ParticleType);
+    @MASS_INLINE@
+    @CHARGE_INLINE@
+    @BETA@
+    void updateTracer();
+};
+@MASSES@
+@CHARGES@
+@MASS_METHOD@
+@CHARGE_METHOD@
+@TRACER@
+
+class MagneticField {
+public:
+    virtual ~MagneticField() = default;
+    virtual void GetValueGauss(const long double*, const CosmoTime&, vector<double>&) const = 0;
+    virtual double MinVariabilityScale(const CosmoTime&) const = 0;
+    @POSITION_SCALE@
+};
+@SAVED_CLASS@
+@SAVED_METHODS@
+
+class Deflection3D {
+public:
+    Deflection3D(MagneticField* field, unsigned accuracy): fGlobalB(field), fAccuracy(accuracy) {}
+    static void GetRotationRate(const Particle&, const vector<double>&, vector<double>&);
+    double Rate(const Particle&) const;
+    bool Propagate(cosmo_time, Particle&, Randomizer&) const;
+private:
+    // Ownership belongs to the driver. Original arithmetic sees the same pointer.
+    MagneticField* fGlobalB;
+    unsigned fAccuracy;
+    int fMFslot = 0;
+};
+@ROTATION@
+@RATE@
+@PROPAGATE@
+
+class ConstantField : public MagneticField {
+public:
+    ConstantField(const double* b, double scale): value(b,b+3), scale_(scale) {}
+    void GetValueGauss(const long double*, const CosmoTime&, vector<double>& out) const override { out=value; }
+    double MinVariabilityScale(const CosmoTime&) const override { return scale_; }
+private:
+    vector<double> value;
+    double scale_;
+};
+class CountedField : public MagneticField {
+public:
+    explicit CountedField(MagneticField& field): field_(field) {}
+    void GetValueGauss(const long double* x, const CosmoTime& t, vector<double>& out) const override {
+        ++values; field_.GetValueGauss(x,t,out);
+    }
+    double MinVariabilityScale(const CosmoTime& t) const override { return field_.MinVariabilityScale(t); }
+    double MinVariabilityScale(const long double* x, const CosmoTime& t, long double dt) const override {
+        ++scales;
+        const auto scale=field_.MinVariabilityScale(x,t,dt);
+        zeros += scale<=0;
+        return scale;
+    }
+    mutable unsigned long values=0, scales=0, zeros=0;
+private:
+    MagneticField& field_;
+};
+struct NullBuffer : streambuf {
+    int_type overflow(int_type c) override { return traits_type::not_eof(c); }
+};
+struct Silence {
+    NullBuffer buffer;
+    streambuf *out=cout.rdbuf(&buffer), *err=cerr.rdbuf(&buffer);
+    ~Silence() { cout.rdbuf(out); cerr.rdbuf(err); }
+};
+}
+
+TransportOutput HistoricalTransport(const TransportInput& input, const char* grid,
+                                    int mode, const double* field, double scale) {
+    using namespace transport_reference;
+    Silence quiet;
+    // These named identities avoid depending on the modern nuclear enum layout.
+    const ParticleType types[]={Electron,Positron,Proton};
+    if (input.particle<0 || input.particle>2) throw runtime_error("Unsupported species");
+    Particle particle;
+    particle.Type=types[input.particle]; particle.Energy=input.energy;
+    particle.Time.setT(input.initialTime);
+    for(int i=0;i<3;++i) { particle.X[i]=input.position[i]; particle.Pdir[i]=input.direction[i]; }
+    unique_ptr<MagneticField> owned;
+    if (grid) owned=make_unique<SavedMF>(grid,static_cast<SavedMF::FillingType>(mode));
+    else owned=make_unique<ConstantField>(field,scale);
+    CountedField counted(*owned);
+    Deflection3D deflector(&counted,input.accuracy);
+    Randomizer random(17311); // The original Propagate body does not consume RNG.
+    TransportOutput result{};
+    result.beta=particle.beta(); result.mass=particle.Mass(); result.charge=particle.ElectricCharge();
+    result.globalScale=owned->MinVariabilityScale(particle.Time);
+    result.initialScale=owned->MinVariabilityScale(particle.X,particle.Time,input.duration/input.outerSteps);
+    result.initialRate=deflector.Rate(particle);
+    for(int i=0;i<input.outerSteps;++i)
+        if (!deflector.Propagate(input.duration/input.outerSteps,particle,random))
+            throw runtime_error("Charged historical propagation refused");
+    for(int i=0;i<3;++i) { result.position[i]=particle.X[i]; result.direction[i]=particle.Pdir[i]; }
+    result.elapsed=particle.Time.t()-input.initialTime;
+    result.energy=particle.Energy;
+    result.fieldCalls=counted.values; result.scaleCalls=counted.scales; result.zeroScaleCalls=counted.zeros;
+    return result;
+}

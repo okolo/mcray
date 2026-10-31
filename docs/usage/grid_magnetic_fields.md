@@ -90,8 +90,12 @@ field model in mind; the propagator does not locate exact face crossings.
 `MinVariabilityScale` returns `min(width_x/Nx, width_y/Ny, width_z/Nz)` in
 internal length units at every position and time, including zero-field
 regions. This restores the historical extent/node-count convention, with a
-correct minimum when axes tie. The fork incorrectly selected the z scale
-for some ties. A zero sentinel outside the box is deliberately not restored:
+correct minimum when axes tie. Each width is evaluated from the double internal
+box limits (convert the two bounds, subtract, then divide by node count),
+preserving the fork's rounding at integer deflector step-count boundaries.
+Evaluating a wider Mpc extent and converting only at the end can produce a
+different partition despite nearly identical scales. The fork incorrectly
+selected the z scale for some ties. A zero sentinel outside the box is deliberately not restored:
 the modern deflector requires a positive scale for subdivision, including
 trajectories entering the field. This scale alone does not establish
 trajectory convergence near a discontinuity.

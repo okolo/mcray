@@ -533,3 +533,10 @@ historical field and cone functions directly, and compares them with the current
 kernels. It accepts explicit read-only reference and modern build paths; ordinary
 builds and CI do not require the historical checkout. The self-contained
 `unit.magnetic.*` regression cases cover the restored boundary and scale rules.
+
+The [deterministic transport extension](fork_compat/TRANSPORT.md) compares the
+actual historical deflector and particle-speed calculation against modern
+charged-particle trajectories, with analytic constant-field controls and a
+frozen step-refinement matrix. It reports numerical differences, not physical
+acceptance. Its self-contained harness guards run with
+`python3 tests/test_fork_transport.py -v` and need no historical checkout.

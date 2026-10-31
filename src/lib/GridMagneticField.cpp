@@ -65,7 +65,6 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
     }
     if (input.bad()) GridError("read failure in '" + filename + "'");
     size_t count = 1;
-    coord_type minimumScale = std::numeric_limits<coord_type>::max();
     for (auto& axis : axes_) {
         std::sort(axis.begin(), axis.end());
         axis.erase(std::unique(axis.begin(), axis.end()), axis.end());
@@ -82,16 +81,10 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
             const coord_type spacing = axis[i] - axis[i - 1];
             if (std::abs(spacing - step) > tolerance) GridError("axis is not regularly spaced");
         }
-        // The historical deflector scale uses extent/node count, not cell count.
-        // Take a true minimum: the fork's strict comparisons mishandle ties.
-        minimumScale = std::min(minimumScale, span / axis.size());
         if (count > rows.size() / axis.size()) GridError("incomplete Cartesian grid");
         count *= axis.size();
     }
     if (count != rows.size()) GridError("duplicate nodes or incomplete Cartesian grid");
-    minimumScale_ = static_cast<double>(minimumScale * units.Mpc);
-    if (!std::isfinite(minimumScale_) || !(minimumScale_ > 0))
-        GridError("grid spacing is not representable in internal units");
     values_.resize(count);
     std::vector<bool> occupied(count, false);
     for (const Row& row : rows) {
@@ -105,6 +98,7 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
     }
     // Interpolate in Particle::X units. Keep a separate double-precision box
     // so that seam classification and periods use the fork's arithmetic.
+    double minimumScale = std::numeric_limits<double>::max();
     for (size_t a = 0; a < axes_.size(); ++a) {
         auto& axis = axes_[a];
         bounds_[a] = {static_cast<double>(axis.front()) * units.Mpc,
@@ -112,6 +106,11 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
         const double legacyWidth = bounds_[a][1] - bounds_[a][0];
         if (!std::isfinite(legacyWidth) || !(legacyWidth > 0))
             GridError("box extent is not representable at boundary precision");
+        // Match the fork's operation order: convert each bound to double
+        // internal coordinates, subtract, then divide by node count. Rounding
+        // a wider Mpc extent only at the end can change an integer step count.
+        // Keep the true minimum; the fork's strict comparisons mishandle ties.
+        minimumScale = std::min(minimumScale, legacyWidth / axis.size());
         for (auto& node : axis) {
             node *= units.Mpc;
             if (!std::isfinite(node)) GridError("coordinate is not representable in internal units");
@@ -123,6 +122,9 @@ void SavedMF::Load(std::istream& input, const std::string& filename) {
             (filling_ == FILLING_MIRROR && !std::isfinite(2 * legacyWidth)))
             GridError("boundary period is not representable in internal units");
     }
+    minimumScale_ = minimumScale;
+    if (!std::isfinite(minimumScale_) || !(minimumScale_ > 0))
+        GridError("grid spacing is not representable in internal units");
 }
 
 size_t SavedMF::Index(size_t i, size_t j, size_t k) const {

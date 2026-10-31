@@ -159,6 +159,44 @@ TEST_F(GridFields, ScaleTiesTakeTheTrueMinimum) {
     EXPECT_DOUBLE_EQ(field.MinVariabilityScale(CosmoTime(0)),units.Mpc);
 }
 
+class CountedGridField : public MagneticField {
+public:
+    explicit CountedGridField(const std::string& file): field_(file) {}
+    void GetValueGauss(const coord_type* x, const CosmoTime& time,
+                       std::vector<double>& value) const override {
+        ++queries;
+        field_.GetValueGauss(x,time,value);
+    }
+    double MinVariabilityScale(const CosmoTime& time) const override {
+        return field_.MinVariabilityScale(time);
+    }
+    mutable unsigned queries=0;
+private:
+    SavedMF field_;
+};
+
+TEST_F(GridFields, HistoricalScaleKeepsLegacyStepPartition) {
+    std::ostringstream data;
+    data << std::setprecision(17);
+    for(int i=0;i<3;++i) for(int j=0;j<4;++j) for(int k=0;k<5;++k)
+        data << -.2+.2*i << ' ' << -.3+.2*j << ' ' << -.4+.2*k << " 0 0 0\n";
+    GridFile input(data.str());
+    auto* field=new CountedGridField(input.path.string());
+    Deflection3D deflector(field,40); // Owns the counted field.
+    const double lower=-.2*units.Mpc, upper=.2*units.Mpc;
+    // Require exact equality: an ulp-tolerant comparison misses this regression.
+    EXPECT_EQ(field->MinVariabilityScale(CosmoTime(0)),(upper-lower)/3);
+    Particle particle(Positron,.01);
+    particle.Energy=1e18*units.eV;
+    particle.X[0]=-.25L*units.Mpc;
+    particle.Pdir[0]=.6L; particle.Pdir[1]=0; particle.Pdir[2]=.8L;
+    Randomizer random(91827);
+    ASSERT_TRUE(deflector.Propagate(.25L*units.Mpc,particle,random));
+    // The zero field eliminates angular substeps. The old scale yields 75
+    // field queries; evaluating the extent in wider Mpc precision yields 76.
+    EXPECT_EQ(field->queries,75u);
+}
+
 TEST_F(GridFields, RejectsMalformedAndIncompleteInput) {
     GridFile valid(Grid());
     ExpectFatal([&] { SavedMF f(valid.path.string()+"-missing"); },"cannot open");

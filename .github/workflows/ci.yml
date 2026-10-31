@@ -85,6 +85,7 @@ jobs:
           export MCRAY_CRBEAM="$GITHUB_WORKSPACE/build/ci/CRbeam"
           build/ci/venv/bin/python tests/test_mc_rotate.py -v 2>&1 | tee build/ci/mc-rotate.log
           build/ci/venv/bin/python tests/test_spatial_output.py -v 2>&1 | tee build/ci/spatial-output.log
+          build/ci/venv/bin/python tests/test_fork_transport.py -v 2>&1 | tee build/ci/fork-transport-guards.log
           build/ci/venv/bin/python -m unittest discover -s .github/scripts -p 'test_*.py' -v \
             2>&1 | tee build/ci/workflow-guards.log
 

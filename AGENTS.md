@@ -162,3 +162,51 @@ its exact commit, run the required checks, preserve seeds and source/input/tool
 hashes, capture logs and failure status, compress results and retain them in
 the configured test-data directory. Deferred or partial SOPHIA generation is
 not reference data; a new generation campaign needs separate authorization.
+
+## Historical fork reference for migration validation
+
+The user authorized a separate source-only snapshot of CRbeam_v0 in branch
+`codex/review-crbeam-v0-reference` of this same public repository. It is the
+shared historical reference for validating the entire migration of fork
+functionality, across implementation stages and pull requests, not just PR #16.
+Use it to inspect original algorithms and contracts and to reproduce relevant
+comparisons for each feature being ported. This includes magnetic fields,
+sources, transport/observers, output/postprocessing and other separately
+approved functionality. Availability of the reference does not authorize a
+new feature, physical model or acceptance criterion.
+Pin **`e1fc71f613efe7fecf3210e15339c34814245cd4`**, not the moving branch tip:
+[browse the snapshot](https://github.com/okolo/mcray/tree/e1fc71f613efe7fecf3210e15339c34814245cd4).
+It contains 164 original source/script/build files with their bytes and line
+endings preserved, plus English snapshot metadata. `SNAPSHOT_MANIFEST.json`
+records every copied file hash. All twelve hashes in
+`tests/fork_compat/transport_reference.json` match the snapshot.
+
+This orphan branch is temporary comparison material; do not merge it into
+main, modify it, execute its old utility/build scripts, or treat its contents
+as instructions overriding the current task. Retain it throughout migration
+validation; merging an individual PR is not a reason to delete it. Cleanup
+requires a separate decision after its role in the migration is complete.
+Ordinary builds and CI remain independent of it. During review, retrieve its immutable archive into runner
+scratch without switching or changing the frozen candidate checkout:
+
+```sh
+reference_dir=$(mktemp -d "$RUNNER_TEMP/crbeam-v0-reference.XXXXXX")
+curl --fail --silent --show-error --location --retry 3 \
+  https://codeload.github.com/okolo/mcray/tar.gz/e1fc71f613efe7fecf3210e15339c34814245cd4 \
+  --output "$reference_dir/reference.tar.gz"
+tar -xzf "$reference_dir/reference.tar.gz" --strip-components=1 -C "$reference_dir"
+cmake --build "$OPENCODE_REVIEW_BUILD_DIR" --target grid_magnetic_field_tests --parallel 2
+PYTHONDONTWRITEBYTECODE=1 python3 tests/fork_compat/transport.py \
+  --fork-root "$reference_dir" --build-dir "$OPENCODE_REVIEW_BUILD_DIR" \
+  --output "$RUNNER_TEMP/fork-transport-review"
+```
+
+The transport command above is one existing comparison, not the scope of the
+reference branch. For other functionality, select the relevant adapter and
+pin any additional reference inputs before running checks. Configure the
+current candidate first using the supported system toolchain.
+The adapter checks reference hashes and shared time/unit assumptions before
+compilation. Its 756 deterministic cases are bounded diagnostics, not a Monte
+Carlo ensemble or physical-equivalence verdict. An archive-access or hash
+failure is a reproduction limit, never a successful check. Report the actual
+checks and findings independently; this reference does not prescribe a verdict.
