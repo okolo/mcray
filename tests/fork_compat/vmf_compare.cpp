@@ -25,8 +25,10 @@ int main(int argc,char** argv) {
                       << ",\"fork\":";
             if(std::isfinite(old)) std::cout << old; else std::cout << "null";
             std::cout << ",\"modern\":" << modern << ",\"relative_difference\":";
-            if(std::isfinite(old)) std::cout << std::abs(old-modern)/std::max({std::abs(old),std::abs(modern),1e-300});
-            else std::cout << "null";
+            if(std::isfinite(old)) {
+                const double scale=std::max(std::abs(old),std::abs(modern));
+                std::cout << (scale>0?std::abs(old-modern)/scale:0);
+            } else std::cout << "null";
             std::cout << "}\n";
         }
         if(!input.eof()) throw std::runtime_error("Malformed weight points");

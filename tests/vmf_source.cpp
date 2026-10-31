@@ -198,7 +198,14 @@ TEST(VmfSource, ZeroBranchDiscontinuityAndDensityTailRemainVisible) {
   EXPECT_NEAR(vMF_weight(axis,pole,1e-14),1/(4*std::acos(-1.)),1e-14);
   // The original exp(-750) underflows although kappa*exp(-750) is representable.
   const coord_type tail[3]{std::sqrt(1-.99925*.99925),0,.99925};
+  const High exact=High(1000000)*exp(-High(1000000)*(1-High(double(tail[2]))))/(2*acos(High(-1)));
   EXPECT_GT(vMF_weight(axis,tail,1e6),0);
+  // Boost convert_to<double>() flushes this subnormal reference to zero.
+  // Compare in units of the least subnormal, keeping the same four-ulp bound.
+  const High quantum=pow(High(2),std::numeric_limits<double>::min_exponent-
+                                std::numeric_limits<double>::digits);
+  EXPECT_NEAR(vMF_weight(axis,tail,1e6)/std::numeric_limits<double>::denorm_min(),
+              (exact/quantum).convert_to<double>(),4);
 }
 TEST(VmfSource, ActivationCutoffDoesNotConsumeRandomNumbersOrChangeWeights) {
   SourceGeometry source({}, {1,-2,3}, Model::Vmf, 1e-14*180/std::acos(-1.)/2,100);
