@@ -105,6 +105,9 @@ def summarize(rows):
                 ballistic_end_time_overshoots=[row for row in flights if row['fork']['past_end']],
                 modern_end_time_overshoots=[row for row in flights if row['modern']['past_end'] or row['variable_rate']['past_end']],
                 modern_rate_path_differences=[row for row in flights if not row['modern_paths_equal']],
+                max_ballistic_position_difference_Mpc=max(row['difference_position_Mpc'] for row in flights),
+                max_ballistic_flight_difference_Mpc=max(row['difference_flight_Mpc'] for row in flights),
+                max_modern_rate_path_time_difference_Mpc=max(row['difference_rate_path_time_Mpc'] for row in flights),
                 scope='Observer kernel and ballistic diagnostics only; no source or cascade statistical acceptance.')
 
 

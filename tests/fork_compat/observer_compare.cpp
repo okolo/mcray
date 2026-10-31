@@ -96,6 +96,9 @@ void Run(const char* file) {
                   << ",\"mode\":" << mode << ",\"radius_Mpc\":" << radiusMpc
                   << ",\"center_Mpc\":[" << centerMpc[0] << ',' << centerMpc[1] << ',' << centerMpc[2]
                   << "],\"requested_Mpc\":" << input.duration/units.Mpc;
+        std::cout << ",\"initial_position_Mpc\":[";
+        for(int i=0;i<3;++i) std::cout << (i?",":"") << input.position[i]/units.Mpc;
+        std::cout << ']';
         if(kind==0) {
             const auto old=HistoricalObserverPoint(input);
             auto observer=Observer(input); auto p=Initial(input);
@@ -117,6 +120,11 @@ void Run(const char* file) {
             std::cout << ",\"variable_rate\":"; PrintFlight(variable);
             std::cout << ",\"fork_steps\":" << old.steps;
             std::cout << ",\"modern_paths_equal\":" << same;
+            long double squared=0;
+            for(int i=0;i<3;++i) squared+=(old.position[i]-modern.position[i])*(old.position[i]-modern.position[i]);
+            std::cout << ",\"difference_position_Mpc\":" << std::sqrt(squared)/units.Mpc
+                      << ",\"difference_flight_Mpc\":" << std::abs(old.elapsed-modern.elapsed)/units.Mpc
+                      << ",\"difference_rate_path_time_Mpc\":" << std::abs(modern.elapsed-variable.elapsed)/units.Mpc;
         }
         std::cout << "}\n";
     }

@@ -45,7 +45,8 @@ class TransportDiagnosticTests(unittest.TestCase):
                    fork_exceeds_remaining=True,modern_exceeds_remaining=False)
         flight=dict(case='cap',kind=1,fork=dict(hit=True,past_end=True),
                     modern=dict(hit=True,past_end=False),variable_rate=dict(hit=True,past_end=False),
-                    modern_paths_equal=False)
+                    modern_paths_equal=False,difference_position_Mpc=.1,
+                    difference_flight_Mpc=.1,difference_rate_path_time_Mpc=.01)
         result=observer.summarize([point,flight])
         self.assertEqual(result['membership_differences'],[point])
         self.assertEqual(result['ballistic_end_time_overshoots'],[flight])
