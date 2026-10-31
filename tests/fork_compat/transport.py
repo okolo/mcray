@@ -125,7 +125,9 @@ def summarize(rows):
                 if any(not math.isfinite(item) for item in values):
                     raise ValueError('Nonfinite trajectory report')
         groups[key] = row
-        group_key = (row['kind'],row['mode'],row['accuracy'],row['outer_steps'])
+        # Keep field orientation and boundary-start scenarios distinct. Species
+        # still share a maximum; the raw trajectory file retains each particle.
+        group_key = (row['case'],row['kind'],row['mode'],row['accuracy'],row['outer_steps'])
         group = convergence.setdefault(group_key, dict(count=0,
             max_position_difference_Mpc=0, max_direction_difference=0, max_beta_difference=0,
             fork_zero_scale_calls=0, fork_max_norm_error=0, modern_max_norm_error=0,
@@ -151,7 +153,7 @@ def summarize(rows):
                 max_position_difference_Mpc=max(r['difference_position_Mpc'] for r in rows),
                 max_direction_difference=max(r['difference_direction'] for r in rows),
                 fork_zero_scale_calls=sum(r['fork']['zero_scale_calls'] for r in rows),
-                convergence=[dict(kind=k[0],mode=k[1],accuracy=k[2],outer_steps=k[3],**v)
+                convergence=[dict(case=k[0],kind=k[1],mode=k[2],accuracy=k[3],outer_steps=k[4],**v)
                              for k,v in sorted(convergence.items())],
                 scope='Deterministic numerical diagnostics; no physical-equivalence verdict.')
 

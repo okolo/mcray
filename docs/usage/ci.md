@@ -7,8 +7,10 @@ yaml-cpp and OpenSSL development dependencies, then configures the supported
 src/app/crbeam CMake project with tests enabled and builds all targets.
 
 The job runs the complete short CTest suite, including the worker lifetime
-regression, then both postprocessing Python suites and the review-publication
-guard tests. MCRAY_CRBEAM points to the freshly built executable, so the loader's
+regression, then both postprocessing Python suites, the self-contained transport
+adapter guards and the review-publication guard tests. The transport guards
+(`tests/test_fork_transport.py`) need no external fork and retain their output
+in `fork-transport-guards.log`. MCRAY_CRBEAM points to the freshly built executable, so the loader's
 executable round-trip case is exercised rather than skipped. NumPy 1.26.4 and
 PyYAML 6.0.3 are installed in a project-local venv; NumPy's minimum supported
 postprocessing version is declared in tools/postprocess/requirements.txt.

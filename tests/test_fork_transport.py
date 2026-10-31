@@ -87,6 +87,16 @@ class TransportDiagnosticTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Nonfinite'):
             transport.summarize([broken])
 
+    def test_constant_field_orientations_have_separate_summary_groups(self):
+        axial=row() | dict(case='axial',kind=1,difference_position_Mpc=.001)
+        oblique=row() | dict(case='oblique',kind=1,difference_position_Mpc=.002)
+        summary=transport.summarize([axial,oblique])
+        groups={group['case']:group for group in summary['convergence']}
+        self.assertEqual(set(groups),{'axial','oblique'})
+        self.assertEqual(groups['axial']['max_position_difference_Mpc'],.001)
+        self.assertEqual(groups['oblique']['max_position_difference_Mpc'],.002)
+        self.assertEqual(summary['max_position_difference_Mpc'],.002)
+
 
 if __name__=='__main__':
     unittest.main()

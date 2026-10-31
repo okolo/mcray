@@ -82,8 +82,10 @@ for both charge signs, with a tolerance derived from double roundoff.
   time, beta, energy, mass/charge, scales, field/scale call counts, norm/time
   errors, analytic errors where available, and old/new differences. Original
   21-digit C++ decimal output is retained without Python float rewriting.
-- `report.json`: grouped error maxima for every accuracy/outer-call combination,
-  and total counts. It never selects a best run or assigns acceptance.
+- `report.json`: error maxima grouped by scenario name, field kind, boundary
+  mode, accuracy and outer-call count. Axial/oblique fields and distinct grid
+  starts stay separate; species share maxima within each group. All 252 groups
+  and total counts are retained. It never selects a best run or assigns acceptance.
 - `manifest.json`, `fragment-sha256.json`: exact reference/adapter/modern-source
   and linked-library hashes, Git revision/dirty status, environment/prefix and
   verbatim extracted-fragment hashes.
@@ -102,3 +104,5 @@ They check complete/fixed case coverage, path-independent inputs, rejection of
 changed reference hashes, duplicate/nonfinite trajectories and retention of
 all refinements, plus preservation of the original compiler-helper defaults.
 Confirmed execution results belong in the public validation documentation.
+The Linux Release CI Python step runs these self-contained guards automatically
+and retains `fork-transport-guards.log`; it does not require a fork checkout.

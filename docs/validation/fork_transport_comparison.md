@@ -194,3 +194,31 @@ was integrated in `38f0601`. All measured production and adapter source hashes
 remained unchanged. The rebuilt macOS Release suite then passed 243/243 in
 16.81 s; the extra case comes from PR #15. Hosted CI checks the published
 combined revision independently.
+
+## Review follow-up: scenario summaries and public reference
+
+The live adapter now groups convergence by scenario name as well as field
+kind, boundary mode, accuracy and outer-call count. Its 252 groups distinguish
+axial/oblique constant fields and all grid-start scenarios, retaining maxima
+over the three species within each group. The frozen evidence JSON files
+above preserve the original 63-group format and their recorded source hashes;
+they are not silently regenerated under a new reporting schema.
+
+A new self-contained regression verifies that the two constant-field
+orientations remain separate. All seven Python harness cases pass and are
+now included in the required Linux Release CI Python step, with their log
+retained as `fork-transport-guards.log`. The 32 review-pipeline tests pass too.
+
+At the user's request, the historical source was published separately in
+temporary branch `codex/review-crbeam-v0-reference`, pinned at
+`e1fc71f613efe7fecf3210e15339c34814245cd4`. All 164 stored source-file hashes
+were checked against the original bytes, including line endings, and checked
+again after downloading the public archive. The twelve transport pins match.
+The current AGENTS.md gives immutable retrieval and scratch-only reproduction
+instructions; normal builds/CI still do not require this reference.
+
+The updated adapter was executed using that downloaded archive: all 756 cases
+completed, producing 252 distinct summary groups. The raw trajectories and
+input hashes are byte-identical to the preceding native post-fix run. Thus
+the reporting change does not alter the diagnostic calculations or discard
+scenarios. The original external fork directory remains unchanged.
