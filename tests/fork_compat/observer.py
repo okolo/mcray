@@ -126,7 +126,8 @@ def main():
     cases,design=inputs(output)
     prefix=shlex.split(args.command_prefix)
     sources=[output/'observer_reference.cpp',HERE/'observer_compare.cpp',
-             ROOT/'src/lib/GridMagneticField.cpp',ROOT/'src/lib/Deflection3D.cpp',ROOT/'src/lib/SpatialGeometry.cpp']
+             ROOT/'src/lib/GridMagneticField.cpp',ROOT/'src/lib/Deflection3D.cpp',
+             ROOT/'src/lib/SpatialGeometry.cpp',ROOT/'src/lib/PropagationEngine.cpp']
     metadata=dict(reference_sha256=reference,
         modern_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         modern_working_tree_dirty=bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True)),

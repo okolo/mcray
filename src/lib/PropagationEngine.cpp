@@ -462,6 +462,7 @@ void PropagationEngine::RunParticleWithVariableRate(Particle& aParticle, double 
 
         }
         LOG_VERBOSE("RPWVR:6\t" + aParticle.ToString()+ "\tdt = " + ToString(dt/units.Mpc));
+        const cosmo_time timeBeforeStep = aParticle.Time.t();
         aParticle.Weight *= sqrt_noninteracting_weight;
         move(aParticle, 0.5*dt, eLossRate1);
         for(vector<PCELInteraction>::iterator it = fContinuousEnergyLosses.begin(); it != fContinuousEnergyLosses.end(); it++)
@@ -471,6 +472,11 @@ void PropagationEngine::RunParticleWithVariableRate(Particle& aParticle, double 
             HandleSecondaries(aParticle, secondaries, 1.);//currently continuous energy loss weighting is not implemented
         }
         move(aParticle, 0.5*dt, eLossRate1);
+        // Two representable half-step durations can both round away when
+        // added to an absolute time. Reject the failed history instead of
+        // repeating the loop forever with changed position but unchanged time.
+        if (!(aParticle.Time.t() > timeBeforeStep))
+            Exception::ThrowFatal("Variable-rate propagation step is below available time resolution");
         aParticle.Weight *= sqrt_noninteracting_weight;
         LOG_VERBOSE("RPWVR:6.1\t" + aParticle.ToString());
 
