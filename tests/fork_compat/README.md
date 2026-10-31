@@ -3,6 +3,8 @@
 For the subsequent interaction-free charged-particle trajectory diagnostic,
 see [deterministic transport comparison](TRANSPORT.md). The field/source
 comparison below remains independently runnable and unchanged in scope.
+For strict sphere membership, step limits and interaction-free stopping,
+see the [observer diagnostic](OBSERVER.md).
 
 This optional diagnostic compiles the actual historical `SavedMF` implementation
 and uniform-cone initialization block (`fJetType=0`), rather than a transcription

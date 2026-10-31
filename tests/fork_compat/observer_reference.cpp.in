@@ -1,0 +1,69 @@
+// Reuse the already hash-checked historical particle/time/units shells.
+#include "transport_reference.cpp"
+#include "observer_api.h"
+#include <limits>
+namespace transport_reference {
+@FREE_PROPAGATE@
+@OBSERVER_CLASS@
+@OBSERVER_CONSTRUCTOR@
+@OBSERVER_REACHED@
+@OBSERVER_STEP@
+
+struct DisabledFilter {
+    bool Pass(const Particle&) const { throw runtime_error("Unexpected filter call"); }
+};
+// Only the constructor/storage shell is supplied by the diagnostic. Both
+// continuation and time-left functions are copied verbatim from the fork.
+struct Result {
+    Observer fObserver;
+    CosmoTime fT;
+    bool fIncludeFilterInPropagation=false;
+    DisabledFilter* fFilter=nullptr;
+    Result(const ObserverInput& input):
+        fObserver(input.mode,input.center[0],input.center[1],input.center[2],input.radius) {
+        fT.setT(input.initialTime+input.duration);
+    }
+    @CONTINUE@
+    cosmo_time GetMinTravelTimeLeft(const Particle&) const;
+};
+@TIME_LEFT@
+Particle BallisticParticle(const ObserverInput& input) {
+    Particle p;
+    p.Type=Photon; p.Energy=1e12*units.eV;
+    p.Time.setT(input.initialTime);
+    for(int i=0;i<3;++i) { p.X[i]=input.position[i]; p.Pdir[i]=input.direction[i]; }
+    return p;
+}
+}
+ObserverPoint HistoricalObserverPoint(const ObserverInput& input) {
+    using namespace transport_reference;
+    Silence quiet;
+    auto p=BallisticParticle(input);
+    Observer observer(input.mode,input.center[0],input.center[1],input.center[2],input.radius);
+    return {observer.weInTarget(p),observer.patchDtIfNeed(p,input.duration)};
+}
+ObserverFlight HistoricalObserverFlight(const ObserverInput& input) {
+    using namespace transport_reference;
+    Silence quiet;
+    auto p=BallisticParticle(input);
+    Result result(input);
+    unsigned long steps=0;
+    // No interactions, filter, abort or deflector: the fork's move() falls
+    // through to the original Particle::PropagateFreely implementation.
+    while(result.ContinuePropagation(p)) {
+        if(++steps>100000) throw runtime_error("Historical ballistic step budget exceeded");
+        const auto dt=result.fObserver.patchDtIfNeed(p,result.GetMinTravelTimeLeft(p));
+        const auto before=p.Time.t();
+        p.PropagateFreely(dt);
+        if(p.Time.t()<=before) throw runtime_error("Historical time failed to advance");
+    }
+    ObserverFlight out{};
+    out.reached=result.fObserver.weInTarget(p); out.steps=steps;
+    out.elapsed=p.Time.t()-input.initialTime;
+    out.pastEnd=p.Time.t()>input.initialTime+input.duration;
+    const auto end=input.initialTime+input.duration;
+    out.endError=p.Time.t()-end;
+    out.endErrorUlps=out.endError/(std::nextafter(end,std::numeric_limits<cosmo_time>::infinity())-end);
+    for(int i=0;i<3;++i) out.position[i]=p.X[i];
+    return out;
+}

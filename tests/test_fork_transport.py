@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parent/'fork_compat'))
 import transport
+import observer
 
 
 def row():
@@ -21,6 +22,37 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_observer_design_is_fixed_and_does_not_sample_sources(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cases,design=observer.inputs(Path(directory))
+            self.assertEqual(len(cases.read_text().splitlines()),210)
+            self.assertEqual(design['points'],174)
+            self.assertEqual(design['flights'],36)
+            self.assertFalse(design['source_sampling'])
+            self.assertFalse(design['fields'])
+            self.assertEqual(transport.kernels.digest(cases),design['sha256'])
+
+    def test_observer_hash_mismatch_precedes_reference_extraction(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(observer.kernels,'digest',return_value='changed'), \
+             patch.object(observer.transport,'extract') as extract:
+            with self.assertRaisesRegex(ValueError,'pinned snapshot'):
+                observer.extract(Path(directory),Path(directory))
+            extract.assert_not_called()
+
+    def test_observer_report_retains_disagreements_without_a_verdict(self):
+        point=dict(case='surface',kind=0,fork_hit=False,modern_hit=True,
+                   fork_exceeds_remaining=True,modern_exceeds_remaining=False)
+        flight=dict(case='cap',kind=1,fork=dict(hit=True,past_end=True),
+                    modern=dict(hit=True,past_end=False),variable_rate=dict(hit=True,past_end=False),
+                    modern_paths_equal=False)
+        result=observer.summarize([point,flight])
+        self.assertEqual(result['membership_differences'],[point])
+        self.assertEqual(result['ballistic_end_time_overshoots'],[flight])
+        self.assertEqual(result['modern_rate_path_differences'],[flight])
+        self.assertEqual(result['modern_steps_exceeding_remaining'],0)
+        self.assertNotIn('accepted',result)
+
     def test_shared_compiler_helper_preserves_original_default_sources(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
