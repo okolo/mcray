@@ -551,3 +551,8 @@ The separate [source/observer cost pilot](fork_compat/SOURCE_OBSERVER_PILOT.md)
 freezes 1000 primaries per implementation and profile for cost/failure diagnostics.
 Its self-contained Python guards use the same CI entry point above. It does not
 start the final statistical ensemble.
+
+The [frozen source/observer ensemble](fork_compat/SOURCE_OBSERVER_ENSEMBLE.md)
+adds independent per-case processes, compressed raw retention and simultaneous
+intervals. Its self-contained confidence/failure guards run through the same
+Python test entry point; ordinary CI does not collect the large ensemble.

@@ -69,7 +69,7 @@ def extract(fork, output):
     return actual
 
 
-def compile_probe(build, output, prefix, sources=None, executable='fork-kernel-probe'):
+def compile_probe(build, output, prefix, sources=None, executable='fork-kernel-probe', timeout=None):
     recipe = build / 'tests/CMakeFiles/grid_magnetic_field_tests.dir/link.txt'
     tokens = shlex.split(recipe.read_text())
     compiler, flags, libraries = tokens[0], [], []
@@ -94,10 +94,10 @@ def compile_probe(build, output, prefix, sources=None, executable='fork-kernel-p
     command = [compiler, *flags, '-std=c++17', '-I'+str(ROOT/'src/lib'), '-I'+str(HERE),
                '-iquote', str(output), *map(str, sources),
                '-o', str(output/executable), *libraries]
-    (output / 'compiler-version.txt').write_text(subprocess.check_output([*prefix, compiler, '--version'], text=True))
+    (output / 'compiler-version.txt').write_text(subprocess.check_output([*prefix, compiler, '--version'], text=True, timeout=timeout))
     (output / 'compile-command.json').write_text(json.dumps(command, indent=2)+'\n')
     with (output/'compile.log').open('w') as log:
-        subprocess.run([*prefix, *command], cwd=build/'tests', stdout=log, stderr=subprocess.STDOUT, check=True)
+        subprocess.run([*prefix, *command], cwd=build/'tests', stdout=log, stderr=subprocess.STDOUT, check=True, timeout=timeout)
 
 
 def field_inputs(output):

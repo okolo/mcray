@@ -1,8 +1,10 @@
 """Self-contained guards for the optional historical transport diagnostic."""
 import copy
+import math
 from pathlib import Path
 import sys
 import tempfile
+import threading
 import unittest
 from unittest.mock import patch
 
@@ -10,6 +12,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parent/'fork_compat'))
 import transport
 import observer
 import source_observer_pilot as pilot
+import source_observer_ensemble as ensemble
 
 
 def row():
@@ -23,6 +26,69 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_collection_deadline_kills_child_and_keeps_no_successful_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); (root/'tmp').mkdir()
+            script=root/'wait.py'; script.write_text('import time; time.sleep(60)\n')
+            collection=ensemble.Collection(root,Path(sys.executable),script)
+            timer=threading.Timer(.1,collection.stop); timer.start()
+            try:
+                with self.assertRaisesRegex(RuntimeError,'Failed stream'):
+                    collection.run(dict(name='timeout',count=1),'fork')
+            finally:
+                timer.cancel(); collection.stop()
+            self.assertFalse((root/'timeout-fork.json').exists())
+            self.assertTrue(all(process.poll() is not None for process in collection.processes))
+
+    def test_final_design_and_fixture_reservations_are_disjoint(self):
+        final,fixture=ensemble.design_for('final'),ensemble.design_for('fixture')
+        self.assertEqual(final['total_histories'],48000000)
+        self.assertEqual(final['family_size'],39)
+        self.assertEqual([case['count'] for case in final['cases']],[8000000]*3)
+        seeds=lambda d:{case[key] for case in d['cases'] for key in ('fork_seed','modern_seed')}
+        self.assertFalse(seeds(final)&seeds(fixture))
+        self.assertEqual(seeds(final),set(range(2004101,2004107)))
+
+    def test_ensemble_intervals_keep_boundary_uncertainty_and_correct_two_sample_factor(self):
+        design=ensemble.design_for('final')
+        rows=self.ensemble_rows(design)
+        result=ensemble.confidence_report(rows,design)
+        self.assertEqual(len(result['differences']),33)
+        self.assertEqual(len(result['hit_fractions']),6)
+        self.assertTrue(result['compatible_at_reported_resolution'])
+        difference=result['differences'][0]
+        fraction=result['hit_fractions'][0]
+        self.assertGreater(difference['half_width'],0)
+        self.assertLess(difference['half_width'],.001)
+        self.assertAlmostEqual(difference['half_width']/fraction['half_width'],math.sqrt(2))
+        self.assertGreater(fraction['interval'][1],1) # No clipping at all-hit boundary.
+        rows[1]['hits']=4000000; rows[1]['sums'][:5]=[4000000]*5
+        self.assertFalse(ensemble.confidence_report(rows,design)['compatible_at_reported_resolution'])
+
+    @staticmethod
+    def ensemble_rows(design):
+        return [dict(case=case['name'],implementation=impl,histories=case['count'],
+                     failures=0,emitted_weight=case['count'],hits=case['count'],
+                     sums=[case['count']]*5+[0]*6,past_end_histories=0)
+                for case in design['cases'] for impl in ('fork','modern')]
+
+    def test_ensemble_cannot_accept_partial_nonfinite_duplicate_or_low_precision_data(self):
+        design=ensemble.design_for('final'); rows=self.ensemble_rows(design)
+        for bad in (rows[:-1],rows+[rows[0]]):
+            with self.assertRaisesRegex(ValueError,'Incomplete or duplicate'):
+                ensemble.confidence_report(bad,design)
+        broken=copy.deepcopy(rows); broken[0]['sums'][5]=float('nan')
+        with self.assertRaisesRegex(ValueError,'Nonfinite'):
+            ensemble.confidence_report(broken,design)
+        broken=copy.deepcopy(rows); broken[0]['sums'][2]=-1
+        with self.assertRaisesRegex(ValueError,'arrival counts'):
+            ensemble.confidence_report(broken,design)
+        fixture=ensemble.design_for('fixture')
+        self.assertNotIn('differences',ensemble.confidence_report(self.ensemble_rows(fixture),fixture))
+        fixture['mode']='final'
+        with self.assertRaisesRegex(ValueError,'Insufficient'):
+            ensemble.confidence_report(self.ensemble_rows(fixture),fixture)
+
     def test_cost_pilot_freezes_separate_seeds_counts_and_geometry(self):
         with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
             path,design=pilot.inputs(Path(a))

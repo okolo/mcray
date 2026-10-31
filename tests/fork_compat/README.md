@@ -95,3 +95,7 @@ whole-program acceptance verdict. It does not retune counts, bins or intervals
 after observing outcomes.
 
 See [results and limitations](../../docs/validation/fork_kernel_comparison.md).
+
+The approved [source/observer ensemble](SOURCE_OBSERVER_ENSEMBLE.md) freezes
+the 39-interval family and 48-million-history count. Its compressed streaming
+runner defaults to a fixture replay; final collection requires explicit mode.
