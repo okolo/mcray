@@ -34,6 +34,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Historical sphere observer and ballistic stopping](validation/fork_observer_comparison.md)
 - [Source/observer cost pilot](validation/fork_source_observer_pilot.md)
 - [Frozen source/observer ensemble results](validation/fork_source_observer_ensemble.md)
+- [Restored original weighted vMF contract](validation/vmf_fork_contract.md)
 
 - [Deterministic historical-fork charged-particle transport](validation/fork_transport_comparison.md)
 

@@ -57,7 +57,8 @@ This is the original full-sphere density multiplier. Do not multiply by
 2*pi*U, divide by q, replace the denominator by 1-exp(-kappa*U), or otherwise
 renormalize the total source. The special small-kappa branch is preserved
 exactly, including its jump from multiplier 1 to a limit of 1/(4*pi).
-For positive kappa and opening U>0, the expected angular multiplier is:
+Outside the small-kappa branch, for positive kappa and an active opening
+with U>0, the expected angular multiplier is:
 
 ```text
 (1-exp(-kappa*U)) / (2*pi*U*(1-exp(-2*kappa))).
@@ -86,7 +87,10 @@ and angle-based entry point. A small axis overload adapts the existing
 vector-axis CLI. SourceGeometry keeps the recognizable fork sequence:
 uniform cone direction, then vMF weight multiplication. There is no inverse
 vMF CDF, conditional-mass cache or direct-vMF sampler. Current particle
-identity, ownership and RNG interfaces are retained.
+identity, ownership and RNG interfaces are retained. Equal seeds do not
+produce the fork's random sequences. Finite RNG/direction precision still
+limits extreme concentrations; pointwise weight checks do not establish
+statistical agreement for unresolved rare directions.
 
 The original formula is evaluated with documented numeric corrections:
 
