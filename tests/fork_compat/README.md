@@ -103,3 +103,8 @@ runner defaults to a fixture replay; final collection requires explicit mode.
 `vmf.py` compares the actual original Jet.cpp weight with the restored modern
 Jet.cpp on fixed directions, separately retaining cancellation/range controls.
 It does not rerun cone/observer ensembles or claim cascade equivalence.
+
+The [fixed-state field/observer coupling diagnostic](COUPLED.md) combines the
+actual historical engine move, deflector and observer with the modern engine
+on 729 shared initialized states. It reports every hit/error/refinement change;
+source sampling and statistical acceptance are outside its scope.

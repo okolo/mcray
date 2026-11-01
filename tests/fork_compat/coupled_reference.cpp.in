@@ -1,0 +1,64 @@
+// The old particle, observer, field and deflector methods are hash-pinned
+// verbatim extractions. Add the actual historical engine move() body.
+#include "observer_reference.cpp"
+#include "coupled_api.h"
+namespace transport_reference {
+using PDeflectionInteraction=Deflection3D*;
+struct CoupledLogger {
+    unsigned long calls=0;
+    void log(const Particle&) {
+        if(++calls>100000) throw runtime_error("Historical coupled move budget exceeded");
+    }
+};
+struct PropagationEngine {
+    vector<PDeflectionInteraction> fDeflectionInteractions;
+    Randomizer fRandomizer{17311}; // No draws in this interaction-free driver.
+    CoupledLogger* fLogger=nullptr;
+    void move(Particle&,cosmo_time,double);
+};
+@MOVE@
+}
+CoupledOutput HistoricalCoupled(const CoupledInput& input,const char* grid,const double* field,double scale) {
+    using namespace transport_reference;
+    Silence quiet;
+    const ParticleType types[]{Electron,Positron,Proton};
+    if(input.particle<0 || input.particle>2) throw runtime_error("Unsupported coupled species");
+    auto p=BallisticParticle(input.observer);
+    p.Type=types[input.particle]; p.Energy=input.energy;
+    Result result(input.observer);
+    unique_ptr<MagneticField> owned= input.fieldKind==2
+        ? unique_ptr<MagneticField>(new SavedMF(grid,SavedMF::FILLING_ZERO))
+        : unique_ptr<MagneticField>(new ConstantField(field,scale));
+    CountedField counted(*owned);
+    Deflection3D deflector(&counted,input.accuracy);
+    CoupledLogger logger;
+    PropagationEngine engine; engine.fLogger=&logger;
+    if(input.fieldKind) engine.fDeflectionInteractions.push_back(&deflector);
+    CoupledOutput out{};
+    out.transport.beta=p.beta(); out.transport.mass=p.Mass();
+    out.transport.charge=p.ElectricCharge(); out.transport.globalScale=owned->MinVariabilityScale(p.Time);
+    out.transport.initialScale=owned->MinVariabilityScale(p.X,p.Time,input.observer.duration);
+    out.transport.initialRate=input.fieldKind?deflector.Rate(p):0;
+    // Exact reduction of the old constant-rate outer loop when CEL/random
+    // interactions, filters and aborts are absent: patch time, then move().
+    // Preserve the original observer floor; do not cap or repair it here.
+    while(result.ContinuePropagation(p)) {
+        const auto dt=result.fObserver.patchDtIfNeed(p,result.GetMinTravelTimeLeft(p));
+        const auto before=p.Time.t();
+        p.updateTracer(); // Original pointer is null, as in the earlier adapter.
+        engine.move(p,dt,0);
+        if(p.Time.t()<=before) throw runtime_error("Historical coupled time failed to advance");
+    }
+    out.hit=result.fObserver.weInTarget(p);
+    out.pastEnd=p.Time.t()>input.observer.initialTime+input.observer.duration;
+    out.endError=p.Time.t()-(input.observer.initialTime+input.observer.duration);
+    out.moves=logger.calls;
+    out.transport.elapsed=p.Time.t()-input.observer.initialTime;
+    out.transport.energy=p.Energy;
+    out.transport.fieldCalls=counted.values; out.transport.scaleCalls=counted.scales;
+    out.transport.zeroScaleCalls=counted.zeros;
+    for(int j=0;j<3;++j) { out.transport.position[j]=p.X[j]; out.transport.direction[j]=p.Pdir[j]; }
+    if(p.Energy!=input.energy || p.Type!=types[input.particle])
+        throw runtime_error("Historical energy/identity changed without interactions");
+    return out;
+}

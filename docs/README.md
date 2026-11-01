@@ -31,6 +31,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [Fixed-state field/observer coupling protocol](../tests/fork_compat/COUPLED.md)
 - [Historical sphere observer and ballistic stopping](validation/fork_observer_comparison.md)
 - [Source/observer cost pilot](validation/fork_source_observer_pilot.md)
 - [Frozen source/observer ensemble results](validation/fork_source_observer_ensemble.md)

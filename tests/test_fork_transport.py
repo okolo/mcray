@@ -1,5 +1,6 @@
 """Self-contained guards for the optional historical transport diagnostic."""
 import copy
+from decimal import Decimal
 import math
 from pathlib import Path
 import sys
@@ -14,6 +15,7 @@ import observer
 import source_observer_pilot as pilot
 import source_observer_ensemble as ensemble
 import vmf as vmf_probe
+import coupled
 
 
 def row():
@@ -27,6 +29,45 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_coupled_matrix_reuses_existing_fields_and_freezes_all_refinements(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            cases,grid,design=coupled.inputs(Path(a))
+            other,other_grid,other_design=coupled.inputs(Path(b))
+            self.assertEqual(design,other_design)
+            self.assertEqual(design['cases'],729)
+            self.assertEqual(design['initial_directions'],27)
+            self.assertEqual(cases.read_bytes(),other.read_bytes())
+            self.assertEqual(grid.read_bytes(),other_grid.read_bytes())
+            self.assertEqual(transport.kernels.digest(grid),design['reused_grid_sha256'])
+            self.assertFalse(design['source_sampling'])
+            rows=[line.split() for line in cases.read_text().splitlines()]
+            self.assertEqual(len({tuple(row[:5]) for row in rows}),729)
+            self.assertEqual({row[4] for row in rows},{'10','20','40'})
+            self.assertEqual(sum(row[1].startswith('tangent') for row in rows),216)
+
+    def test_coupled_report_preserves_disagreements_and_decimal_refinement(self):
+        rows=[]
+        for accuracy in (10,20,40):
+            state=dict(hit=True,past_end=False,zero_scale_calls=0,
+                       position_Mpc=[Decimal('0.1')+Decimal(accuracy)*Decimal('1e-23'),0,0],
+                       direction=[0,0,1],flight_Mpc=Decimal('.1'))
+            rows.append(dict(profile='cone',ray='tangent_1',field=2,particle=0,accuracy=accuracy,
+                fork=copy.deepcopy(state),modern=copy.deepcopy(state),same_hit=accuracy!=10,
+                difference_position_Mpc=Decimal('1e-20'),difference_direction=0,difference_time_Mpc=0))
+        rows[0]['modern']['hit']=False
+        result=coupled.summarize(rows)
+        self.assertEqual(len(result['hit_differences']),1)
+        self.assertEqual(len(result['groups']),3)
+        self.assertGreater(result['refinements'][0]['fork']['position_change_Mpc'],0)
+        self.assertNotIn('accepted',result)
+        with self.assertRaisesRegex(ValueError,'Duplicate'):
+            coupled.summarize(rows+[rows[0]])
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            coupled.summarize(rows[:-1])
+        broken=copy.deepcopy(rows); broken[0]['modern']['flight_Mpc']=float('nan')
+        with self.assertRaisesRegex(ValueError,'Nonfinite'):
+            coupled.summarize(broken)
+
     def test_vmf_point_design_separates_ordinary_and_numerical_controls(self):
         with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
             points,count=vmf_probe.inputs(Path(a))
