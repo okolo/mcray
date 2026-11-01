@@ -59,8 +59,9 @@ pointers are null. Counting loggers observe engine moves and impose a
 propagator RNG objects are initialized but deflection consumes no draws.
 A stalled/over-budget/incomplete/failed trajectory aborts the report without
 replacement. Modern execution uses the actual Result/PropagationEngine,
-SphereObserver and Deflection3D with captured final output. Energy, weight
-and identity invariants are checked. Current APIs and ownership are preserved;
+SphereObserver and Deflection3D with captured final output. Energy and identity invariants are checked in both paths; modern output
+weight is checked too. The minimal historical shell has no weight field
+because this fixed-state path has no weight-changing operation. Current APIs and ownership are preserved;
 no production implementation is changed for this diagnostic.
 
 ## Output, refinement and reproduction
@@ -99,7 +100,7 @@ refinement, path independence, duplicate/nonfinite rejection and retention
 of disagreement and sub-double decimal differences. Normal builds/CI do not
 need the external snapshot or run this optional coupled probe.
 
-Confirmed results belong in docs/validation. A later source-RNG cost pilot
+See the [confirmed results](../../docs/validation/fork_field_observer_comparison.md). A later source-RNG cost pilot
 and statistical field/observer ensemble need their own frozen reservations,
 counts and confidence/precision decisions. Do not rerun the spent final seeds
 from the photon baseline or infer interacting-cascade equivalence here.
