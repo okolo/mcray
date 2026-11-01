@@ -1,13 +1,19 @@
 """Self-contained guards for the optional historical transport diagnostic."""
 import copy
+import math
 from pathlib import Path
 import sys
 import tempfile
+import threading
 import unittest
 from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parent/'fork_compat'))
 import transport
+import observer
+import source_observer_pilot as pilot
+import source_observer_ensemble as ensemble
+import vmf as vmf_probe
 
 
 def row():
@@ -21,6 +27,150 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_vmf_point_design_separates_ordinary_and_numerical_controls(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            points,count=vmf_probe.inputs(Path(a))
+            other,other_count=vmf_probe.inputs(Path(b))
+            self.assertEqual(count,87); self.assertEqual(other_count,count)
+            self.assertEqual(points.read_bytes(),other.read_bytes())
+            rows=[line.split() for line in points.read_text().splitlines()]
+            self.assertEqual(sum(row[0]=='ordinary' for row in rows),70)
+            self.assertEqual(sum(row[0]=='cancellation' for row in rows),12)
+            self.assertEqual(sum(row[0]=='range' for row in rows),5)
+            self.assertIn(-100.,{float(row[3]) for row in rows})
+            self.assertIn(1e-14,{float(row[3]) for row in rows})
+
+    def test_collection_deadline_kills_child_and_keeps_no_successful_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); (root/'tmp').mkdir()
+            script=root/'wait.py'; script.write_text('import time; time.sleep(60)\n')
+            collection=ensemble.Collection(root,Path(sys.executable),script)
+            timer=threading.Timer(.1,collection.stop); timer.start()
+            try:
+                with self.assertRaisesRegex(RuntimeError,'Failed stream'):
+                    collection.run(dict(name='timeout',count=1),'fork')
+            finally:
+                timer.cancel(); collection.stop()
+            self.assertFalse((root/'timeout-fork.json').exists())
+            self.assertTrue(all(process.poll() is not None for process in collection.processes))
+
+    def test_final_design_and_fixture_reservations_are_disjoint(self):
+        final,fixture=ensemble.design_for('final'),ensemble.design_for('fixture')
+        self.assertEqual(final['total_histories'],48000000)
+        self.assertEqual(final['family_size'],39)
+        self.assertEqual([case['count'] for case in final['cases']],[8000000]*3)
+        seeds=lambda d:{case[key] for case in d['cases'] for key in ('fork_seed','modern_seed')}
+        self.assertFalse(seeds(final)&seeds(fixture))
+        self.assertEqual(seeds(final),set(range(2004101,2004107)))
+
+    def test_ensemble_intervals_keep_boundary_uncertainty_and_correct_two_sample_factor(self):
+        design=ensemble.design_for('final')
+        rows=self.ensemble_rows(design)
+        result=ensemble.confidence_report(rows,design)
+        self.assertEqual(len(result['differences']),33)
+        self.assertEqual(len(result['hit_fractions']),6)
+        self.assertTrue(result['compatible_at_reported_resolution'])
+        difference=result['differences'][0]
+        fraction=result['hit_fractions'][0]
+        self.assertGreater(difference['half_width'],0)
+        self.assertLess(difference['half_width'],.001)
+        self.assertAlmostEqual(difference['half_width']/fraction['half_width'],math.sqrt(2))
+        self.assertGreater(fraction['interval'][1],1) # No clipping at all-hit boundary.
+        rows[1]['hits']=4000000; rows[1]['sums'][:5]=[4000000]*5
+        self.assertFalse(ensemble.confidence_report(rows,design)['compatible_at_reported_resolution'])
+
+    @staticmethod
+    def ensemble_rows(design):
+        return [dict(case=case['name'],implementation=impl,histories=case['count'],
+                     failures=0,emitted_weight=case['count'],hits=case['count'],
+                     sums=[case['count']]*5+[0]*6,past_end_histories=0)
+                for case in design['cases'] for impl in ('fork','modern')]
+
+    def test_ensemble_cannot_accept_partial_nonfinite_duplicate_or_low_precision_data(self):
+        design=ensemble.design_for('final'); rows=self.ensemble_rows(design)
+        for bad in (rows[:-1],rows+[rows[0]]):
+            with self.assertRaisesRegex(ValueError,'Incomplete or duplicate'):
+                ensemble.confidence_report(bad,design)
+        broken=copy.deepcopy(rows); broken[0]['sums'][5]=float('nan')
+        with self.assertRaisesRegex(ValueError,'Nonfinite'):
+            ensemble.confidence_report(broken,design)
+        broken=copy.deepcopy(rows); broken[0]['sums'][2]=-1
+        with self.assertRaisesRegex(ValueError,'arrival counts'):
+            ensemble.confidence_report(broken,design)
+        fixture=ensemble.design_for('fixture')
+        self.assertNotIn('differences',ensemble.confidence_report(self.ensemble_rows(fixture),fixture))
+        fixture['mode']='final'
+        with self.assertRaisesRegex(ValueError,'Insufficient'):
+            ensemble.confidence_report(self.ensemble_rows(fixture),fixture)
+
+    def test_cost_pilot_freezes_separate_seeds_counts_and_geometry(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            path,design=pilot.inputs(Path(a))
+            self.assertEqual(design,pilot.inputs(Path(b))[1])
+            self.assertEqual(design['total_histories'],6000)
+            self.assertEqual([case['count'] for case in design['cases']],[1000]*3)
+            seeds=[case[key] for case in design['cases'] for key in ('fork_seed','modern_seed')]
+            self.assertEqual(len(set(seeds)),6)
+            self.assertEqual(design['observer_radius_Mpc'],.01)
+            self.assertEqual(design['observer_distance_Mpc'],.1)
+            self.assertEqual(design['input_sha256'],transport.kernels.digest(path))
+
+    def test_cost_pilot_rejects_partial_duplicate_nonfinite_and_missing_timings(self):
+        design=dict(cases=[dict(name='tiny',count=2)],purpose='Cost only')
+        rows=[]
+        for implementation in ('fork','modern'):
+            for i in range(2):
+                rows.append(dict(record='history',case='tiny',implementation=implementation,
+                    primary=i,weight=1,direction=[0,0,1],historical_steps=1,
+                    flight=dict(hit=i==0,past_end=False,end_error_Mpc=0,position_Mpc=[0,0,.1])))
+            rows.append(dict(record='timing',case='tiny',implementation=implementation,compute_seconds=.1))
+        result=pilot.summarize(rows,design)
+        self.assertEqual(result['histories'],4)
+        self.assertEqual(result['groups'][0]['hits'],1)
+        self.assertEqual(result['groups'][1]['emitted_weight'],2)
+        self.assertNotIn('accepted',result)
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            pilot.summarize(rows[1:],design)
+        with self.assertRaisesRegex(ValueError,'Duplicate'):
+            pilot.summarize(rows+[rows[0]],design)
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            pilot.summarize(rows[:-1],design)
+        broken=copy.deepcopy(rows); broken[0]['weight']=float('nan')
+        with self.assertRaisesRegex(ValueError,'Nonfinite'):
+            pilot.summarize(broken,design)
+
+    def test_observer_design_is_fixed_and_does_not_sample_sources(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cases,design=observer.inputs(Path(directory))
+            self.assertEqual(len(cases.read_text().splitlines()),210)
+            self.assertEqual(design['points'],174)
+            self.assertEqual(design['flights'],36)
+            self.assertFalse(design['source_sampling'])
+            self.assertFalse(design['fields'])
+            self.assertEqual(transport.kernels.digest(cases),design['sha256'])
+
+    def test_observer_hash_mismatch_precedes_reference_extraction(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(observer.kernels,'digest',return_value='changed'), \
+             patch.object(observer.transport,'extract') as extract:
+            with self.assertRaisesRegex(ValueError,'pinned snapshot'):
+                observer.extract(Path(directory),Path(directory))
+            extract.assert_not_called()
+
+    def test_observer_report_retains_disagreements_without_a_verdict(self):
+        point=dict(case='surface',kind=0,fork_hit=False,modern_hit=True,
+                   fork_exceeds_remaining=True,modern_exceeds_remaining=False)
+        flight=dict(case='cap',kind=1,fork=dict(hit=True,past_end=True),
+                    modern=dict(hit=True,past_end=False),variable_rate=dict(hit=True,past_end=False),
+                    modern_paths_equal=False,difference_position_Mpc=.1,
+                    difference_flight_Mpc=.1,difference_rate_path_time_Mpc=.01)
+        result=observer.summarize([point,flight])
+        self.assertEqual(result['membership_differences'],[point])
+        self.assertEqual(result['ballistic_end_time_overshoots'],[flight])
+        self.assertEqual(result['modern_rate_path_differences'],[flight])
+        self.assertEqual(result['modern_steps_exceeding_remaining'],0)
+        self.assertNotIn('accepted',result)
+
     def test_shared_compiler_helper_preserves_original_default_sources(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)

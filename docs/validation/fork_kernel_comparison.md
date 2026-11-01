@@ -122,3 +122,8 @@ The optional reference adapter is not required by ordinary CI. Thirteen
 self-contained `unit.magnetic.*` cases cover the current behavior, including
 all zero faces, nearest-node extension, seam insets, translated boxes, scale
 ties, extreme-coordinate clamping, robust loading, concurrency and constant-field electron/Fe56 transport.
+
+The vMF exclusion above describes the contract at this frozen comparison.
+The user subsequently restored the original weighted-vMF contract; see the
+[separate restoration checks](vmf_fork_contract.md). Ordinary-cone results
+and their source/input provenance above are unchanged.

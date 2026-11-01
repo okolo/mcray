@@ -29,7 +29,7 @@ approved approximations are unchanged.
   magnetic-field behavior. Version 2 adds explicitly selected grid/none/sum
   fields; see [the magnetic-field contract](grid_magnetic_fields.md).
   It also supports the optional [photon-thinning policy](photon_thinning.md)
-  and the [truncated vMF source](vmf_source.md).
+  and the [fork-compatible weighted vMF source](vmf_source.md).
   Unknown/duplicate keys, invalid enum values,
   unsupported types, nonfinite numbers and invalid ranges are errors.
 - Booleans are `true`/`false`. Numeric values must be numbers, not quoted

@@ -1,7 +1,7 @@
 # Source geometry, sphere observers and spatial output
 
 YAML schema version 2 and the long CLI options below configure source geometry.
-Existing CLI invocations and version 1 keep their defaults and output format.
+Legacy simulation defaults and the version 1 output format are preserved.
 A version 2 configuration containing only default spatial values also keeps
 that format, including when replayed from config.yaml.
 
@@ -9,9 +9,9 @@ that format, including when replayed from config.yaml.
 | --- | --- | --- |
 | `--source-position-Mpc x,y,z` | `source.position_Mpc` | `[0, 0, 0]`, absolute engine coordinates in Mpc |
 | `--source-angular-model pencil\|cone\|vmf` | `source.angular_distribution.model` | `pencil` |
-| `--source-axis x,y,z` | `source.angular_distribution.axis` | `[0, 0, 1]`, finite nonzero direction, normalized |
+| `--jet-axis theta,phi` or `--jet-axis x,y,z` | `source.angular_distribution.axis` | Two finite angles in radians, or a finite nonzero vector (normalized); default `[0, 0, 1]` |
 | `--source-half-angle-deg angle` | `source.angular_distribution.half_angle_deg` | `0` for cone; vmf requires an explicit value in [0,180] |
-| `--source-vmf-kappa value` | `source.angular_distribution.kappa` | Required finite nonnegative concentration for vmf; forbidden with other models |
+| `--source-vmf-kappa value` | `source.angular_distribution.kappa` | Required finite signed parameter for vmf; forbidden with other models |
 | `--end-redshift z` | `propagation.end_redshift` | `0`, nonnegative and below source redshift |
 | `--observer none\|sphere` | `observer.model` | `none` |
 | `--observer-center-Mpc x,y,z` | `observer.center_Mpc` | `[0, 0, 0]`, sphere only |
@@ -19,17 +19,58 @@ that format, including when replayed from config.yaml.
 | `--observer-stop-when inside\|outside` | `observer.stop_when` | `inside`, sphere only |
 | `--output-primary-direction` | `output.primary_direction` | `false`, record primary direction |
 
-YAML vectors are sequences of three numbers. CLI vectors are comma-separated;
+Source/observer positions use three-number YAML sequences. Jet axes accept
+either two or three numbers, in YAML sequences or comma-separated CLI values.
+Other CLI vectors are comma-separated;
 quote the complete value if it contains spaces. Geometry and time settings are
 validated before output creation. Source coordinates, fields and observer
 coordinates use the same existing engine convention; no new cosmological
 coordinate transformation is applied.
 
+## Jet-axis representations
+
+Two numbers mean `(theta,phi)` in **radians**, matching the fork's
+`--jet-theta` and `--jet-phi`. Theta is the polar angle from +Z; phi is
+azimuth from +X toward +Y. Their direction is:
+
+```text
+axis = [sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta)]
+```
+
+Three numbers mean Cartesian vector components, which are normalized.
+Both angles must be finite; vector components must be finite and not all zero.
+For example, the angle pair `0,0` means +Z and is valid, while `0,0,0` is
+an invalid zero vector. Positions continue to require exactly three numbers.
+Malformed/empty components, other arities and duplicate options are errors.
+
+```sh
+CRbeam ... --jet-axis 0.4,0.7
+CRbeam ... --jet-axis 1,-2,3
+```
+
+The same input choices are available in YAML schema version 2:
+
+```yaml
+source:
+  angular_distribution:
+    model: vmf
+    axis: [0.4, 0.7]  # theta, phi in radians; alternatively [x, y, z]
+    half_angle_deg: 10
+    kappa: 100
+```
+
+The effective config.yaml always stores the canonical normalized three-number
+axis, so replay does not reinterpret saved vector components as angles.
+Opening `half_angle_deg` remains in degrees and is separate from the axis.
+The renamed `--source-axis` option is rejected with a `--jet-axis` migration
+message; it is not silently ignored or retained as an alias.
+
 A cone samples uniformly in solid angle about its axis. Pencil and zero-width
 cone sources consume no extra random values; geometry does not change primary
-energy, weight or identity. The optional [truncated vMF profile](vmf_source.md)
-also preserves weights; kappa=0 matches the uniform cone and zero opening
-matches the pencil direction/RNG behavior. Gaussian profiles remain outside
+energy, weight or identity. The optional [fork-compatible vMF source](vmf_source.md)
+uses a uniform-cone proposal followed by the original density weight multiplier.
+Its small-kappa branch preserves weight; inactive opening preserves the pencil
+direction/RNG behavior. Gaussian profiles remain outside
 the implemented source models.
 
 ## Sphere semantics
@@ -47,6 +88,12 @@ simulation time. A step below representable time resolution is an error.
 One shared immutable observer controls termination, step limiting and the
 recorded `in_target` flag. The API permits a later observer implementation;
 crossing events and multiple-hit logging are not implemented.
+
+The variable-rate engine also rejects a complete step whose two half-moves
+cannot advance the represented absolute time. The failed history is counted
+and discarded rather than looping indefinitely or inventing a time increment.
+See the [historical observer/stopping diagnostic](../validation/fork_observer_comparison.md)
+for precision limits, end-time rounding and comparison scope.
 
 See [the runnable configuration](../../examples/spatial_observer.yaml):
 
@@ -154,3 +201,15 @@ longdouble precision with NumPy scalar formatting. The old rotateMC
 assumptions (zero source position, +z pencil, and interpreting 1-z/T as a delay)
 do not apply to general spatial runs. Old plotting/launch scripts require
 adaptation to the new settings and are not copied wholesale.
+
+
+## Jet-axis interface verification
+
+The 2026-11-01 input extension passed 253/253 C++ checks on native macOS
+Release and emulated Linux amd64 Release, plus 57/57 focused source/spatial/
+configuration checks under ASan/UBSan with leak detection. Seventeen Python
+guards passed. New cases verify angle/vector CLI/YAML equivalence, weighted
+vMF ballistic output and canonical snapshot replay, malformed/quoted/nonfinite
+values, empty components, duplicate options and the removed CLI name. This
+is interface/software validation; no physics sampler or Monte Carlo acceptance
+protocol changed and no final statistical reservations were rerun.

@@ -1,7 +1,12 @@
 # Truncated vMF source verification
 
+This is the frozen record of the earlier normalized model, superseded on
+2026-10-31 by the user-requested [original weighted contract](vmf_fork_contract.md).
+Its point/CDF results must not be presented as verification of that restored
+contract. Original cases, criteria and results below remain historical.
+
 The implementation starts from main 5b5399d69e34f6dc3a883ac966bd801edc626f8e
-and follows the [normalized source contract](../usage/vmf_source.md).
+and follows the [historical normalized source contract](https://github.com/okolo/mcray/blob/8cf97128330f93e7f7a8ed25b70a5ce0dbd43056/docs/usage/vmf_source.md).
 The new law is opt-in; default pencil and existing cone behavior are preserved.
 Gaussian profiles, FFT fields, backgrounds and observer changes are excluded.
 

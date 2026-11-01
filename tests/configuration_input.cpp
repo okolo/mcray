@@ -2,6 +2,7 @@
 #include "Sha256.h"
 #include "SpatialGeometry.h"
 #include <map>
+#include <iomanip>
 #include <limits>
 #include <filesystem>
 #include <fstream>
@@ -513,7 +514,7 @@ TEST_F(ConfigurationTest, SpatialConeCliYamlAndSnapshotReplayAreIdentical) {
          "1,-2,3",
          "--source-angular-model",
          "cone",
-         "--source-axis",
+         "--jet-axis",
          "1,2,3",
          "--source-half-angle-deg",
          "20",
@@ -607,12 +608,78 @@ TEST_F(ConfigurationTest, SpatialEndRedshiftCapsPropagationWithoutObserver) {
   EXPECT_EQ(count, 12u);
 }
 
+TEST_F(ConfigurationTest, JetAxisAnglesVectorsAndYamlHaveSameCanonicalAxis) {
+  for (auto angles : {std::pair<double,double>{0,0},{1.5707963267948966,0},
+                      {1.5707963267948966,1.5707963267948966},{.4,.7},{-.4,-.7}}) {
+    const auto [theta,phi]=angles;
+    std::ostringstream pair,vector;
+    pair << std::setprecision(17) << theta << ',' << phi;
+    vector << std::setprecision(17) << std::sin(theta)*std::cos(phi) << ','
+           << std::sin(theta)*std::sin(phi) << ',' << std::cos(theta);
+    Parse({"--jet-axis",pair.str()});
+    auto expected=YAML::Clone(program->EffectiveConfiguration()["source"]["angular_distribution"]["axis"]);
+    ASSERT_EQ(expected.size(),3u);
+    Parse({"--jet-axis",vector.str()});
+    EXPECT_EQ(YAML::Dump(program->EffectiveConfiguration()["source"]["angular_distribution"]["axis"]),YAML::Dump(expected));
+    auto cfg=YAML::Load(Common()); cfg["schema_version"]=2;
+    cfg["source"]["angular_distribution"]["axis"].push_back(theta);
+    cfg["source"]["angular_distribution"]["axis"].push_back(phi);
+    auto path=Write(YAML::Dump(cfg)); Parse({path.string()});
+    EXPECT_EQ(YAML::Dump(program->EffectiveConfiguration()["source"]["angular_distribution"]["axis"]),YAML::Dump(expected));
+    // Canonical vectors retain their bytes through snapshot-style replay.
+    cfg["source"]["angular_distribution"]["axis"]=expected;
+    path=Write(YAML::Dump(cfg)); Parse({path.string()});
+    EXPECT_EQ(YAML::Dump(program->EffectiveConfiguration()["source"]["angular_distribution"]["axis"]),YAML::Dump(expected));
+  }
+}
+TEST_F(ConfigurationTest, JetAxisAnglesVmfCliYamlAndSnapshotProduceSameOutput) {
+  auto cfg=YAML::Load(Common()); cfg["schema_version"]=2;
+  cfg["source"]["particle"]["type"]="neutrinoE";
+  cfg["source"]["angular_distribution"]=YAML::Load("{model: vmf, axis: [.4,.7], half_angle_deg: 10, kappa: 100}");
+  cfg["output"]["directory"]=(root/"angles-yaml").string();
+  cfg["output"]["primary_direction"]=true;
+  auto path=Write(YAML::Dump(cfg)); Parse({path.string()});
+  ASSERT_EQ(program->run(),0);
+  const auto data=Read(root/"angles-yaml/z0/neutrinoE"); ASSERT_FALSE(data.empty());
+  auto snapshot=YAML::LoadFile((root/"angles-yaml/config.yaml").string());
+  const auto axis=snapshot["source"]["angular_distribution"]["axis"];
+  ASSERT_EQ(axis.size(),3u);
+  std::ostringstream vector; vector << std::setprecision(17) << axis[0].as<double>() << ','
+                                  << axis[1].as<double>() << ',' << axis[2].as<double>();
+  for (const auto &value : {std::string(".4,.7"),vector.str()}) {
+    const auto output=root/(value==".4,.7"?"angles-cli":"vector-cli");
+    Parse({"--particle","neutrinoE","--z","1e-8","--nparticles","12","--seed","123456",
+        "--batch","12","--background","0","--EGMF","0","--noEMcascade",
+        "--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","100",
+        "--jet-axis",value,"--output-primary-direction","--output",output.string()});
+    ASSERT_EQ(program->run(),0); EXPECT_EQ(Read(output/"z0/neutrinoE"),data);
+  }
+  snapshot["output"]["directory"]=(root/"angles-replay").string();
+  path=Write(YAML::Dump(snapshot)); Parse({path.string()});
+  ASSERT_EQ(program->run(),0); EXPECT_EQ(Read(root/"angles-replay/z0/neutrinoE"),data);
+}
+TEST_F(ConfigurationTest, JetAxisRejectsMalformedAnglesAndRemovedFlag) {
+  for (const auto* value : {"", "1", "1,", "1,2,", ",2", "1,,2", "1,2,3,4", "nan,0", "0,inf", "x,0"}) {
+    SCOPED_TRACE(value);
+    Error([&] { Parse({"--jet-axis",value}); },"");
+  }
+  Error([&] { Parse({"--source-axis","0,0,1"}); },"renamed to --jet-axis");
+  Error([&] { Parse({"--jet-axis","0,0","--jet-axis","1,0"}); },"");
+  for (const auto* value : {"[]", "[1]", "[1,2,3,4]", "[.nan,0]", "[0,.inf]", "['1',0]"}) {
+    SCOPED_TRACE(value);
+    // Preserve scalar quoting: YAML::Dump can emit a numeric-looking string
+    // without quotes, turning the intentionally malformed input into a number.
+    auto path=Write(std::string("schema_version: 2\nsource: {redshift: 1e-8, angular_distribution: {axis: ")+value+"}}\n");
+    Error([&] { Parse({path.string()}); },"");
+  }
+}
+
 TEST_F(ConfigurationTest, SpatialInputValidatesVectorsRegionsAnglesAndEndTime) {
   for (const auto &options : std::vector<std::vector<std::string>>{
-           {"--source-axis", "0,0,0"},
-           {"--source-axis", "1,2"},
-           {"--source-axis", "1,2,3,"},
-           {"--source-axis", "nan,0,1"},
+           {"--jet-axis", "0,0,0"},
+           {"--jet-axis", "1"},
+           {"--jet-axis", "1,2,3,"},
+           {"--jet-axis", "nan,0,1"},
            {"--source-position-Mpc", "1,,3"},
            {"--source-half-angle-deg", "10"},
            {"--source-angular-model", "cone", "--source-half-angle-deg", "181"},
@@ -623,7 +690,7 @@ TEST_F(ConfigurationTest, SpatialInputValidatesVectorsRegionsAnglesAndEndTime) {
            {"--observer", "none", "--observer-center-Mpc", "0,0,0"},
            {"--observer", "sphere", "--observer-radius-Mpc", "1",
             "--observer-stop-when", "enter"},
-           {"--source-axis", "0,0,1", "--source-axis", "1,0,0"},
+           {"--jet-axis", "0,0,1", "--jet-axis", "1,0,0"},
            {"--end-redshift", "-1"},
            {"--end-redshift", ".01"}}) {
     auto args = options;
@@ -657,7 +724,7 @@ TEST_F(ConfigurationTest,
          ".01",
          "--source-position-Mpc",
          "1, -2, 3",
-         "--source-axis",
+         "--jet-axis",
          "0,0,5",
          "--source-angular-model",
          "cone",
@@ -844,7 +911,7 @@ TEST_F(ConfigurationTest, VmfCliYamlSnapshotAndBallisticOutputAreConsistent) {
   Parse({"--particle", "neutrinoE", "--z", "1e-8", "--nparticles", "12",
       "--seed", "123456", "--batch", "12", "--background", "0", "--EGMF", "0",
       "--noEMcascade", "--source-position-Mpc", "1,-2,3", "--source-angular-model", "vmf",
-      "--source-axis", "1,-2,3", "--source-half-angle-deg", "10", "--source-vmf-kappa", "100",
+      "--jet-axis", "1,-2,3", "--source-half-angle-deg", "10", "--source-vmf-kappa", "100",
       "--output-primary-direction", "--output", (root / "vmf-cli").string()});
   ASSERT_EQ(program->run(), 0);
   EXPECT_EQ(Read(root / "vmf-cli/z0/neutrinoE"), data);
@@ -880,7 +947,6 @@ TEST_F(ConfigurationTest, VmfCliYamlSnapshotAndBallisticOutputAreConsistent) {
     while (row >> value) values.push_back(value);
     ASSERT_EQ(values.size(), columns.size());
     auto get = [&](const std::string& name) { return values.at(columns.at(name)); };
-    EXPECT_EQ(get("weight"), 1);
     const std::array<long double,3> direction{get("Px/P"),get("Py/P"),1-get("1-(Pz/P)")};
     const std::array<long double,3> position{get("x/T")*scale,get("y/T")*scale,(1-get("1-(z/T)"))*scale};
     const std::array<long double,3> start{1,-2,3};
@@ -894,10 +960,27 @@ TEST_F(ConfigurationTest, VmfCliYamlSnapshotAndBallisticOutputAreConsistent) {
           (std::abs(start[i]) + get("FlightMpc") + 1);
       EXPECT_LE(std::abs(position[i] - start[i] - direction[i]*get("FlightMpc")), tolerance);
     }
+    const long double expectedWeight=100*std::exp(100*(dot-1))/(2*std::acos(-1.L)*(-std::expm1(-200.L)));
+    EXPECT_NEAR(get("weight"),expectedWeight,
+                512*std::numeric_limits<mcray::coord_type>::epsilon()*100*expectedWeight);
     EXPECT_GE(dot, std::cos(10*std::acos(-1.L)/180) - 1e-14);
     ++count;
   }
   EXPECT_EQ(count, 12u);
+}
+TEST_F(ConfigurationTest, VmfSignedKappaIsAcceptedByCliYamlAndReplay) {
+  Parse({"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","-1"});
+  EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["source"]["angular_distribution"]["kappa"].as<double>(),-1);
+  auto cfg=YAML::Load(Common()); cfg["schema_version"]=2;
+  cfg["source"]["particle"]["type"]="neutrinoE";
+  cfg["source"]["angular_distribution"]=YAML::Load("{model: vmf, half_angle_deg: 10, kappa: -1}");
+  cfg["output"]["directory"]=(root/"vmf-negative").string();
+  auto path=Write(YAML::Dump(cfg)); Parse({path.string()});
+  EXPECT_DOUBLE_EQ(program->EffectiveConfiguration()["source"]["angular_distribution"]["kappa"].as<double>(),-1);
+  ASSERT_EQ(program->run(),0);
+  EXPECT_FALSE(Read(root/"vmf-negative/z0/neutrinoE").empty());
+  auto saved=YAML::LoadFile((root/"vmf-negative/config.yaml").string());
+  EXPECT_DOUBLE_EQ(saved["source"]["angular_distribution"]["kappa"].as<double>(),-1);
 }
 TEST_F(ConfigurationTest, VmfRejectsMissingInvalidAndInapplicableSettings) {
   for (const auto& options : std::vector<std::vector<std::string>>{
@@ -906,16 +989,15 @@ TEST_F(ConfigurationTest, VmfRejectsMissingInvalidAndInapplicableSettings) {
       {"--source-angular-model","vmf","--source-half-angle-deg","10"},
       {"--source-vmf-kappa","0"},
       {"--source-angular-model","cone","--source-half-angle-deg","10","--source-vmf-kappa","0"},
-      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","-1"},
       {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","nan"},
       {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1junk"},
       {"--source-angular-model","vmf","--source-half-angle-deg","181","--source-vmf-kappa","1"},
       {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1","--source-vmf-kappa","2"},
-      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1","--source-axis","0,0,0"}})
+      {"--source-angular-model","vmf","--source-half-angle-deg","10","--source-vmf-kappa","1","--jet-axis","0,0,0"}})
     Error([&] { Parse(options); }, "Configuration");
   for (const auto* settings : {"{model: vmf}", "{model: vmf, kappa: 1}",
       "{model: vmf, half_angle_deg: 10}", "{model: cone, kappa: 0}",
-      "{model: pencil, kappa: 0}", "{model: vmf, half_angle_deg: 10, kappa: -1}",
+      "{model: pencil, kappa: 0}",
       "{model: vmf, half_angle_deg: 10, kappa: .inf}",
       "{model: vmf, half_angle_deg: 10, kappa: '1'}",
       "{model: vmf, half_angle_deg: 10, kappa: 1, kappaa: 2}",

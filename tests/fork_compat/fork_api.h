@@ -11,3 +11,5 @@ void ForkDeleteField(void *field);
 void *ForkCone(double angle, double theta, double phi, unsigned long seed);
 ForkSample ForkNext(void *cone);
 void ForkDeleteCone(void *cone);
+
+double ForkVmfWeight(double theta,double phi,const long double* direction,double kappa);

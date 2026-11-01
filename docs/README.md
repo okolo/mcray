@@ -8,7 +8,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 - [Automated Linux build and short tests](usage/ci.md)
 - [Source geometry, sphere observers and spatial output](usage/spatial_source_observer.md)
-- [Truncated vMF angular source](usage/vmf_source.md)
+- [Fork-compatible weighted vMF source](usage/vmf_source.md)
 - [Grid magnetic fields, composition and CLI/YAML input](usage/grid_magnetic_fields.md)
 - [YAML configuration, CLI compatibility and run records](usage/yaml_configuration.md)
 - [Cosmology settings](usage/cosmology.md)
@@ -30,6 +30,11 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Docker Linux amd64](../docker/README.md)
 
 ## Validation results
+
+- [Historical sphere observer and ballistic stopping](validation/fork_observer_comparison.md)
+- [Source/observer cost pilot](validation/fork_source_observer_pilot.md)
+- [Frozen source/observer ensemble results](validation/fork_source_observer_ensemble.md)
+- [Restored original weighted vMF contract](validation/vmf_fork_contract.md)
 
 - [Deterministic historical-fork charged-particle transport](validation/fork_transport_comparison.md)
 

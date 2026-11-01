@@ -1,0 +1,1146 @@
+{
+  "date": "2026-10-31",
+  "scope": "Deterministic observer/ballistic prerequisite only; no source ensemble or physical-equivalence verdict.",
+  "source_revision": "5d5006c",
+  "base_main": "473b99e",
+  "reference_commit": "e1fc71f613efe7fecf3210e15339c34814245cd4",
+  "image_sha256": "37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+  "runs": {
+    "native": {
+      "source_revision": "5d5006c21fb8bba99b628af58d1be80eb61514bd",
+      "dirty": false,
+      "compiler": "Homebrew clang version 22.1.5\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.5/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.5/etc/clang/arm64-apple-darwin25.cfg",
+      "linked_core_sha256": "aff4dd0b12bad4d17f45f6bfd7b362ff5f888d7e56f40bf98a74a76cc524fe60",
+      "summary": {
+        "cases": 210,
+        "points": 174,
+        "flights": 36,
+        "membership_differences": 8,
+        "old_steps_exceeding_remaining": 56,
+        "modern_steps_exceeding_remaining": 0,
+        "ballistic_hit_differences": 0,
+        "ballistic_end_time_overshoots": 3,
+        "modern_end_time_overshoots": 1,
+        "modern_rate_path_differences": 11,
+        "max_ballistic_position_difference_Mpc": 9.900000000195938e-05,
+        "max_ballistic_flight_difference_Mpc": 9.900000000219531e-05,
+        "max_modern_rate_path_time_difference_Mpc": 7.549805846847474e-15,
+        "scope": "Observer kernel and ballistic diagnostics only; no source or cascade statistical acceptance."
+      },
+      "membership_difference_categories": {
+        "diagonal": 6,
+        "range_interior": 1,
+        "range_exterior": 1
+      },
+      "old_overshoot_cases": [
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.01
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000003043394e-05,
+            "end_error_Mpc": 9.900000000974511e-06,
+            "end_error_ulps": 1311291999,
+            "position_Mpc": [
+              0,
+              0,
+              -0.00999
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.000000020688815e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.009999899999997931
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.000000020688815e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.009999899999997931
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": true,
+          "difference_position_Mpc": 9.899999997931364e-06,
+          "difference_flight_Mpc": 9.900000000974511e-06,
+          "difference_rate_path_time_Mpc": 0
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.1,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000002e-06,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.1
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 0.00010000000000023471,
+            "end_error_Mpc": 9.900000000219531e-05,
+            "end_error_ulps": 13112919989,
+            "position_Mpc": [
+              0,
+              0,
+              -0.09990000000000002
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 9.999999980393976e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.09999900000000198
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 9.999999980393976e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.09999900000000198
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": true,
+          "difference_position_Mpc": 9.900000000195938e-05,
+          "difference_flight_Mpc": 9.900000000219531e-05,
+          "difference_rate_path_time_Mpc": 0
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.1,
+          "center_Mpc": [
+            0.25,
+            -0.125,
+            0.5
+          ],
+          "requested_Mpc": 1.0000000000000002e-06,
+          "initial_position_Mpc": [
+            0.25,
+            -0.125,
+            0.39999999999999997
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 0.00010000000000023471,
+            "end_error_Mpc": 9.900000000219531e-05,
+            "end_error_ulps": 13112919989,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4001
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 9.999999980393976e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.40000099999999805
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 9.999999980393976e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.40000099999999805
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": true,
+          "difference_position_Mpc": 9.900000000195938e-05,
+          "difference_flight_Mpc": 9.900000000219531e-05,
+          "difference_rate_path_time_Mpc": 0
+        }
+      ],
+      "modern_overshoot_cases": [
+        {
+          "case": "surface_outward",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.1,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 0.4,
+          "initial_position_Mpc": [
+            0,
+            0,
+            0.1
+          ],
+          "fork": {
+            "hit": false,
+            "past_end": false,
+            "flight_Mpc": 0.40000000000000263,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              0.5000000000000027
+            ]
+          },
+          "modern": {
+            "hit": false,
+            "past_end": false,
+            "flight_Mpc": 0.40000000000000263,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              0.5000000000000027
+            ]
+          },
+          "variable_rate": {
+            "hit": false,
+            "past_end": true,
+            "flight_Mpc": 0.4000000000000102,
+            "end_error_Mpc": 7.549805846847474e-15,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0,
+              0,
+              0.4999999999999951
+            ]
+          },
+          "fork_steps": 13,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 0,
+          "difference_flight_Mpc": 0,
+          "difference_rate_path_time_Mpc": 7.549805846847474e-15
+        }
+      ],
+      "raw_sha256": "3c63a0a2bfcb3d8508f6c98d8fc2b0cad5ddcbf1419e186d52c31a8baf257c29",
+      "report_sha256": "50559f3864cf4de6ddb84af8a0af367251a5605fc6061832c66b2d2a58796af0",
+      "manifest_sha256": "de7c0e70bdfe01756cedfbf8ff2793c1fc91744bc8b63b08b992f309abe028de",
+      "executable_sha256": "70e352d5908f589368480c2cb871f6c6bb7ccc7ee3f03894c227e5431a229f10",
+      "execution_log_sha256": "fad5a9c58ab50c09f65482000895db256d896340db55e5a4bc8edf35306f4792",
+      "unchanged_raw_after_guard": true
+    },
+    "linux": {
+      "source_revision": "5d5006c21fb8bba99b628af58d1be80eb61514bd",
+      "dirty": false,
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "linked_core_sha256": "cdb5315b10aab25d829018321fa01ab3b4bc37b8849f4394d7ec09ed4439573e",
+      "summary": {
+        "cases": 210,
+        "points": 174,
+        "flights": 36,
+        "membership_differences": 32,
+        "old_steps_exceeding_remaining": 56,
+        "modern_steps_exceeding_remaining": 0,
+        "ballistic_hit_differences": 0,
+        "ballistic_end_time_overshoots": 4,
+        "modern_end_time_overshoots": 2,
+        "modern_rate_path_differences": 16,
+        "max_ballistic_position_difference_Mpc": 9.899999999999944e-05,
+        "max_ballistic_flight_difference_Mpc": 9.899999999999819e-05,
+        "max_modern_rate_path_time_difference_Mpc": 3.686428636155993e-18,
+        "scope": "Observer kernel and ballistic diagnostics only; no source or cascade statistical acceptance."
+      },
+      "membership_difference_categories": {
+        "surface_below": 12,
+        "diagonal": 6,
+        "surface_above": 12,
+        "range_interior": 1,
+        "range_exterior": 1
+      },
+      "old_overshoot_cases": [
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.01
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0,
+              0,
+              -0.00999
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.899999999999206e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0.25,
+            -0.125,
+            0.5
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0.25,
+            -0.125,
+            0.49
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.49001
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.89999999999922e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.1,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000002e-06,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.1
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999999877e-05,
+            "end_error_Mpc": 9.899999999999819e-05,
+            "end_error_ulps": 26855260136876,
+            "position_Mpc": [
+              0,
+              0,
+              -0.09990000000000002
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.099999
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.099999
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": true,
+          "difference_position_Mpc": 9.899999999999944e-05,
+          "difference_flight_Mpc": 9.899999999999819e-05,
+          "difference_rate_path_time_Mpc": 0
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.1,
+          "center_Mpc": [
+            0.25,
+            -0.125,
+            0.5
+          ],
+          "requested_Mpc": 1.0000000000000002e-06,
+          "initial_position_Mpc": [
+            0.25,
+            -0.125,
+            0.39999999999999997
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999999877e-05,
+            "end_error_Mpc": 9.899999999999819e-05,
+            "end_error_ulps": 26855260136876,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4001
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.400001
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.400001
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": true,
+          "difference_position_Mpc": 9.899999999999944e-05,
+          "difference_flight_Mpc": 9.899999999999819e-05,
+          "difference_rate_path_time_Mpc": 0
+        }
+      ],
+      "modern_overshoot_cases": [
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.01
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0,
+              0,
+              -0.00999
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.899999999999206e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0.25,
+            -0.125,
+            0.5
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0.25,
+            -0.125,
+            0.49
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.49001
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.89999999999922e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        }
+      ],
+      "raw_sha256": "3b92d7b745111c01e3d982dfb7c7456f9f6244bf3e41608bfafb397ae037e970",
+      "report_sha256": "7f2a76a8ddeedb2022c4c90fa795ad379fc43453cb249ad3335796fbf1beb39a",
+      "manifest_sha256": "b44f0398970d2089e12b17b5f94d7ff278353cd61a0a2afa438bc34c80535ff7",
+      "executable_sha256": "230987f7e741569a475f5f0bf40cb8276cb88544d1de3d3d33fe4c68bef6f2b9",
+      "execution_log_sha256": "8a0ddb4bace286aba5645286de8a5da9586ea1b8498e92561342daf8b22ce6a9",
+      "unchanged_raw_after_guard": true
+    },
+    "sanitizers": {
+      "source_revision": "5d5006c21fb8bba99b628af58d1be80eb61514bd",
+      "dirty": false,
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "linked_core_sha256": "34602efcc0d6bd7772767a3177e57ccb3b874700ef62e816e964a27e94e1093a",
+      "summary": {
+        "cases": 210,
+        "points": 174,
+        "flights": 36,
+        "membership_differences": 32,
+        "old_steps_exceeding_remaining": 56,
+        "modern_steps_exceeding_remaining": 0,
+        "ballistic_hit_differences": 0,
+        "ballistic_end_time_overshoots": 4,
+        "modern_end_time_overshoots": 2,
+        "modern_rate_path_differences": 16,
+        "max_ballistic_position_difference_Mpc": 9.899999999999944e-05,
+        "max_ballistic_flight_difference_Mpc": 9.899999999999819e-05,
+        "max_modern_rate_path_time_difference_Mpc": 3.686428636155993e-18,
+        "scope": "Observer kernel and ballistic diagnostics only; no source or cascade statistical acceptance."
+      },
+      "membership_difference_categories": {
+        "surface_below": 12,
+        "diagonal": 6,
+        "surface_above": 12,
+        "range_interior": 1,
+        "range_exterior": 1
+      },
+      "old_overshoot_cases": [
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.01
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0,
+              0,
+              -0.00999
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.899999999999206e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0.25,
+            -0.125,
+            0.5
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0.25,
+            -0.125,
+            0.49
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.49001
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.89999999999922e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.1,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000002e-06,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.1
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999999877e-05,
+            "end_error_Mpc": 9.899999999999819e-05,
+            "end_error_ulps": 26855260136876,
+            "position_Mpc": [
+              0,
+              0,
+              -0.09990000000000002
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.099999
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.099999
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": true,
+          "difference_position_Mpc": 9.899999999999944e-05,
+          "difference_flight_Mpc": 9.899999999999819e-05,
+          "difference_rate_path_time_Mpc": 0
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.1,
+          "center_Mpc": [
+            0.25,
+            -0.125,
+            0.5
+          ],
+          "requested_Mpc": 1.0000000000000002e-06,
+          "initial_position_Mpc": [
+            0.25,
+            -0.125,
+            0.39999999999999997
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999999877e-05,
+            "end_error_Mpc": 9.899999999999819e-05,
+            "end_error_ulps": 26855260136876,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4001
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.400001
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000005776e-06,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.400001
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": true,
+          "difference_position_Mpc": 9.899999999999944e-05,
+          "difference_flight_Mpc": 9.899999999999819e-05,
+          "difference_rate_path_time_Mpc": 0
+        }
+      ],
+      "modern_overshoot_cases": [
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0,
+            0,
+            0
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0,
+            0,
+            -0.01
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0,
+              0,
+              -0.00999
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0,
+              0,
+              -0.0099999
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.899999999999206e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        },
+        {
+          "case": "short_remaining",
+          "kind": 1,
+          "mode": 1,
+          "radius_Mpc": 0.01,
+          "center_Mpc": [
+            0.25,
+            -0.125,
+            0.5
+          ],
+          "requested_Mpc": 1.0000000000000001e-07,
+          "initial_position_Mpc": [
+            0.25,
+            -0.125,
+            0.49
+          ],
+          "fork": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 9.999999999998403e-06,
+            "end_error_Mpc": 9.899999999997608e-06,
+            "end_error_ulps": 2685526013687,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.49001
+            ]
+          },
+          "modern": {
+            "hit": true,
+            "past_end": false,
+            "flight_Mpc": 1.0000000000079504e-07,
+            "end_error_Mpc": 0,
+            "end_error_ulps": 0,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "variable_rate": {
+            "hit": true,
+            "past_end": true,
+            "flight_Mpc": 1.0000000000448147e-07,
+            "end_error_Mpc": 3.686428636155993e-18,
+            "end_error_ulps": 1,
+            "position_Mpc": [
+              0.25,
+              -0.125,
+              0.4900001
+            ]
+          },
+          "fork_steps": 1,
+          "modern_paths_equal": false,
+          "difference_position_Mpc": 9.89999999999922e-06,
+          "difference_flight_Mpc": 9.899999999997608e-06,
+          "difference_rate_path_time_Mpc": 3.686428636155993e-18
+        }
+      ],
+      "raw_sha256": "3b92d7b745111c01e3d982dfb7c7456f9f6244bf3e41608bfafb397ae037e970",
+      "report_sha256": "7f2a76a8ddeedb2022c4c90fa795ad379fc43453cb249ad3335796fbf1beb39a",
+      "manifest_sha256": "cfa638571014683812fab922d43c6c06e7cdd2d7930287dc141281e0fb647f60",
+      "executable_sha256": "9e67b201e397ff20fb9a25978e2201998a0bffe303194d565547daefdc8a74ef",
+      "execution_log_sha256": "43f7e5ada2799d132099a40b2a653c7fffb27ab657c7653668f5c1f1a24dabd0",
+      "unchanged_raw_after_guard": true
+    }
+  },
+  "inputs": {
+    "cases": 210,
+    "points": 174,
+    "flights": 36,
+    "cosmology": {
+      "hubble_km_s_Mpc": 70,
+      "omega_lambda": 0.7,
+      "source_z": 0.01
+    },
+    "interactions": [],
+    "source_sampling": false,
+    "fields": false,
+    "source": "Common initialized photon states; no source-sampler equivalence claim.",
+    "acceptance": "None: deterministic diagnostic, all discrepancies retained.",
+    "sha256": "b9a46248da51713545e9bc34d331a985fb506ef491b6478597de20f24ac97249"
+  },
+  "reference_sha256": {
+    "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+    "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+    "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+    "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+    "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+    "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+    "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+    "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+    "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+    "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+    "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+    "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+    "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+    "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+    "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+    "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+    "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+  },
+  "adapter_sha256": {
+    "observer.py": "b46976d086a93b4d58724f72522135c218d7e4db9f278f47727b0bd951626a9c",
+    "fork_api.h": "fa706c85962887c99bcaa85bc478eb930bd3f6f8d738593f7b38466bd784d8fc",
+    "run.py": "ffc7f750002ec7cb37aa1888e24809b87bdf333c7271f41dda279059696df360",
+    "observer_compare.cpp": "e96bafc6a259b033ee25674ff41cde60c5599b06489777c9bf2debac442d25f0",
+    "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+    "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+    "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+    "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+    "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+    "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+    "README.md": "c9927b021af4febfba113ec5369165315b41b7557222087017e95adc6b389675",
+    "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+    "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+    "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+    "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+    "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+    "reference_wrapper.cpp.in": "5c76489405c80a1202a6da5696e1097c57e97dc30bc83ff56536f8bca1984239",
+    "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da"
+  },
+  "production_sha256": {
+    "SpatialGeometry.cpp": "7e0061b06ff976e534478eede2b52456c23f5e9b683a441e665717c377d7a710",
+    "SpatialGeometry.h": "eca89187039cff963d89a9cd6558c3a865c460a17c7204d4a7ecf85767029d79",
+    "Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea",
+    "ParticleStack.cpp": "750df8f2052fc2dd6e0e7dc6bf8f73c8897d8f4283faf260faa5b438dc9b66a3",
+    "PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec"
+  },
+  "negative_control": {
+    "previous_revision": "473b99e",
+    "standalone_timeout_seconds": 2,
+    "standalone_log_sha256": "91c867a79d3cfa0c9b591b865c405bb5e88ee35bf5b2dac9470cec1819b3f5f0",
+    "bounded_regression_log_sha256": "7b25e7aab5332d5106ce9d4f033284e28f28b5634ddb23aacc1327425017263a",
+    "outcome": "Previous engine stalls at a one-ulp final remainder; bounded regression reaches watchdog.",
+    "standalone_source_sha256": "e56ab745a8112997eda1292445c52cab432b114d0444ce1a5051863cd8e79ce9",
+    "previous_engine_sha256": "ac02d1dd87d937778d7506a9f9b4bb2047556ea25b237d2d4f3d942a11f6cf4c",
+    "standalone_executable_sha256": "90055f7b3798c25940870b0d3c0c8232751e064221044e6e8ec0100d7acd5c1d"
+  },
+  "checks": {
+    "native": {
+      "ctest_passed": 244,
+      "elapsed_seconds": 16.78,
+      "log_sha256": "1a7af9e2e78c9b747c79209aab32ac93ee83950c25847fb6490bfc35120145a3"
+    },
+    "linux": {
+      "ctest_passed": 244,
+      "elapsed_seconds": 119.89,
+      "log_sha256": "195e8241c83127ec34eaf7ef75f3477133d823ba57d821339a70859f175907c5"
+    },
+    "sanitizers": {
+      "ctest_passed": 244,
+      "elapsed_seconds": 174.92,
+      "log_sha256": "45b46b06ac730c5fde4ca0c68c85a03f553b3180cb43efc1d67a7155dbfcf552"
+    },
+    "python_harness": {
+      "passed": 10,
+      "log_sha256": "3632c9d3f4001c9436310bcf5102e25d3a0a9655c0c872108b211123dfc41752"
+    }
+  }
+}

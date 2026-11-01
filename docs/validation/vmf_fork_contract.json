@@ -1,0 +1,875 @@
+{
+  "schema": 1,
+  "date": "2026-10-31",
+  "production_change": "8f9f681",
+  "final_point_revision": "7d2c924",
+  "contract": "Uniform cone proposal followed by original full-sphere vMF density multiplier; original zero/cutoff branches.",
+  "reference_snapshot": "e1fc71f613efe7fecf3210e15339c34814245cd4",
+  "runs": [
+    {
+      "mode": "native",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b"
+        },
+        "input_sha256": "1b203130aa7fcd67909277c4cbac2c8ffb2f9fcda571b22f1c138df2e322a067",
+        "revision": "7d2c924e5d72ca5f7e0e2016b59c55eebd6c832a",
+        "dirty": false,
+        "production_sha256": {
+          "Jet.cpp": "7f2223db4f6b792866a00dd49c013fe6765efa7cc1bc50a55af5d9e63ca9f1ed",
+          "Jet.h": "08812c9b3f48e0b6006e053ee3ab88cc8da996cb04f96187c4984459498827d7",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "SpatialGeometry.h": "ed206f425aaafb57bdc4987a11aa9f65f88f73fbdf8288f2b696723ba3ffde48"
+        },
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "effec5dec961304b85a055fccc18aeee322a7f41536945ca9c1f7be077908e78",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "linked_core_sha256": "6784b031a00bb8be612f7c1649e08438cd05222a88b9d02dfda4cbaf65dddbad",
+        "prefix": []
+      },
+      "report": {
+        "points": 87,
+        "ordinary_points": 70,
+        "max_ordinary_relative_difference": 3.592677129323217e-15,
+        "numerical_controls": [
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364644,
+            "modern": 0.07957747154594687,
+            "relative_difference": 0.0007992778373491814
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364725,
+            "modern": 0.07957747154594767,
+            "relative_difference": 0.0007992778373491733
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364804,
+            "modern": 0.07957747154594846,
+            "relative_difference": 0.0007992778373491654
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364964,
+            "modern": 0.07957747154594846,
+            "relative_difference": 0.0007992778373691886
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364883,
+            "modern": 0.07957747154594767,
+            "relative_difference": 0.0007992778373690224
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364804,
+            "modern": 0.07957747154594687,
+            "relative_difference": 0.0007992778373692046
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197528577,
+            "modern": 0.07957747154586811,
+            "relative_difference": 2.2121719121445653e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197536533,
+            "modern": 0.07957747154594767,
+            "relative_difference": 2.2121719121423536e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197544492,
+            "modern": 0.07957747154602726,
+            "relative_difference": 2.212171912140141e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197560407,
+            "modern": 0.07957747154602726,
+            "relative_difference": 2.2121721121256723e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197552451,
+            "modern": 0.07957747154594767,
+            "relative_difference": 2.2121721121627622e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197544492,
+            "modern": 0.07957747154586811,
+            "relative_difference": 2.2121721121300965e-05
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1000000,
+            "fork_finite": true,
+            "fork": 0,
+            "modern": 3.03e-321,
+            "relative_difference": 1
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1000000,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 3.03e-321,
+            "relative_difference": null
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e+308,
+            "fork_finite": true,
+            "fork": 1.5915494309189535e+307,
+            "modern": 1.5915494309189535e+307,
+            "relative_difference": 0
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e+308,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 1.5915494309189535e+307,
+            "relative_difference": null
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1000,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 159.15494309189535,
+            "relative_difference": null
+          }
+        ],
+        "scope": "Original weight kernel point diagnostics; no source/cascade statistical acceptance."
+      },
+      "compiler": "Homebrew clang version 22.1.5",
+      "full_suite": {
+        "total": 250,
+        "failed": 0,
+        "seconds": 36.19,
+        "sha256": "77057b6a9b3913755663bde61e68fd8cd44068affba7b9bb6c1e2b288c37a182"
+      },
+      "final_targeted": {
+        "total": 39,
+        "failed": 0,
+        "seconds": 0.72,
+        "sha256": "5c18621d236a83015de1d70fa86695c861875dc8a3c172427f58c8578fbbe58a"
+      },
+      "retained_directory": "build/checks/vmf-restore-points-final-native",
+      "artifacts_sha256": {
+        "Utils.h": "b4dd34a495838f65b9b63ade571cb82061e2aeb09bd79b5aa3678cb6feb3152e",
+        "Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+        "compiler-version.txt": "7fd92963bd53fe1d5cb8fc6cd497f4d32fda57d7f5e0a98fddf2d2fabd5420f8",
+        "report.json": "730d20a9dce196ec48ab36cc5a9c1aa07d051d5b7214a0c7009d2de883f1cd75",
+        "Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+        "compile-command.json": "f96540a30d9027a5f23b6cbc9cdde3a11c467604d6aa12d968dd315d9179535c",
+        "fork-vmf-weight-probe": "df08b1c1e20a69c5accf1d601978df2d78a1d3ba4cf9c0e5549ee4d86f7e6a1e",
+        "compile.log": "fa88c8dd84f48d1086ec85f6c2b1a6464320e9808eb267c62aee431c0cd13801",
+        "execution.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vmf.points": "1b203130aa7fcd67909277c4cbac2c8ffb2f9fcda571b22f1c138df2e322a067",
+        "weights.jsonl": "93230e28261cf9445a2b36be9411345fb6c999d15681e9845fe1220a5af8e50c",
+        "manifest.json": "da1ac675d4655df488f4e96701b43bca308a526dfa8374813d04dbea6e8fef4e",
+        "Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+        "reference.cpp": "787ea368932ca8b5e4ae74f076132374e0c4bebc604c3bcc9d8756f1a9108564",
+        "Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3"
+      }
+    },
+    {
+      "mode": "linux",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b"
+        },
+        "input_sha256": "1b203130aa7fcd67909277c4cbac2c8ffb2f9fcda571b22f1c138df2e322a067",
+        "revision": "7d2c924e5d72ca5f7e0e2016b59c55eebd6c832a",
+        "dirty": false,
+        "production_sha256": {
+          "Jet.cpp": "7f2223db4f6b792866a00dd49c013fe6765efa7cc1bc50a55af5d9e63ca9f1ed",
+          "Jet.h": "08812c9b3f48e0b6006e053ee3ab88cc8da996cb04f96187c4984459498827d7",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "SpatialGeometry.h": "ed206f425aaafb57bdc4987a11aa9f65f88f73fbdf8288f2b696723ba3ffde48"
+        },
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "effec5dec961304b85a055fccc18aeee322a7f41536945ca9c1f7be077908e78",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "linked_core_sha256": "3e33072756ecac49138989505a300ca5c176bc31e7363cc782a7cd8bb574b8c2",
+        "prefix": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull=never",
+          "--network",
+          "none",
+          "--read-only",
+          "--platform",
+          "linux/amd64",
+          "--entrypoint",
+          "/usr/bin/timeout",
+          "-v",
+          "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+          "-v",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/vmf-restore-linux-release/tmp:/tmp",
+          "-e",
+          "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/vmf-restore-linux-release/tmp",
+          "-w",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+          "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+          "240"
+        ]
+      },
+      "report": {
+        "points": 87,
+        "ordinary_points": 70,
+        "max_ordinary_relative_difference": 3.592677129323217e-15,
+        "numerical_controls": [
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364644,
+            "modern": 0.07957747154594687,
+            "relative_difference": 0.0007992778373491814
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364725,
+            "modern": 0.07957747154594767,
+            "relative_difference": 0.0007992778373491733
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364804,
+            "modern": 0.07957747154594846,
+            "relative_difference": 0.0007992778373491654
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364964,
+            "modern": 0.07957747154594846,
+            "relative_difference": 0.0007992778373691886
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364883,
+            "modern": 0.07957747154594767,
+            "relative_difference": 0.0007992778373690224
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364804,
+            "modern": 0.07957747154594687,
+            "relative_difference": 0.0007992778373692046
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197528577,
+            "modern": 0.07957747154586811,
+            "relative_difference": 2.2121719121445653e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197536533,
+            "modern": 0.07957747154594767,
+            "relative_difference": 2.2121719121423536e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197544492,
+            "modern": 0.07957747154602726,
+            "relative_difference": 2.212171912140141e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197560407,
+            "modern": 0.07957747154602726,
+            "relative_difference": 2.2121721121256723e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197552451,
+            "modern": 0.07957747154594767,
+            "relative_difference": 2.2121721121627622e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197544492,
+            "modern": 0.07957747154586811,
+            "relative_difference": 2.2121721121300965e-05
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1000000,
+            "fork_finite": true,
+            "fork": 0,
+            "modern": 3.03e-321,
+            "relative_difference": 1
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1000000,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 3.03e-321,
+            "relative_difference": null
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e+308,
+            "fork_finite": true,
+            "fork": 1.5915494309189535e+307,
+            "modern": 1.5915494309189535e+307,
+            "relative_difference": 0
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e+308,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 1.5915494309189535e+307,
+            "relative_difference": null
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1000,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 159.15494309189535,
+            "relative_difference": null
+          }
+        ],
+        "scope": "Original weight kernel point diagnostics; no source/cascade statistical acceptance."
+      },
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+      "full_suite": {
+        "total": 250,
+        "failed": 0,
+        "seconds": 221.38,
+        "sha256": "6565c6c695b6ccd0288606a6010a5f0084c20296ed93903f1ff3e8808b4f74a8"
+      },
+      "final_targeted": {
+        "total": 39,
+        "failed": 0,
+        "seconds": 15.31,
+        "sha256": "04854f216063f00e4c9acea2aabaffc3e4b04534753b595837976b9b67e50501"
+      },
+      "retained_directory": "build/checks/vmf-restore-points-final-linux",
+      "artifacts_sha256": {
+        "Utils.h": "b4dd34a495838f65b9b63ade571cb82061e2aeb09bd79b5aa3678cb6feb3152e",
+        "Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+        "compiler-version.txt": "8d6e704227c739386853b14c98257428d8ffbffd817517db0b2e088d28c773f6",
+        "report.json": "730d20a9dce196ec48ab36cc5a9c1aa07d051d5b7214a0c7009d2de883f1cd75",
+        "Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+        "compile-command.json": "a8c9067de7263f97ac17b44944a23f627b8f3630e001d736ef0c9783e4af2f62",
+        "fork-vmf-weight-probe": "5f9b62d3980aade09c5cabac23c98eee7ac71cd5c7c8d3602c106ccf79ea0698",
+        "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "execution.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vmf.points": "1b203130aa7fcd67909277c4cbac2c8ffb2f9fcda571b22f1c138df2e322a067",
+        "weights.jsonl": "93230e28261cf9445a2b36be9411345fb6c999d15681e9845fe1220a5af8e50c",
+        "manifest.json": "0d770ece585e23f06407a3ddb27c1774389a3216c3f33a21e8df10ba16b573a2",
+        "Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+        "reference.cpp": "787ea368932ca8b5e4ae74f076132374e0c4bebc604c3bcc9d8756f1a9108564",
+        "Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3"
+      }
+    },
+    {
+      "mode": "sanitizers",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b"
+        },
+        "input_sha256": "1b203130aa7fcd67909277c4cbac2c8ffb2f9fcda571b22f1c138df2e322a067",
+        "revision": "7d2c924e5d72ca5f7e0e2016b59c55eebd6c832a",
+        "dirty": false,
+        "production_sha256": {
+          "Jet.cpp": "7f2223db4f6b792866a00dd49c013fe6765efa7cc1bc50a55af5d9e63ca9f1ed",
+          "Jet.h": "08812c9b3f48e0b6006e053ee3ab88cc8da996cb04f96187c4984459498827d7",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "SpatialGeometry.h": "ed206f425aaafb57bdc4987a11aa9f65f88f73fbdf8288f2b696723ba3ffde48"
+        },
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "effec5dec961304b85a055fccc18aeee322a7f41536945ca9c1f7be077908e78",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "linked_core_sha256": "270021e122a96e9e1d9310993585143e1497505c37ca2f4149f804a8f37befa2",
+        "prefix": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull=never",
+          "--network",
+          "none",
+          "--read-only",
+          "--platform",
+          "linux/amd64",
+          "--entrypoint",
+          "/usr/bin/timeout",
+          "-v",
+          "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+          "-v",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/vmf-restore-linux-sanitizers/tmp:/tmp",
+          "-e",
+          "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/vmf-restore-linux-sanitizers/tmp",
+          "-e",
+          "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1",
+          "-e",
+          "UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1",
+          "-w",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+          "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+          "240"
+        ]
+      },
+      "report": {
+        "points": 87,
+        "ordinary_points": 70,
+        "max_ordinary_relative_difference": 3.592677129323217e-15,
+        "numerical_controls": [
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364644,
+            "modern": 0.07957747154594687,
+            "relative_difference": 0.0007992778373491814
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364725,
+            "modern": 0.07957747154594767,
+            "relative_difference": 0.0007992778373491733
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364804,
+            "modern": 0.07957747154594846,
+            "relative_difference": 0.0007992778373491654
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364964,
+            "modern": 0.07957747154594846,
+            "relative_difference": 0.0007992778373691886
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364883,
+            "modern": 0.07957747154594767,
+            "relative_difference": 0.0007992778373690224
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-14,
+            "fork_finite": true,
+            "fork": 0.07964112693364804,
+            "modern": 0.07957747154594687,
+            "relative_difference": 0.0007992778373692046
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197528577,
+            "modern": 0.07957747154586811,
+            "relative_difference": 2.2121719121445653e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197536533,
+            "modern": 0.07957747154594767,
+            "relative_difference": 2.2121719121423536e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197544492,
+            "modern": 0.07957747154602726,
+            "relative_difference": 2.212171912140141e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197560407,
+            "modern": 0.07957747154602726,
+            "relative_difference": 2.2121721121256723e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197552451,
+            "modern": 0.07957747154594767,
+            "relative_difference": 2.2121721121627622e-05
+          },
+          {
+            "group": "cancellation",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e-12,
+            "fork_finite": true,
+            "fork": 0.07957923197544492,
+            "modern": 0.07957747154586811,
+            "relative_difference": 2.2121721121300965e-05
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1000000,
+            "fork_finite": true,
+            "fork": 0,
+            "modern": 3.03e-321,
+            "relative_difference": 1
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1000000,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 3.03e-321,
+            "relative_difference": null
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": 1e+308,
+            "fork_finite": true,
+            "fork": 1.5915494309189535e+307,
+            "modern": 1.5915494309189535e+307,
+            "relative_difference": 0
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1e+308,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 1.5915494309189535e+307,
+            "relative_difference": null
+          },
+          {
+            "group": "range",
+            "theta": 0,
+            "phi": 0,
+            "kappa": -1000,
+            "fork_finite": false,
+            "fork": null,
+            "modern": 159.15494309189535,
+            "relative_difference": null
+          }
+        ],
+        "scope": "Original weight kernel point diagnostics; no source/cascade statistical acceptance."
+      },
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+      "full_suite": {
+        "total": 250,
+        "failed": 0,
+        "seconds": 343.89,
+        "sha256": "691e905a1f9f265eeea08a516daeda88f05b08fc66c468f5e59ab20c0730df34"
+      },
+      "final_targeted": {
+        "total": 39,
+        "failed": 0,
+        "seconds": 20.6,
+        "sha256": "c7d417e153a746bd96c61d2296e6d4f4c57d7c9b033b599f4de70ec42fbebf3a"
+      },
+      "retained_directory": "build/checks/vmf-restore-points-final-sanitizers",
+      "artifacts_sha256": {
+        "Utils.h": "b4dd34a495838f65b9b63ade571cb82061e2aeb09bd79b5aa3678cb6feb3152e",
+        "Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+        "compiler-version.txt": "8d6e704227c739386853b14c98257428d8ffbffd817517db0b2e088d28c773f6",
+        "report.json": "730d20a9dce196ec48ab36cc5a9c1aa07d051d5b7214a0c7009d2de883f1cd75",
+        "Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+        "compile-command.json": "2e1570843651503518ee2373f41bc45e93d59e68730d9f6d69a7f855e059a727",
+        "fork-vmf-weight-probe": "5cf719f3fc560b7b5693731030e1c19afd79a96527e7b51b6eb697464546c33c",
+        "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "execution.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "vmf.points": "1b203130aa7fcd67909277c4cbac2c8ffb2f9fcda571b22f1c138df2e322a067",
+        "weights.jsonl": "93230e28261cf9445a2b36be9411345fb6c999d15681e9845fe1220a5af8e50c",
+        "manifest.json": "833ee234b6fc398d66f629b4bde0da1564676018c048acc5f67614933cddb326",
+        "Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+        "reference.cpp": "787ea368932ca8b5e4ae74f076132374e0c4bebc604c3bcc9d8756f1a9108564",
+        "Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3"
+      }
+    }
+  ],
+  "test_source_sha256": {
+    "tests/vmf_source.cpp": "2be44393a5fd32102058a410b7a0b01e88208f00da6416420a5d474283260675",
+    "tests/configuration_input.cpp": "b0f8d5daf47c8fd02abbf3347ddc8db0cd717b74c48f3170d0b8bcae64c1f2ae",
+    "tests/test_fork_transport.py": "5f3ebcbf1179383e689523ebf1c64f0acadd60376902c710805007d55701c05b"
+  },
+  "python": {
+    "passed": 17,
+    "log_sha256": "385d875b9e29dbf43830dc067da462b5392af8d83b180e9475db42cdeaf46443"
+  },
+  "reference_conversion_note": "An additional subnormal assertion initially converted the Boost reference to zero. Comparing in least-subnormal units preserves the four-ulp bound; all final targeted suites passed.",
+  "retained_failed_reference_log_sha256": "7c2a83aeb7bb2169536f7016d2fc7fc3ef1ccd0cf9e90aa4d81a09114904960d",
+  "image": "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+  "linux_execution": "Offline Ubuntu 22.04 Linux amd64 under emulation; GCC/GFortran 11.4.0; ASan/UBSan leak detection, no suppressions.",
+  "interface_sha256": {
+    "src/lib/CMakeLists.txt": "5ecbc89324ee42ca1deccdc4c7eb10f56b53d0c84f1613c17c37a59bf96bbac7",
+    "src/app/crbeam/Configuration.cpp": "fc65c8901a8ac9b6a077e8bd68e94ffe9efb4beb2bdfe256bffea22676207945",
+    "src/app/crbeam/CRbeam.cpp": "85b13b154a4e740a92880eab7b250ee46f60a6935ab53c8c83bbc79f33b59b5a",
+    "examples/vmf_source.yaml": "ad4237abf547364b6c4aa2054dc61d71e0238cf85a02ab3e750f1ae21434ab16"
+  }
+}

@@ -1,11 +1,13 @@
 #include "ParticleStack.h"
 #include "PropagationEngine.h"
 #include "SpatialGeometry.h"
+#include "Logger.h"
 #include <cmath>
 #include <functional>
 #include <gtest/gtest.h>
 #include <limits>
 #include <memory>
+#include <sstream>
 
 namespace {
 using namespace mcray;
@@ -30,6 +32,47 @@ public:
   void AddParticle(const Particle &p) override { particles.push_back(p); }
   void Flush(bool) override {}
 };
+class ProgressWatchdog : public ILogger {
+public:
+  unsigned calls=0;
+  void log(const Particle&) override {
+    // Make the regression fail promptly on old code instead of hanging CI.
+    if (++calls>12)
+      Utils::Exception::ThrowFatal("Test watchdog: variable-rate propagation stalled");
+  }
+};
+
+TEST_F(SpatialGeometryTest, VariableRateRejectsHalfStepsThatCannotAdvanceTime) {
+  Particle p(Photon,.01);
+  p.Energy=1e12*units.eV;
+  cosmo_time initial=p.Time.t();
+  auto next=std::nextafter(initial,std::numeric_limits<cosmo_time>::infinity());
+  const cosmo_time half=(next-initial)/2;
+  // Adjacent normal binary values alternate their tie-to-even rounding.
+  if (initial+half!=initial) {
+    initial=std::nextafter(initial,-std::numeric_limits<cosmo_time>::infinity());
+    next=std::nextafter(initial,std::numeric_limits<cosmo_time>::infinity());
+  }
+  ASSERT_EQ(initial+(next-initial)/2,initial);
+  p.Time.setT(initial);
+  CosmoTime end; end.setT(next);
+  Result result; result.SetEndTime(end);
+  Utils::SmartPtr<Capture> capture=new Capture;
+  result.AddOutput(capture);
+  ParticleStack stack; stack.AddPrimary(p);
+  PropagationEngine engine(stack,result,17);
+  ProgressWatchdog watchdog; engine.SetLogger(&watchdog);
+  std::ostringstream errors;
+  auto* previous=std::cerr.rdbuf(errors.rdbuf());
+  engine.Run(.1);
+  std::cerr.rdbuf(previous);
+  result.Flush();
+  EXPECT_EQ(engine.FailureCount(),1u);
+  EXPECT_TRUE(capture->particles.empty());
+  EXPECT_LT(watchdog.calls,12u);
+  EXPECT_NE(errors.str().find("below available time resolution"),std::string::npos);
+  EXPECT_EQ(errors.str().find("Test watchdog"),std::string::npos);
+}
 TEST_F(SpatialGeometryTest,
        PencilInitializesPositionAndPreservesRandomStreamAndIdentity) {
   SourceGeometry source({units.Mpc, -2 * units.Mpc, 3 * units.Mpc}, {0, 0, 5});
