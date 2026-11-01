@@ -9,7 +9,7 @@ that format, including when replayed from config.yaml.
 | --- | --- | --- |
 | `--source-position-Mpc x,y,z` | `source.position_Mpc` | `[0, 0, 0]`, absolute engine coordinates in Mpc |
 | `--source-angular-model pencil\|cone\|vmf` | `source.angular_distribution.model` | `pencil` |
-| `--source-axis x,y,z` | `source.angular_distribution.axis` | `[0, 0, 1]`, finite nonzero direction, normalized |
+| `--jet-axis theta,phi` or `--jet-axis x,y,z` | `source.angular_distribution.axis` | Two finite angles in radians, or a finite nonzero vector (normalized); default `[0, 0, 1]` |
 | `--source-half-angle-deg angle` | `source.angular_distribution.half_angle_deg` | `0` for cone; vmf requires an explicit value in [0,180] |
 | `--source-vmf-kappa value` | `source.angular_distribution.kappa` | Required finite signed parameter for vmf; forbidden with other models |
 | `--end-redshift z` | `propagation.end_redshift` | `0`, nonnegative and below source redshift |
@@ -19,11 +19,51 @@ that format, including when replayed from config.yaml.
 | `--observer-stop-when inside\|outside` | `observer.stop_when` | `inside`, sphere only |
 | `--output-primary-direction` | `output.primary_direction` | `false`, record primary direction |
 
-YAML vectors are sequences of three numbers. CLI vectors are comma-separated;
+Source/observer positions use three-number YAML sequences. Jet axes accept
+either two or three numbers, in YAML sequences or comma-separated CLI values.
+Other CLI vectors are comma-separated;
 quote the complete value if it contains spaces. Geometry and time settings are
 validated before output creation. Source coordinates, fields and observer
 coordinates use the same existing engine convention; no new cosmological
 coordinate transformation is applied.
+
+## Jet-axis representations
+
+Two numbers mean `(theta,phi)` in **radians**, matching the fork's
+`--jet-theta` and `--jet-phi`. Theta is the polar angle from +Z; phi is
+azimuth from +X toward +Y. Their direction is:
+
+```text
+axis = [sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta)]
+```
+
+Three numbers mean Cartesian vector components, which are normalized.
+Both angles must be finite; vector components must be finite and not all zero.
+For example, the angle pair `0,0` means +Z and is valid, while `0,0,0` is
+an invalid zero vector. Positions continue to require exactly three numbers.
+Malformed/empty components, other arities and duplicate options are errors.
+
+```sh
+CRbeam ... --jet-axis 0.4,0.7
+CRbeam ... --jet-axis 1,-2,3
+```
+
+The same input choices are available in YAML schema version 2:
+
+```yaml
+source:
+  angular_distribution:
+    model: vmf
+    axis: [0.4, 0.7]  # theta, phi in radians; alternatively [x, y, z]
+    half_angle_deg: 10
+    kappa: 100
+```
+
+The effective config.yaml always stores the canonical normalized three-number
+axis, so replay does not reinterpret saved vector components as angles.
+Opening `half_angle_deg` remains in degrees and is separate from the axis.
+The renamed `--source-axis` option is rejected with a `--jet-axis` migration
+message; it is not silently ignored or retained as an alias.
 
 A cone samples uniformly in solid angle about its axis. Pencil and zero-width
 cone sources consume no extra random values; geometry does not change primary

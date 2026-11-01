@@ -279,10 +279,20 @@ mcray::SpatialVector SpatialVectorValue(const YAML::Node &input,
     fallback[i] = Numeric(node[i], path);
   return fallback;
 }
+mcray::SpatialVector JetAxisValue(const YAML::Node &input) {
+  const std::string path="source.angular_distribution.axis";
+  const auto node=Get(input,path);
+  if (!node) return {0,0,1};
+  if (!node.IsSequence() || (node.size()!=2 && node.size()!=3))
+    Invalid(path,"expected theta,phi in radians or x,y,z");
+  if (node.size()==3) return SpatialVectorValue(input,path,{0,0,1});
+  // Match the axis used by the fork's jet-theta/jet-phi parameters.
+  const double theta=Numeric(node[0],path), phi=Numeric(node[1],path);
+  return {std::sin(theta)*std::cos(phi),std::sin(theta)*std::sin(phi),std::cos(theta)};
+}
 void NormalizeSpatial(YAML::Node effective, const YAML::Node &input) {
   const auto position = SpatialVectorValue(input, "source.position_Mpc", {});
-  auto axis =
-      SpatialVectorValue(input, "source.angular_distribution.axis", {0, 0, 1});
+  auto axis = JetAxisValue(input);
   const auto scale =
       std::max({std::abs(axis[0]), std::abs(axis[1]), std::abs(axis[2])});
   if (!(scale > 0))
@@ -413,7 +423,7 @@ bool SpatialCli(CmdLine &cli, YAML::Node effective) {
   const Option options[] = {
       {"--source-position-Mpc", "source.position_Mpc", "vector"},
       {"--source-angular-model", "source.angular_distribution.model", "text"},
-      {"--source-axis", "source.angular_distribution.axis", "vector"},
+      {"--jet-axis", "source.angular_distribution.axis", "axis"},
       {"--source-half-angle-deg", "source.angular_distribution.half_angle_deg",
        "number"},
       {"--source-vmf-kappa", "source.angular_distribution.kappa", "number"},
@@ -437,9 +447,11 @@ bool SpatialCli(CmdLine &cli, YAML::Node effective) {
     if (!parameter.value || !*parameter.value)
       Invalid(option.option, "requires a nonempty argument");
     const std::string raw = parameter.value;
-    if (std::string(option.kind) == "vector") {
-      if (std::count(raw.begin(), raw.end(), ',') != 2)
-        Invalid(option.option, "expected x,y,z");
+    if (std::string(option.kind) == "vector" || std::string(option.kind) == "axis") {
+      const bool axis=std::string(option.kind)=="axis";
+      const auto commas=std::count(raw.begin(),raw.end(),',');
+      if (commas!=2 && !(axis && commas==1))
+        Invalid(option.option,axis?"expected theta,phi in radians or x,y,z":"expected x,y,z");
       YAML::Node vector(YAML::NodeType::Sequence);
       for (auto item : Split(raw, ',')) {
         const auto first = item.find_first_not_of(" \t\r\n"),
@@ -449,8 +461,10 @@ bool SpatialCli(CmdLine &cli, YAML::Node effective) {
         item = item.substr(first, last - first + 1);
         vector.push_back(Numeric(YAML::Node(item), option.option));
       }
-      if (vector.size() != 3)
-        Invalid(option.option, "expected exactly three coordinates");
+      if (vector.size()!=static_cast<size_t>(commas+1))
+        Invalid(option.option,"empty axis/vector component");
+      if (vector.size()!=3 && !(axis && vector.size()==2))
+        Invalid(option.option,axis?"expected two angles or three coordinates":"expected exactly three coordinates");
       Put(input, option.field, vector);
     } else if (std::string(option.kind) == "number")
       Put(input, option.field, Numeric(YAML::Node(raw), option.option));
@@ -577,6 +591,8 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
       fOriginal.emplace_back(argv[i]);
     int file = -1;
     for (int i = 1; i < argc; ++i) {
+      if (std::string(argv[i])=="--source-axis")
+        Invalid("--source-axis","renamed to --jet-axis (theta,phi in radians or x,y,z)");
       const CmdInfo *known = nullptr;
       for (const auto *c = commands; c->code; ++c)
         if (std::string(argv[i]) == c->name ||
@@ -681,7 +697,7 @@ Configuration::Configuration(int argc, char **argv, CmdInfo *commands) {
     if (!yaml) {
       fArguments = fOriginal;
       for (const char* option : {"--magnetic-field","--magnetic-field-file","--magnetic-field-boundary",
-          "--source-position-Mpc","--source-angular-model","--source-axis","--source-half-angle-deg","--source-vmf-kappa",
+          "--source-position-Mpc","--source-angular-model","--jet-axis","--source-half-angle-deg","--source-vmf-kappa",
           "--end-redshift","--observer","--observer-center-Mpc","--observer-radius-Mpc",
           "--observer-stop-when","--output-primary-direction",
           "--thinning-model","--thinning-threshold-eV"})

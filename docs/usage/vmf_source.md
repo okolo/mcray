@@ -9,11 +9,13 @@ superseding the normalized conditional-vMF implementation from PR #12.
 
 ## CLI and YAML
 
-The existing names and schema version 2 are retained:
+The vMF model/kappa names and YAML schema version 2 are retained. The axis
+option is now `--jet-axis`: two angles in radians or three vector components
+(see [axis representations](spatial_source_observer.md#jet-axis-representations)):
 
 ```sh
 CRbeam --particle electron --z 0.01 --emax 1e13 \
-  --source-angular-model vmf --source-axis 0,0,1 \
+  --source-angular-model vmf --jet-axis 0,0,1 \
   --source-half-angle-deg 10 --source-vmf-kappa 100 \
   --seed 123 --output vmf-run
 ```
@@ -31,7 +33,8 @@ The [complete example](../../examples/vmf_source.yaml) enables primary-direction
 output. Kappa must be explicitly supplied and finite, and may be positive,
 negative or zero, as allowed by the original weight function. A negative
 value favors the opposite pole. Half-angle must be explicitly supplied in
-[0,180] degrees. A finite nonzero axis is normalized. Kappa remains forbidden
+[0,180] degrees. A three-number axis is normalized; a two-number axis is converted from the
+fork's theta/phi radians. Snapshots store the normalized three-number vector. Kappa remains forbidden
 with pencil/cone models. Schema version 1 does not accept vmf/kappa.
 Effective settings are saved in config.yaml and run.yaml identifies code and
 execution provenance. This changes results for existing nonzero-kappa vMF
@@ -84,7 +87,8 @@ and next RNG value for the same inputs.
 
 `src/lib/Jet.h` and `Jet.cpp` restore the original `vMF_weight` function name
 and angle-based entry point. A small axis overload adapts the existing
-vector-axis CLI. SourceGeometry keeps the recognizable fork sequence:
+vector-axis CLI. The `vmf` abbreviation means **von Mises-Fisher**, the distribution of
+directions on a sphere. SourceGeometry keeps the recognizable fork sequence:
 uniform cone direction, then vMF weight multiplication. There is no inverse
 vMF CDF, conditional-mass cache or direct-vMF sampler. Current particle
 identity, ownership and RNG interfaces are retained. Equal seeds do not
