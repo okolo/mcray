@@ -147,8 +147,8 @@ target_link_libraries(photon_thinning_tests PRIVATE GTest::gtest_main mcray)
 gtest_discover_tests(photon_thinning_tests TEST_PREFIX "unit.thinning."
     PROPERTIES TIMEOUT 30 LABELS "unit;sampling")
 
-# Truncated vMF quantiles and frozen CDF controls use header-only Boost decimal
-# arithmetic as an independent high-precision reference for point checks.
+# Fork-compatible vMF checks cover uniform-cone proposals and density weights.
+# Header-only Boost decimal arithmetic provides independent point references.
 add_executable(vmf_source_tests vmf_source.cpp)
 target_include_directories(vmf_source_tests PRIVATE ../src/lib)
 target_link_libraries(vmf_source_tests PRIVATE GTest::gtest_main mcray)
