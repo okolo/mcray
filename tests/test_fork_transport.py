@@ -16,6 +16,7 @@ import source_observer_pilot as pilot
 import source_observer_ensemble as ensemble
 import vmf as vmf_probe
 import coupled
+import field_source_pilot as field_pilot
 
 
 def row():
@@ -29,6 +30,48 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_field_pilot_reservations_are_separate_and_match_revised_model(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            cases,grid,design=field_pilot.inputs(Path(a),'pilot')
+            _,_,fixture=field_pilot.inputs(Path(b),'fixture')
+            self.assertEqual(design['particles'],['electron','photon'])
+            self.assertEqual(design['energy_eV'],1e15)
+            self.assertEqual(design['total_histories'],12000)
+            self.assertEqual(fixture['total_histories'],24)
+            self.assertEqual({c['species'] for c in design['cases']},{0,3})
+            self.assertEqual({c['accuracy'] for c in design['cases']},{20})
+            seeds=lambda d:{c[k] for c in d['cases'] for k in ('fork_seed','modern_seed')}
+            self.assertEqual(seeds(design),set(range(2005101,2005113)))
+            self.assertFalse(seeds(design)&seeds(fixture))
+            self.assertFalse(seeds(design)&set(range(2003101,2003107)))
+            self.assertFalse(seeds(design)&set(range(2004101,2004107)))
+            self.assertEqual(field_pilot.kernels.digest(grid),design['grid_sha256'])
+            self.assertEqual(len(cases.read_text().splitlines()),6)
+
+    def test_field_pilot_rejects_incomplete_and_invalid_final_states(self):
+        design=dict(cases=[dict(name='electron',count=2)],purpose='Cost only',mode='fixture')
+        rows=[]
+        for impl in ('fork','modern'):
+            for i in range(2):
+                rows.append(dict(record='history',case='electron',implementation=impl,primary=i,
+                    weight=1,direction=[0,0,1],historical_steps=2,
+                    flight=dict(hit=False,past_end=False,end_error_Mpc=0,position_Mpc=[0,0,.2],
+                                direction=[0,0,1],moves=2,field_calls=8,zero_scale_calls=0)))
+            rows.append(dict(record='timing',case='electron',implementation=impl,compute_seconds=1))
+        report=field_pilot.summarize(rows,design)
+        self.assertEqual(report['histories'],4)
+        self.assertEqual(report['groups'][0]['max_engine_moves'],2)
+        self.assertNotIn('compatible_at_reported_resolution',report)
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            field_pilot.summarize(rows[:-1],design)
+        with self.assertRaisesRegex(ValueError,'Duplicate'):
+            field_pilot.summarize(rows+[rows[0]],design)
+        for bad in ([0,0], [0,0,float('nan')]):
+            broken=copy.deepcopy(rows); broken[0]['flight']['direction']=bad
+            with self.assertRaises(ValueError): field_pilot.summarize(broken,design)
+        broken=copy.deepcopy(rows); broken[0]['weight']=.5
+        with self.assertRaises(ValueError): field_pilot.summarize(broken,design)
+
     def test_coupled_matrix_reuses_existing_fields_and_freezes_all_refinements(self):
         with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
             cases,grid,design=coupled.inputs(Path(a))

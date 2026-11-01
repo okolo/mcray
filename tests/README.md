@@ -561,3 +561,7 @@ The [fixed-state field/observer diagnostic](fork_compat/COUPLED.md) exercises
 729 charged-particle field/observer/engine combinations with the same frozen
 physical settings. Its guards also use tests/test_fork_transport.py; the
 optional C++ reference probe needs the pinned snapshot and configured build.
+
+The [electron/photon field/source pilot](fork_compat/FIELD_SOURCE_PILOT.md)
+adds true source sampling at 1 PeV to the coupled field/observer path. Its
+self-contained reservation/accounting guards use tests/test_fork_transport.py.

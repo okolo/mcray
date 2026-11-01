@@ -31,6 +31,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [Electron/photon field/source cost-pilot protocol](../tests/fork_compat/FIELD_SOURCE_PILOT.md)
 - [Fixed-state historical field/observer/engine coupling](validation/fork_field_observer_comparison.md)
 - [Historical sphere observer and ballistic stopping](validation/fork_observer_comparison.md)
 - [Source/observer cost pilot](validation/fork_source_observer_pilot.md)

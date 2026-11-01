@@ -141,7 +141,7 @@ def main():
             ('PropagationEngine.cpp','Deflection3D.cpp','GridMagneticField.cpp','SpatialGeometry.cpp','Particle.cpp')},
         linked_core_sha256=kernels.digest(build/'mcray/libmcray.a'),command_prefix=prefix)
     (output/'manifest.json').write_text(json.dumps(metadata,indent=2)+'\n')
-    sources=[output/'coupled_reference.cpp',HERE/'coupled_compare.cpp',*[ROOT/'src/lib'/name for name in
+    sources=[output/'coupled_reference.cpp',HERE/'coupled_compare.cpp',HERE/'coupled_modern.cpp',*[ROOT/'src/lib'/name for name in
         ('PropagationEngine.cpp','Deflection3D.cpp','GridMagneticField.cpp','SpatialGeometry.cpp','Jet.cpp')]]
     kernels.compile_probe(build,output,prefix,sources,'coupled-probe',timeout=240)
     with (output/'execution.log').open('w') as log,(output/'trajectories.jsonl').open('w') as raw:

@@ -104,3 +104,8 @@ See the [confirmed results](../../docs/validation/fork_field_observer_comparison
 and statistical field/observer ensemble need their own frozen reservations,
 counts and confidence/precision decisions. Do not rerun the spent final seeds
 from the photon baseline or infer interacting-cascade equivalence here.
+
+The subsequent [1 PeV electron/photon cost pilot](FIELD_SOURCE_PILOT.md)
+reuses this adapter with source sampling. The modern propagation/output
+helpers now live in coupled_modern.cpp/.h; fixed-state case inputs and the
+frozen results above remain unchanged.

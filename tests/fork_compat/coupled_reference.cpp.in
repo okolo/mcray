@@ -18,17 +18,15 @@ struct PropagationEngine {
 };
 @MOVE@
 }
-CoupledOutput HistoricalCoupled(const CoupledInput& input,const char* grid,const double* field,double scale) {
+CoupledOutput HistoricalCoupledWithField(const CoupledInput& input,void* field) {
     using namespace transport_reference;
     Silence quiet;
-    const ParticleType types[]{Electron,Positron,Proton};
-    if(input.particle<0 || input.particle>2) throw runtime_error("Unsupported coupled species");
+    const ParticleType types[]{Electron,Positron,Proton,Photon};
+    if(input.particle<0 || input.particle>3) throw runtime_error("Unsupported coupled species");
     auto p=BallisticParticle(input.observer);
     p.Type=types[input.particle]; p.Energy=input.energy;
     Result result(input.observer);
-    unique_ptr<MagneticField> owned= input.fieldKind==2
-        ? unique_ptr<MagneticField>(new SavedMF(grid,SavedMF::FILLING_ZERO))
-        : unique_ptr<MagneticField>(new ConstantField(field,scale));
+    auto* owned=static_cast<MagneticField*>(field);
     CountedField counted(*owned);
     Deflection3D deflector(&counted,input.accuracy);
     CoupledLogger logger;
@@ -61,4 +59,20 @@ CoupledOutput HistoricalCoupled(const CoupledInput& input,const char* grid,const
     if(p.Energy!=input.energy || p.Type!=types[input.particle])
         throw runtime_error("Historical energy/identity changed without interactions");
     return out;
+}
+
+void* HistoricalCoupledField(int kind,const char* grid,const double* field,double scale) {
+    using namespace transport_reference;
+    Silence quiet;
+    if(kind==2) return new SavedMF(grid,SavedMF::FILLING_ZERO);
+    if(kind==0 || kind==1) return new ConstantField(field,scale);
+    throw runtime_error("Unsupported coupled field");
+}
+void DeleteHistoricalCoupledField(void* field) {
+    delete static_cast<transport_reference::MagneticField*>(field);
+}
+CoupledOutput HistoricalCoupled(const CoupledInput& input,const char* grid,const double* field,double scale) {
+    std::unique_ptr<void,void(*)(void*)> owned(
+        HistoricalCoupledField(input.fieldKind,grid,field,scale),DeleteHistoricalCoupledField);
+    return HistoricalCoupledWithField(input,owned.get());
 }

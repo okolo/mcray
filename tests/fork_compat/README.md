@@ -108,3 +108,7 @@ The [fixed-state field/observer coupling diagnostic](COUPLED.md) combines the
 actual historical engine move, deflector and observer with the modern engine
 on 729 shared initialized states. It reports every hit/error/refinement change;
 source sampling and statistical acceptance are outside its scope.
+
+The [electron/photon field/source cost pilot](FIELD_SOURCE_PILOT.md) uses
+1 PeV primaries and the same tabulated-field coupling driver. Its small
+software fixture has disjoint seeds; final statistical acceptance is separate.
