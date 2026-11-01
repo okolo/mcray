@@ -72,6 +72,20 @@ class TransportDiagnosticTests(unittest.TestCase):
         broken=copy.deepcopy(rows); broken[0]['weight']=.5
         with self.assertRaises(ValueError): field_pilot.summarize(broken,design)
 
+    def test_requested_eev_species_matrix_keeps_energy_and_refinements(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cases,_,design=coupled.inputs(Path(directory),('electron','photon','proton'))
+            self.assertEqual(design['species'],['electron','photon','proton'])
+            self.assertEqual(design['energy_eV'],1e18)
+            rows=[line.split() for line in cases.read_text().splitlines()]
+            self.assertEqual(len(rows),729)
+            self.assertEqual({int(row[3]) for row in rows},{0,2,3})
+            coverage={tuple(row[:4]):set() for row in rows}
+            for row in rows: coverage[tuple(row[:4])].add(int(row[4]))
+            self.assertTrue(all(values=={10,20,40} for values in coverage.values()))
+        for species in ((),('electron','electron'),('muon',)):
+            with self.assertRaises(ValueError): coupled.inputs(Path('.'),species)
+
     def test_coupled_matrix_reuses_existing_fields_and_freezes_all_refinements(self):
         with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
             cases,grid,design=coupled.inputs(Path(a))

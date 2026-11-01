@@ -18,7 +18,15 @@ HERE, ROOT = observer.HERE, observer.ROOT
 kernels = observer.kernels
 
 
-def inputs(output):
+PARTICLE_IDS = dict(electron=0, positron=1, proton=2, photon=3)
+DEFAULT_SPECIES = ('electron', 'positron', 'proton')
+
+
+def inputs(output, species=DEFAULT_SPECIES):
+    # Keep the original default matrix byte-for-byte reproducible. An explicit
+    # species selection creates a new design without relabelling earlier runs.
+    if not species or len(set(species)) != len(species) or any(name not in PARTICLE_IDS for name in species):
+        raise ValueError('Select distinct supported coupled species')
     # Reuse the exact existing transport grid generator instead of maintaining
     # a second field prescription. Its other generated cases are not executed.
     fixture=output/'transport-fixture'; fixture.mkdir()
@@ -46,11 +54,11 @@ def inputs(output):
             norm=math.sqrt(sum(x*x for x in direction)); direction=[x/norm for x in direction]
             rays.append((name,kind+'_'+str(index),center,direction))
     cases=output/'coupled.cases'
-    rows=[(name,ray,field,species,accuracy,*center,*direction)
+    rows=[(name,ray,field,particle,accuracy,*center,*direction)
           for name,ray,center,direction in rays for field in (0,1,2)
-          for species in (0,1,2) for accuracy in (10,20,40)]
+          for particle in (PARTICLE_IDS[name] for name in species) for accuracy in (10,20,40)]
     cases.write_text(''.join(' '.join(map(str,row))+'\n' for row in rows))
-    design=dict(cases=len(rows),initial_directions=len(rays),species=['electron','positron','proton'],
+    design=dict(cases=len(rows),initial_directions=len(rays),species=list(species),
         energy_eV=1e18,accuracy=[10,20,40],fields=['none','oblique constant','existing saved grid'],
         constant_field_G=[2e-10,3e-10,5e-10],constant_scale_Mpc=.1,
         observer=dict(mode='strict inside',radius_Mpc=.01,distance_Mpc=.1),
@@ -127,12 +135,14 @@ def main():
     parser.add_argument('--build-dir',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--command-prefix',default='')
+    parser.add_argument('--species',nargs='+',choices=tuple(PARTICLE_IDS),default=DEFAULT_SPECIES,
+                        help='Explicit species matrix; default preserves the original charged-particle controls')
     args=parser.parse_args()
     fork,build,output=args.fork_root.resolve(),args.build_dir.resolve(),args.output.resolve()
     if output==fork or fork in output.parents: parser.error('Output must be outside the reference')
     if output.exists() and any(output.iterdir()): parser.error('Preserve earlier attempts; output must be empty')
     output.mkdir(parents=True,exist_ok=True)
-    reference=extract(fork,output); cases,grid,design=inputs(output); prefix=shlex.split(args.command_prefix)
+    reference=extract(fork,output); cases,grid,design=inputs(output,args.species); prefix=shlex.split(args.command_prefix)
     metadata=dict(reference_sha256=reference,
         revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         dirty=bool(subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True)),

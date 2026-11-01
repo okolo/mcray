@@ -109,3 +109,14 @@ The subsequent [1 PeV electron/photon cost pilot](FIELD_SOURCE_PILOT.md)
 reuses this adapter with source sampling. The modern propagation/output
 helpers now live in coupled_modern.cpp/.h; fixed-state case inputs and the
 frozen results above remain unchanged.
+
+## Requested 1 EeV electron/photon/proton follow-up
+
+On 2026-11-01 the user requested electrons, photons and protons at 1 EeV.
+Run the same fixed-state geometry/fields and 10/20/40 refinements with explicit
+**--species electron photon proton**. This replaces positrons with photons in
+a separately recorded 729-case design. The default matrix and earlier frozen
+results remain unchanged. No source RNG, new statistical seed or acceptance
+threshold is introduced. Energy is 1 EeV in both matrices; photons propagate
+freely even when the field deflector is installed. Save a new empty output
+and retain the species list and input hash with the results.
