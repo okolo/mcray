@@ -104,3 +104,7 @@ adds field/engine counters. Descriptive hit counts and cost are not acceptance
 criteria. The next statistical protocol still needs agreed observables,
 confidence/precision choices, final counts, new seeds and stopping rules.
 Checks expected to exceed 30 minutes belong on an external Linux amd64 server.
+
+See the [confirmed pilot results](../../docs/validation/fork_field_source_pilot.md)
+for the completed reservation, measured costs, known stopping differences
+and limits. Those seeds are spent; do not turn the run example into a rerun.
