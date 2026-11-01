@@ -1,7 +1,7 @@
 # Source geometry, sphere observers and spatial output
 
 YAML schema version 2 and the long CLI options below configure source geometry.
-Existing CLI invocations and version 1 keep their defaults and output format.
+Legacy simulation defaults and the version 1 output format are preserved.
 A version 2 configuration containing only default spatial values also keeps
 that format, including when replayed from config.yaml.
 
@@ -201,3 +201,15 @@ longdouble precision with NumPy scalar formatting. The old rotateMC
 assumptions (zero source position, +z pencil, and interpreting 1-z/T as a delay)
 do not apply to general spatial runs. Old plotting/launch scripts require
 adaptation to the new settings and are not copied wholesale.
+
+
+## Jet-axis interface verification
+
+The 2026-11-01 input extension passed 253/253 C++ checks on native macOS
+Release and emulated Linux amd64 Release, plus 57/57 focused source/spatial/
+configuration checks under ASan/UBSan with leak detection. Seventeen Python
+guards passed. New cases verify angle/vector CLI/YAML equivalence, weighted
+vMF ballistic output and canonical snapshot replay, malformed/quoted/nonfinite
+values, empty components, duplicate options and the removed CLI name. This
+is interface/software validation; no physics sampler or Monte Carlo acceptance
+protocol changed and no final statistical reservations were rerun.
