@@ -120,3 +120,6 @@ results remain unchanged. No source RNG, new statistical seed or acceptance
 threshold is introduced. Energy is 1 EeV in both matrices; photons propagate
 freely even when the field deflector is installed. Save a new empty output
 and retain the species list and input hash with the results.
+
+See the [requested 1 EeV species results](../../docs/validation/fork_eev_species_comparison.md)
+for the completed three-environment comparison and its refinement limits.

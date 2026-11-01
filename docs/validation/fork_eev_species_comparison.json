@@ -1,0 +1,2052 @@
+{
+  "date": "2026-11-01",
+  "scope": "Requested fixed-state 1 EeV species/refinement diagnostic; no statistical-equivalence verdict.",
+  "source_revision": "03bb431ce588bffba2aa01c6bd52fdbf4f3203ff",
+  "reference_revision": "e1fc71f613efe7fecf3210e15339c34814245cd4",
+  "inputs": {
+    "cases": 729,
+    "initial_directions": 27,
+    "species": [
+      "electron",
+      "photon",
+      "proton"
+    ],
+    "energy_eV": 1e+18,
+    "accuracy": [
+      10,
+      20,
+      40
+    ],
+    "fields": [
+      "none",
+      "oblique constant",
+      "existing saved grid"
+    ],
+    "constant_field_G": [
+      2e-10,
+      3e-10,
+      5e-10
+    ],
+    "constant_scale_Mpc": 0.1,
+    "observer": {
+      "mode": "strict inside",
+      "radius_Mpc": 0.01,
+      "distance_Mpc": 0.1
+    },
+    "source_position_Mpc": [
+      0,
+      0,
+      0
+    ],
+    "source_profiles": [
+      "pencil_z",
+      "cone_z",
+      "cone_rotated"
+    ],
+    "source_sampling": false,
+    "interactions": [],
+    "duration_Mpc": 0.2,
+    "rate_path": "constant",
+    "cosmology": {
+      "hubble_km_s_Mpc": 70,
+      "omega_lambda": 0.7,
+      "source_z": 0.01
+    },
+    "acceptance": "None: all errors, hit differences and refinement changes retained.",
+    "tangent_scope": "Floating-point/grazing controls, separate from interior/near-rim rows.",
+    "reused_grid_sha256": "11219136c8f1ef7ef692776de20d63fd6ddbb133adc200d534ef15b7f29e0746",
+    "case_sha256": "2056bf4cd7a4881e91a14a72b567a4fc29d3c4fa552401fd86c4971c8b5f084c"
+  },
+  "runs": [
+    {
+      "environment": "native",
+      "raw_directory": "build/checks/eev-species-native",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+          "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+          "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+          "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+          "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+          "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+          "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+          "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+          "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+          "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+        },
+        "revision": "03bb431ce588bffba2aa01c6bd52fdbf4f3203ff",
+        "dirty": false,
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "COUPLED.md": "aabf0d03f483f34b9e50e3c0e1f1bee528985a0971f17a31f0520082c9317ae1",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "FIELD_SOURCE_PILOT.md": "f748980744b6dde85349518d20a306234a7f8df5d9c820712131c0b069b753a5",
+          "coupled_api.h": "d8212ba24cb5bfcf4cc8449751e7de85d9e8b429f2bfc756bfd9ac4290b33df8",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "c76434cbe8c49cf77991443213fb7cd6d18b9774df2fbff816856bba208f825c",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "coupled_compare.cpp": "fe8791fd1672a56987398dde21a97c7061d6d8755bf77004027b916508bcfa5b",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "field_source_pilot.cpp": "f99b20e1e39584e516a62ae3bf02795a7fe6a6d269bdaaa44cf69fb6779ebbb6",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "coupled_modern.cpp": "44f496208f115cc5f36f7affb1e4232ec05135d8ccb1f252186a9d579d115955",
+          "field_source_pilot.py": "43babe6bf39737b28edef7c0d9c12cf4e18011e200ef270d65b78ea78975f140",
+          "coupled_reference.cpp.in": "25efc18660e14c1605cfac46757c5a4c97e84f8899c962fa2bdd5a1ff2ec4ef4",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "coupled_modern.h": "cb2edb20d0375d7c09ff68c12f7406c41294d4866c3b15f0f0a28c98a11825ed",
+          "coupled.py": "9bd90f1ae14497545214a830adaa85e1bb25f581297123fdd0798d9b34e825d6",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "production_sha256": {
+          "PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec",
+          "Deflection3D.cpp": "90d479648b6272479b7070a1be8c2884d6360ea75680af97a5ba7f1313a503e2",
+          "GridMagneticField.cpp": "5c46a7619936777a3a33dd94eb9b9371079025f5d50d2147764fbf127e3eeddc",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea"
+        },
+        "linked_core_sha256": "6784b031a00bb8be612f7c1649e08438cd05222a88b9d02dfda4cbaf65dddbad",
+        "command_prefix": []
+      },
+      "compiler": "Homebrew clang version 22.1.5\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.5/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.5/etc/clang/arm64-apple-darwin25.cfg",
+      "cases": 729,
+      "hit_differences": 0,
+      "groups": 243,
+      "refinement_pairs": 486,
+      "species": [
+        {
+          "species": "electron",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 4.423714363387192e-17,
+          "max_direction_difference": 3.2957919968262575e-16,
+          "max_time_difference_Mpc": 0,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 0,
+              "max_time_difference_Mpc": 0
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 0,
+              "max_time_difference_Mpc": 0
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 4.423714363387192e-17,
+              "max_time_difference_Mpc": 0
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0122366622788566e-05,
+                "max_direction_change": 6.545069779931062e-05,
+                "max_time_change_Mpc": 1.00905855557748e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0122366622788566e-05,
+                "max_direction_change": 6.545069779931062e-05,
+                "max_time_change_Mpc": 1.00905855557748e-05
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.628990506708523e-06,
+                "max_direction_change": 3.615845952811124e-05,
+                "max_time_change_Mpc": 1.311035865009246e-07
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.628990506708523e-06,
+                "max_direction_change": 3.615845952811124e-05,
+                "max_time_change_Mpc": 1.311035865009246e-07
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.226903375515419e-05,
+                "max_direction_change": 0.0003139766195353044,
+                "max_time_change_Mpc": 1.162170122825934e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.226903375515454e-05,
+                "max_direction_change": 0.0003139766195353044,
+                "max_time_change_Mpc": 1.162170122825934e-05
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.6593509758334463e-05,
+                "max_direction_change": 0.0001691692917332076,
+                "max_time_change_Mpc": 9.981542222606277e-06
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.6593509758334094e-05,
+                "max_direction_change": 0.0001691692917332076,
+                "max_time_change_Mpc": 9.981542222606277e-06
+              }
+            }
+          ]
+        },
+        {
+          "species": "photon",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 0,
+          "max_direction_difference": 0,
+          "max_time_difference_Mpc": 0,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 0,
+              "max_time_difference_Mpc": 0
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 0,
+              "max_time_difference_Mpc": 0
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 0,
+              "max_time_difference_Mpc": 0
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 99,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 99,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "species": "proton",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 5.391898107550362e-16,
+          "max_direction_difference": 7.221785298249066e-16,
+          "max_time_difference_Mpc": 0,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 0,
+              "max_time_difference_Mpc": 0
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 0,
+              "max_time_difference_Mpc": 0
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 5.391898107550362e-16,
+              "max_time_difference_Mpc": 0
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.022239853339219e-05,
+                "max_direction_change": 6.760376834444149e-05,
+                "max_time_change_Mpc": 1.0173637980170902e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.022239853339219e-05,
+                "max_direction_change": 6.760376834444149e-05,
+                "max_time_change_Mpc": 1.0173637980170902e-05
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.601713731480216e-06,
+                "max_direction_change": 3.6276867029551775e-05,
+                "max_time_change_Mpc": 1.289402651316606e-07
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.601713731480216e-06,
+                "max_direction_change": 3.6276867029551775e-05,
+                "max_time_change_Mpc": 1.289402651316606e-07
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.371138582934473e-05,
+                "max_direction_change": 0.0003279854744276336,
+                "max_time_change_Mpc": 1.2266941504371354e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.3711385829343575e-05,
+                "max_direction_change": 0.00032798547442766733,
+                "max_time_change_Mpc": 1.2266941504371354e-05
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.7986095569301357e-05,
+                "max_direction_change": 0.00017625508648236085,
+                "max_time_change_Mpc": 1.3615559646032449e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.7986095569302472e-05,
+                "max_direction_change": 0.00017625508648226904,
+                "max_time_change_Mpc": 1.3615559646032449e-05
+              }
+            }
+          ]
+        }
+      ],
+      "unequal_engine_move_counts": 0,
+      "worst_position_case": {
+        "profile": "cone_z",
+        "ray": "tangent_8",
+        "field": 2,
+        "particle": 2,
+        "accuracy": 40,
+        "fork": {
+          "hit": false,
+          "past_end": false,
+          "end_error_Mpc": 0,
+          "moves": 2027,
+          "flight_Mpc": 0.20000000000000132,
+          "beta": 1,
+          "mass": 938.272046,
+          "charge": 1,
+          "energy": 1000000000000,
+          "initial_rate": 5.714107816743395e-36,
+          "scale_Mpc": 0.13333333333333336,
+          "field_calls": 2080,
+          "scale_calls": 2027,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0.016833191710851583,
+            0.01768798600001039,
+            0.19822939789016625
+          ],
+          "direction": [
+            0.07104616203562238,
+            0.177675348781533,
+            0.9815212240677064
+          ],
+          "direction_norm_error": 0
+        },
+        "modern": {
+          "hit": false,
+          "past_end": false,
+          "end_error_Mpc": 0,
+          "moves": 2027,
+          "flight_Mpc": 0.20000000000000132,
+          "beta": 1,
+          "mass": 938.272046,
+          "charge": 1,
+          "energy": 1000000000000,
+          "initial_rate": 5.714107816743395e-36,
+          "scale_Mpc": 0.13333333333333336,
+          "field_calls": 2080,
+          "scale_calls": 2027,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0.01683319171085155,
+            0.017687986000010304,
+            0.19822939789016572
+          ],
+          "direction": [
+            0.07104616203562245,
+            0.17767534878153268,
+            0.9815212240677065
+          ],
+          "direction_norm_error": 0
+        },
+        "same_hit": true,
+        "difference_position_Mpc": 5.391898107550362e-16,
+        "difference_direction": 3.3219841332160006e-16,
+        "difference_time_Mpc": 0
+      },
+      "artifact_sha256": {
+        "report.json": "8e9db575ec0753a2bf67a2bc9f21f0d0730dee32d9d8bcf3543923f13f741e01",
+        "inputs.json": "9e012276c8d5416eab2f2c07cc4f2096862b050d98429d6c2300898e57ad6a98",
+        "coupled.cases": "2056bf4cd7a4881e91a14a72b567a4fc29d3c4fa552401fd86c4971c8b5f084c",
+        "trajectories.jsonl": "6a3f3aa4d594b8328d00cf67bb70ff971b1b11156039739b4b7eafd66015d5fb",
+        "trajectories.jsonl.gz": "e9318b7a6641dab83b6ce41f5b775d8c03499306241ed1d9ac55c713a6faa006",
+        "manifest.json": "e6af804d26b65811641a3f15c9d7c11bbe49c0d829ee7a476f19c5bfcb6ec299",
+        "compile-command.json": "5fbd16ddc61d14efe10e80d7e004ff39b9f31a7c2cdac29a48724afe025f6c1a",
+        "compiler-version.txt": "7fd92963bd53fe1d5cb8fc6cd497f4d32fda57d7f5e0a98fddf2d2fabd5420f8",
+        "compile.log": "0ce478a5a78f69f8a5cfd8895f35918f4195105dbeb6a569585185f8c844a017",
+        "execution.log": "fe2f6c565033f51310dec998b485bfdc7dcc4abc60dd1ebd644ea95be8f47183",
+        "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e"
+      }
+    },
+    {
+      "environment": "linux-release",
+      "raw_directory": "build/checks/eev-species-linux-release",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+          "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+          "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+          "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+          "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+          "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+          "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+          "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+          "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+          "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+        },
+        "revision": "03bb431ce588bffba2aa01c6bd52fdbf4f3203ff",
+        "dirty": false,
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "COUPLED.md": "aabf0d03f483f34b9e50e3c0e1f1bee528985a0971f17a31f0520082c9317ae1",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "FIELD_SOURCE_PILOT.md": "f748980744b6dde85349518d20a306234a7f8df5d9c820712131c0b069b753a5",
+          "coupled_api.h": "d8212ba24cb5bfcf4cc8449751e7de85d9e8b429f2bfc756bfd9ac4290b33df8",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "c76434cbe8c49cf77991443213fb7cd6d18b9774df2fbff816856bba208f825c",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "coupled_compare.cpp": "fe8791fd1672a56987398dde21a97c7061d6d8755bf77004027b916508bcfa5b",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "field_source_pilot.cpp": "f99b20e1e39584e516a62ae3bf02795a7fe6a6d269bdaaa44cf69fb6779ebbb6",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "coupled_modern.cpp": "44f496208f115cc5f36f7affb1e4232ec05135d8ccb1f252186a9d579d115955",
+          "field_source_pilot.py": "43babe6bf39737b28edef7c0d9c12cf4e18011e200ef270d65b78ea78975f140",
+          "coupled_reference.cpp.in": "25efc18660e14c1605cfac46757c5a4c97e84f8899c962fa2bdd5a1ff2ec4ef4",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "coupled_modern.h": "cb2edb20d0375d7c09ff68c12f7406c41294d4866c3b15f0f0a28c98a11825ed",
+          "coupled.py": "9bd90f1ae14497545214a830adaa85e1bb25f581297123fdd0798d9b34e825d6",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "production_sha256": {
+          "PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec",
+          "Deflection3D.cpp": "90d479648b6272479b7070a1be8c2884d6360ea75680af97a5ba7f1313a503e2",
+          "GridMagneticField.cpp": "5c46a7619936777a3a33dd94eb9b9371079025f5d50d2147764fbf127e3eeddc",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea"
+        },
+        "linked_core_sha256": "3e33072756ecac49138989505a300ca5c176bc31e7363cc782a7cd8bb574b8c2",
+        "command_prefix": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull=never",
+          "--network",
+          "none",
+          "--read-only",
+          "--platform",
+          "linux/amd64",
+          "--entrypoint",
+          "/usr/bin/timeout",
+          "-v",
+          "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+          "-v",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-species-linux-release-tmp:/tmp",
+          "-e",
+          "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-species-linux-release-tmp",
+          "-w",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+          "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+          "240"
+        ]
+      },
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "cases": 729,
+      "hit_differences": 0,
+      "groups": 243,
+      "refinement_pairs": 486,
+      "species": [
+        {
+          "species": "electron",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994471e-06,
+          "max_direction_difference": 2.2724547458788563e-17,
+          "max_time_difference_Mpc": 9.999999999991029e-06,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 1.952659158838144e-17,
+              "max_time_difference_Mpc": 7.372857272311986e-18
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 1.495802446071288e-17,
+              "max_time_difference_Mpc": 7.372857272311986e-18
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.012236662276711e-05,
+                "max_direction_change": 6.545069779902148e-05,
+                "max_time_change_Mpc": 1.0090585552312997e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0122366622767856e-05,
+                "max_direction_change": 6.545069779902176e-05,
+                "max_time_change_Mpc": 1.0090585552312997e-05
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.6289905066034296e-06,
+                "max_direction_change": 3.615845952808448e-05,
+                "max_time_change_Mpc": 1.311035806859487e-07
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.628990506603387e-06,
+                "max_direction_change": 3.6158459528084226e-05,
+                "max_time_change_Mpc": 1.311035806785761e-07
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.226903375504857e-05,
+                "max_direction_change": 0.00031397661953515006,
+                "max_time_change_Mpc": 1.1621701234150752e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.226903375504843e-05,
+                "max_direction_change": 0.0003139766195351498,
+                "max_time_change_Mpc": 1.1621701234143373e-05
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.613984441598054e-05,
+                "max_direction_change": 0.00016621834904736053,
+                "max_time_change_Mpc": 9.979835934165415e-06
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.6139844415980677e-05,
+                "max_direction_change": 0.00016621834904736085,
+                "max_time_change_Mpc": 9.979835934165415e-06
+              }
+            }
+          ]
+        },
+        {
+          "species": "photon",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994471e-06,
+          "max_direction_difference": 0,
+          "max_time_difference_Mpc": 9.999999999991029e-06,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 99,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 99,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "species": "proton",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994436e-06,
+          "max_direction_difference": 1.4310474020222614e-17,
+          "max_time_difference_Mpc": 9.999999999991029e-06,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 9.999999999994436e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 1.8194608431476038e-17,
+              "max_time_difference_Mpc": 7.372857272311986e-18
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 1.638021991151959e-17,
+              "max_time_difference_Mpc": 1.4745714544623972e-17
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0222398533468772e-05,
+                "max_direction_change": 6.760376834428625e-05,
+                "max_time_change_Mpc": 1.0173637977459394e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0222398533468713e-05,
+                "max_direction_change": 6.760376834428575e-05,
+                "max_time_change_Mpc": 1.0173637977455707e-05
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.6017137315614568e-06,
+                "max_direction_change": 3.627686702984799e-05,
+                "max_time_change_Mpc": 1.289402570514339e-07
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.6017137315614754e-06,
+                "max_direction_change": 3.627686702984847e-05,
+                "max_time_change_Mpc": 1.289402570514339e-07
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.3711385829427546e-05,
+                "max_direction_change": 0.0003279854744278629,
+                "max_time_change_Mpc": 1.2266941506480147e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.3711385829427546e-05,
+                "max_direction_change": 0.00032798547442786465,
+                "max_time_change_Mpc": 1.2266941506480147e-05
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.7514375855591884e-05,
+                "max_direction_change": 0.00017318473927190688,
+                "max_time_change_Mpc": 1.3615559641776915e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.751437585559231e-05,
+                "max_direction_change": 0.00017318473927191053,
+                "max_time_change_Mpc": 1.3615559641784287e-05
+              }
+            }
+          ]
+        }
+      ],
+      "unequal_engine_move_counts": 30,
+      "worst_position_case": {
+        "profile": "pencil_z",
+        "ray": "axis_0",
+        "field": 0,
+        "particle": 0,
+        "accuracy": 10,
+        "fork": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.11,
+          "moves": 1,
+          "flight_Mpc": 0.09000000000000001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09000000000000001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "modern": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.10999000000000002,
+          "moves": 2,
+          "flight_Mpc": 0.09001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "same_hit": true,
+        "difference_position_Mpc": 9.999999999994471e-06,
+        "difference_direction": 0,
+        "difference_time_Mpc": 9.999999999991029e-06
+      },
+      "artifact_sha256": {
+        "report.json": "4d2c317311af9fd7fea6eb6444656b0ddd4841d138391536c1dac2e3b1a35eb3",
+        "inputs.json": "9e012276c8d5416eab2f2c07cc4f2096862b050d98429d6c2300898e57ad6a98",
+        "coupled.cases": "2056bf4cd7a4881e91a14a72b567a4fc29d3c4fa552401fd86c4971c8b5f084c",
+        "trajectories.jsonl": "07beb2db5310de354841aa2a29abfb7bc5b42035de121ff378c61130a4870508",
+        "trajectories.jsonl.gz": "60d346020ba402976c2a441069ee8cfae24515c1453c4c9fd0beaf5624782c68",
+        "manifest.json": "d52c425676b7fc62cf0ce62da2ece5e2dc4293d98afba2868807bedccff22c77",
+        "compile-command.json": "49361f3717b2b21fccabb5feaa2e43851af67faedf41db4f3b533f47b46aa9b1",
+        "compiler-version.txt": "8d6e704227c739386853b14c98257428d8ffbffd817517db0b2e088d28c773f6",
+        "compile.log": "fd78153e398c5e009562e02602277cfd8f12d013041e191d33de3edee1c834e3",
+        "execution.log": "165e06d938150ef893d4affb626cf30904e66c7247f6e76d68a89d46a600c063",
+        "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e"
+      }
+    },
+    {
+      "environment": "linux-sanitizers",
+      "raw_directory": "build/checks/eev-species-linux-sanitizers",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+          "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+          "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+          "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+          "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+          "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+          "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+          "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+          "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+          "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+        },
+        "revision": "03bb431ce588bffba2aa01c6bd52fdbf4f3203ff",
+        "dirty": false,
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "COUPLED.md": "aabf0d03f483f34b9e50e3c0e1f1bee528985a0971f17a31f0520082c9317ae1",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "FIELD_SOURCE_PILOT.md": "f748980744b6dde85349518d20a306234a7f8df5d9c820712131c0b069b753a5",
+          "coupled_api.h": "d8212ba24cb5bfcf4cc8449751e7de85d9e8b429f2bfc756bfd9ac4290b33df8",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "c76434cbe8c49cf77991443213fb7cd6d18b9774df2fbff816856bba208f825c",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "coupled_compare.cpp": "fe8791fd1672a56987398dde21a97c7061d6d8755bf77004027b916508bcfa5b",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "field_source_pilot.cpp": "f99b20e1e39584e516a62ae3bf02795a7fe6a6d269bdaaa44cf69fb6779ebbb6",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "coupled_modern.cpp": "44f496208f115cc5f36f7affb1e4232ec05135d8ccb1f252186a9d579d115955",
+          "field_source_pilot.py": "43babe6bf39737b28edef7c0d9c12cf4e18011e200ef270d65b78ea78975f140",
+          "coupled_reference.cpp.in": "25efc18660e14c1605cfac46757c5a4c97e84f8899c962fa2bdd5a1ff2ec4ef4",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "coupled_modern.h": "cb2edb20d0375d7c09ff68c12f7406c41294d4866c3b15f0f0a28c98a11825ed",
+          "coupled.py": "9bd90f1ae14497545214a830adaa85e1bb25f581297123fdd0798d9b34e825d6",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "production_sha256": {
+          "PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec",
+          "Deflection3D.cpp": "90d479648b6272479b7070a1be8c2884d6360ea75680af97a5ba7f1313a503e2",
+          "GridMagneticField.cpp": "5c46a7619936777a3a33dd94eb9b9371079025f5d50d2147764fbf127e3eeddc",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea"
+        },
+        "linked_core_sha256": "270021e122a96e9e1d9310993585143e1497505c37ca2f4149f804a8f37befa2",
+        "command_prefix": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull=never",
+          "--network",
+          "none",
+          "--read-only",
+          "--platform",
+          "linux/amd64",
+          "--entrypoint",
+          "/usr/bin/timeout",
+          "-v",
+          "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+          "-v",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-species-linux-sanitizers-tmp:/tmp",
+          "-e",
+          "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-species-linux-sanitizers-tmp",
+          "-e",
+          "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1",
+          "-e",
+          "UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1",
+          "-w",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+          "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+          "240"
+        ]
+      },
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "cases": 729,
+      "hit_differences": 0,
+      "groups": 243,
+      "refinement_pairs": 486,
+      "species": [
+        {
+          "species": "electron",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994471e-06,
+          "max_direction_difference": 2.2724547458788563e-17,
+          "max_time_difference_Mpc": 9.999999999991029e-06,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 1.952659158838144e-17,
+              "max_time_difference_Mpc": 7.372857272311986e-18
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 1.495802446071288e-17,
+              "max_time_difference_Mpc": 7.372857272311986e-18
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.012236662276711e-05,
+                "max_direction_change": 6.545069779902148e-05,
+                "max_time_change_Mpc": 1.0090585552312997e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0122366622767856e-05,
+                "max_direction_change": 6.545069779902176e-05,
+                "max_time_change_Mpc": 1.0090585552312997e-05
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.6289905066034296e-06,
+                "max_direction_change": 3.615845952808448e-05,
+                "max_time_change_Mpc": 1.311035806859487e-07
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.628990506603387e-06,
+                "max_direction_change": 3.6158459528084226e-05,
+                "max_time_change_Mpc": 1.311035806785761e-07
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.226903375504857e-05,
+                "max_direction_change": 0.00031397661953515006,
+                "max_time_change_Mpc": 1.1621701234150752e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.226903375504843e-05,
+                "max_direction_change": 0.0003139766195351498,
+                "max_time_change_Mpc": 1.1621701234143373e-05
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.613984441598054e-05,
+                "max_direction_change": 0.00016621834904736053,
+                "max_time_change_Mpc": 9.979835934165415e-06
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.6139844415980677e-05,
+                "max_direction_change": 0.00016621834904736085,
+                "max_time_change_Mpc": 9.979835934165415e-06
+              }
+            }
+          ]
+        },
+        {
+          "species": "photon",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994471e-06,
+          "max_direction_difference": 0,
+          "max_time_difference_Mpc": 9.999999999991029e-06,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 9.999999999994471e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 99,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 99,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "species": "proton",
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994436e-06,
+          "max_direction_difference": 1.4310474020222614e-17,
+          "max_time_difference_Mpc": 9.999999999991029e-06,
+          "fields": [
+            {
+              "field": 0,
+              "max_position_difference_Mpc": 9.999999999994436e-06,
+              "max_time_difference_Mpc": 9.999999999991029e-06
+            },
+            {
+              "field": 1,
+              "max_position_difference_Mpc": 1.8194608431476038e-17,
+              "max_time_difference_Mpc": 7.372857272311986e-18
+            },
+            {
+              "field": 2,
+              "max_position_difference_Mpc": 1.638021991151959e-17,
+              "max_time_difference_Mpc": 1.4745714544623972e-17
+            }
+          ],
+          "states": {
+            "fork": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            },
+            "modern": {
+              "hits": 120,
+              "past_end": 0,
+              "zero_scale_calls": 0,
+              "max_moves": 2097
+            }
+          },
+          "refinements": [
+            {
+              "field": 0,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 0,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 0.0,
+                "max_direction_change": 0.0,
+                "max_time_change_Mpc": 0.0
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0222398533468772e-05,
+                "max_direction_change": 6.760376834428625e-05,
+                "max_time_change_Mpc": 1.0173637977459394e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.0222398533468713e-05,
+                "max_direction_change": 6.760376834428575e-05,
+                "max_time_change_Mpc": 1.0173637977455707e-05
+              }
+            },
+            {
+              "field": 1,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.6017137315614568e-06,
+                "max_direction_change": 3.627686702984799e-05,
+                "max_time_change_Mpc": 1.289402570514339e-07
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.6017137315614754e-06,
+                "max_direction_change": 3.627686702984847e-05,
+                "max_time_change_Mpc": 1.289402570514339e-07
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                10,
+                20
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.3711385829427546e-05,
+                "max_direction_change": 0.0003279854744278629,
+                "max_time_change_Mpc": 1.2266941506480147e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 3.3711385829427546e-05,
+                "max_direction_change": 0.00032798547442786465,
+                "max_time_change_Mpc": 1.2266941506480147e-05
+              }
+            },
+            {
+              "field": 2,
+              "accuracy_pair": [
+                20,
+                40
+              ],
+              "cases": 27,
+              "fork": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.7514375855591884e-05,
+                "max_direction_change": 0.00017318473927190688,
+                "max_time_change_Mpc": 1.3615559641776915e-05
+              },
+              "modern": {
+                "hit_changes": 0,
+                "max_position_change_Mpc": 1.751437585559231e-05,
+                "max_direction_change": 0.00017318473927191053,
+                "max_time_change_Mpc": 1.3615559641784287e-05
+              }
+            }
+          ]
+        }
+      ],
+      "unequal_engine_move_counts": 30,
+      "worst_position_case": {
+        "profile": "pencil_z",
+        "ray": "axis_0",
+        "field": 0,
+        "particle": 0,
+        "accuracy": 10,
+        "fork": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.11,
+          "moves": 1,
+          "flight_Mpc": 0.09000000000000001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09000000000000001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "modern": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.10999000000000002,
+          "moves": 2,
+          "flight_Mpc": 0.09001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "same_hit": true,
+        "difference_position_Mpc": 9.999999999994471e-06,
+        "difference_direction": 0,
+        "difference_time_Mpc": 9.999999999991029e-06
+      },
+      "artifact_sha256": {
+        "report.json": "4d2c317311af9fd7fea6eb6444656b0ddd4841d138391536c1dac2e3b1a35eb3",
+        "inputs.json": "9e012276c8d5416eab2f2c07cc4f2096862b050d98429d6c2300898e57ad6a98",
+        "coupled.cases": "2056bf4cd7a4881e91a14a72b567a4fc29d3c4fa552401fd86c4971c8b5f084c",
+        "trajectories.jsonl": "07beb2db5310de354841aa2a29abfb7bc5b42035de121ff378c61130a4870508",
+        "trajectories.jsonl.gz": "60d346020ba402976c2a441069ee8cfae24515c1453c4c9fd0beaf5624782c68",
+        "manifest.json": "24aa1e4393ffdad0ddef015979b4741b03d582d4e4a088238569a3f0f7a892f2",
+        "compile-command.json": "5980f4d69c4817ffc56d2bdf72ef62fbca77758368b21abf78fd3cdb37b89a15",
+        "compiler-version.txt": "8d6e704227c739386853b14c98257428d8ffbffd817517db0b2e088d28c773f6",
+        "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "execution.log": "9b35d7b98570c56589428cdcbfaf47f885ea3f8eb662f1d9a49605c580a8c393",
+        "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e"
+      }
+    }
+  ],
+  "python_guards": {
+    "passed": 22,
+    "log_sha256": "2445a3db9edf4513a0c0dcc072c11886872fdcabae05502344a924d272334ae5"
+  }
+}
