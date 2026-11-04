@@ -31,6 +31,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [1 EeV three-species field/source cost pilot](validation/fork_eev_field_source_pilot.md)
 - [Electron/photon/proton refinement at 1 EeV](validation/fork_eev_species_comparison.md)
 - [1 PeV electron/photon field/source cost pilot](validation/fork_field_source_pilot.md)
 - [Fixed-state historical field/observer/engine coupling](validation/fork_field_observer_comparison.md)

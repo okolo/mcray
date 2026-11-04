@@ -64,3 +64,7 @@ retains its numerical limits and known boundary-step differences. This pilot
 adds real source sampling but does not turn that refinement into a numerical
 acceptance bound. Final ensemble observables, confidence/precision choices,
 counts, new seeds and stopping rules still require agreement.
+
+See the [confirmed cost-pilot results](../../docs/validation/fork_eev_field_source_pilot.md).
+The pilot reservations are now spent; the reproduction example defaults to
+the separate software fixture.
