@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Separate electron/photon field/source cost pilot, not an acceptance test."""
+"""Separate field/source cost pilots, not an acceptance test."""
 import argparse
 import json
 from pathlib import Path
@@ -16,16 +16,26 @@ HERE, ROOT = coupled.HERE, coupled.ROOT
 kernels = coupled.kernels
 
 
-def inputs(output, mode):
+def inputs(output, mode, pilot_design="pev"):
     """Freeze the approved pilot, or a disjoint small software fixture."""
     if mode not in ('fixture', 'pilot'):
         raise ValueError('Unknown field/source mode')
-    count, first_seed = (1000, 2005101) if mode == 'pilot' else (2, 2006101)
+    if pilot_design not in ('pev', 'eev'):
+        raise ValueError('Unknown field/source design')
+    count = 1000 if mode == 'pilot' else 2
+    # The new EeV reservation never replays the spent PeV pilot streams.
+    if pilot_design == 'eev':
+        first_seed = 2007101 if mode == 'pilot' else 2008101
+    else:
+        first_seed = 2005101 if mode == 'pilot' else 2006101
+    particles = [('electron', 0), ('photon', 3)]
+    if pilot_design == 'eev':
+        particles.append(('proton', 2))
     cases = []
     profiles = [('pencil_z', 0, 0, 0), ('cone_z', 20, 0, 0),
                 ('cone_rotated', 20, .4, .7)]
     for profile, angle, theta, phi in profiles:
-        for particle, species in [('electron', 0), ('photon', 3)]:
+        for particle, species in particles:
             index = len(cases)
             cases.append(dict(name=profile+'_'+particle, species=species,
                               half_angle_degrees=angle, theta=theta, phi=phi,
@@ -38,8 +48,8 @@ def inputs(output, mode):
     _, grid, grid_design = coupled.observer.transport.inputs(fixture)
     design = dict(schema=1, mode=mode,
                   purpose='Cost/failure diagnostics only; no statistical equivalence verdict.',
-                  cases=cases, total_histories=12*count, particles=['electron', 'photon'],
-                  energy_eV=1e15, initial_weight=1, accuracy=20,
+                  cases=cases, total_histories=2*len(cases)*count, particles=[name for name,_ in particles],
+                  energy_eV=1e18 if pilot_design == 'eev' else 1e15, initial_weight=1, accuracy=20,
                   cosmology=dict(hubble_km_s_Mpc=70, omega_lambda=.7, source_z=.01),
                   source_position_Mpc=[0, 0, 0], observer='strict inside sphere',
                   observer_radius_Mpc=.01, observer_distance_Mpc=.1, duration_Mpc=.2,
@@ -79,6 +89,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--mode', choices=('fixture', 'pilot'), default='fixture')
     parser.add_argument('--command-prefix', default='')
+    parser.add_argument('--design', choices=('pev', 'eev'), default='pev',
+                        help='Original PeV pair or separately reserved EeV electron/photon/proton pilot')
     args = parser.parse_args()
     fork, build, output = args.fork_root.resolve(), args.build_dir.resolve(), args.output.resolve()
     dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True))
@@ -91,7 +103,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     reference = coupled.extract(fork, output)
-    cases, grid, design = inputs(output, args.mode)
+    cases, grid, design = inputs(output, args.mode, args.design)
     prefix = shlex.split(args.command_prefix)
     metadata = dict(reference_sha256=reference,
         revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
@@ -115,7 +127,7 @@ def main():
             raise TimeoutError('Field/source whole-run deadline expired')
         before = time.monotonic()
         with (output/'execution.log').open('w') as log, (output/'pilot.jsonl').open('w') as raw:
-            subprocess.run([*prefix, str(output/'field-source-pilot'), str(cases), str(grid)],
+            subprocess.run([*prefix, str(output/'field-source-pilot'), str(cases), str(grid), args.design],
                            stdout=raw, stderr=log, check=True, timeout=timeout)
         wall = time.monotonic()-before
         rows = [json.loads(line) for line in (output/'pilot.jsonl').read_text().splitlines()]

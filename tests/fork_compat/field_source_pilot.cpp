@@ -10,7 +10,7 @@
 
 using namespace mcray;
 namespace {
-void Run(const char* cases,const char* grid) {
+void Run(const char* cases,const char* grid,bool eev) {
     cosmology.Init(10.01,.7,70);
     ForkUnits(units.Mpc);
     const double unusedField[]{0,0,0};
@@ -26,7 +26,7 @@ void Run(const char* cases,const char* grid) {
     double degrees,theta,phi;
     unsigned long oldSeed,newSeed,count;
     while(input >> name >> species >> degrees >> theta >> phi >> oldSeed >> newSeed >> count >> accuracy) {
-        if((species!=0 && species!=3) || (count!=2 && count!=1000) || accuracy!=20)
+        if((species!=0 && species!=3 && (!eev || species!=2)) || (count!=2 && count!=1000) || accuracy!=20)
             throw std::runtime_error("Unsupported field/source pilot settings");
         const auto axis=SourceGeometry::NormalizeAxis(
             {std::sin(theta)*std::cos(phi),std::sin(theta)*std::sin(phi),std::cos(theta)});
@@ -34,7 +34,7 @@ void Run(const char* cases,const char* grid) {
                                                  SourceGeometry::AngularModel::Cone,degrees);
         CoupledInput state{};
         state.particle=species; state.accuracy=accuracy; state.fieldKind=2;
-        state.energy=1e15*units.eV;
+        state.energy=(eev?1e18:1e15)*units.eV;
         auto& observer=state.observer;
         observer.mode=1; observer.radius=.01*units.Mpc;
         observer.initialTime=cosmology.z2t0(.01); observer.duration=.2*units.Mpc;
@@ -48,7 +48,8 @@ void Run(const char* cases,const char* grid) {
                 const auto before=std::chrono::steady_clock::now();
                 double weight;
                 if(modern) {
-                    Particle particle(species==0?Electron:Photon,.01);
+                    const ParticleType types[]{Electron,Positron,Proton,Photon};
+                    Particle particle(types[species],.01);
                     particle.Energy=state.energy; particle.Weight=1;
                     source.Initialize(particle,random);
                     weight=particle.Weight;
@@ -83,9 +84,10 @@ void Run(const char* cases,const char* grid) {
 }
 int main(int argc,char** argv) {
     try {
-        if(argc!=3) throw std::runtime_error("Usage: field-source-pilot CASES GRID");
+        if((argc!=3 && argc!=4) || (argc==4 && std::string(argv[3])!="pev" && std::string(argv[3])!="eev"))
+            throw std::runtime_error("Usage: field-source-pilot CASES GRID [pev|eev]");
         std::cout << std::setprecision(21) << std::boolalpha;
-        Run(argv[1],argv[2]); return 0;
+        Run(argv[1],argv[2],argc==4 && std::string(argv[3])=="eev"); return 0;
     } catch(Utils::Exception* error) {
         std::unique_ptr<Utils::Exception> owner(error); std::cerr << error->Message() << '\n';
     } catch(const std::exception& error) { std::cerr << error.what() << '\n'; }

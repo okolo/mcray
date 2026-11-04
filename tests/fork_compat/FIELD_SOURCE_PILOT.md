@@ -108,3 +108,7 @@ Checks expected to exceed 30 minutes belong on an external Linux amd64 server.
 See the [confirmed pilot results](../../docs/validation/fork_field_source_pilot.md)
 for the completed reservation, measured costs, known stopping differences
 and limits. Those seeds are spent; do not turn the run example into a rerun.
+
+The separately approved [1 EeV three-species pilot](EEV_FIELD_SOURCE_PILOT.md)
+uses explicit --design eev with new reservations. The default PeV design
+and its completed evidence remain separate.

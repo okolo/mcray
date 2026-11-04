@@ -48,6 +48,25 @@ class TransportDiagnosticTests(unittest.TestCase):
             self.assertEqual(field_pilot.kernels.digest(grid),design['grid_sha256'])
             self.assertEqual(len(cases.read_text().splitlines()),6)
 
+    def test_eev_pilot_preserves_old_design_and_reserves_new_streams(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b,tempfile.TemporaryDirectory() as c:
+            cases,grid,design=field_pilot.inputs(Path(a),'pilot','eev')
+            _,_,fixture=field_pilot.inputs(Path(b),'fixture','eev')
+            old_cases,old_grid,old=field_pilot.inputs(Path(c),'pilot')
+            self.assertEqual(design['energy_eV'],1e18)
+            self.assertEqual(design['particles'],['electron','photon','proton'])
+            self.assertEqual(design['total_histories'],18000)
+            self.assertEqual(fixture['total_histories'],36)
+            self.assertEqual(len(cases.read_text().splitlines()),9)
+            self.assertEqual(grid.read_bytes(),old_grid.read_bytes())
+            seeds=lambda d:{v[k] for v in d['cases'] for k in ('fork_seed','modern_seed')}
+            self.assertEqual(seeds(design),set(range(2007101,2007119)))
+            self.assertEqual(seeds(fixture),set(range(2008101,2008119)))
+            self.assertFalse(seeds(design)&(seeds(old)|seeds(fixture)))
+            self.assertEqual(old['energy_eV'],1e15)
+            self.assertEqual(old['total_histories'],12000)
+            self.assertEqual(len(old_cases.read_text().splitlines()),6)
+
     def test_field_pilot_rejects_incomplete_and_invalid_final_states(self):
         design=dict(cases=[dict(name='electron',count=2)],purpose='Cost only',mode='fixture')
         rows=[]
