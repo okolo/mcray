@@ -115,3 +115,7 @@ software fixture has disjoint seeds; final statistical acceptance is separate.
 
 The [1 EeV electron/photon/proton cost pilot](EEV_FIELD_SOURCE_PILOT.md)
 retains the field/geometry controls with separately reserved source streams.
+
+The [eight-hour Ubuntu 22.04 launcher](EEV_SERVER.md) runs the
+[frozen EeV ensemble](EEV_FIELD_ENSEMBLE.md), with fixtures separated from
+the persistent final seed reservation.

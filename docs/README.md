@@ -29,6 +29,8 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Nuclear transport release notes and known limitations](validation/nuclear_release_notes.md)
 - [Docker Linux amd64](../docker/README.md)
 
+- [Eight-hour EeV comparison on Ubuntu 22.04](../tests/fork_compat/EEV_SERVER.md)
+
 ## Validation results
 
 - [1 EeV three-species field/source cost pilot](validation/fork_eev_field_source_pilot.md)

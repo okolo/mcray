@@ -17,6 +17,12 @@ import source_observer_ensemble as ensemble
 import vmf as vmf_probe
 import coupled
 import field_source_pilot as field_pilot
+import eev_field_ensemble as eev
+import run_eev_field_server as server
+import subprocess
+import tarfile
+import io
+import os
 
 
 def row():
@@ -30,6 +36,62 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_eev_final_family_and_disjoint_reservations(self):
+        final,fixture=eev.design_for('final'),eev.design_for('fixture')
+        self.assertEqual(final['total_histories'],162000000)
+        self.assertEqual(fixture['total_histories'],18000)
+        self.assertEqual(final['accuracy'],40)
+        seeds=lambda d:{c[k] for c in d['cases'] for k in ('fork_seed','modern_seed')}
+        self.assertEqual(seeds(final),set(range(2010101,2010119)))
+        self.assertFalse(seeds(final)&seeds(fixture))
+        rows=[dict(case=c['name'],implementation=impl,histories=c['count'],failures=0,
+                   emitted_weight=c['count'],hits=c['count'],past_end_histories=0,
+                   max_engine_moves=1,sums=[c['count']]*5+[0]*9)
+              for c in final['cases'] for impl in ('fork','modern')]
+        report=eev.confidence_report(rows,final)
+        self.assertEqual(len(report['differences']),126)
+        self.assertEqual(len(report['hit_fractions']),18)
+        self.assertAlmostEqual(report['differences'][0]['half_width'],.000980855225113378)
+        self.assertTrue(report['compatible_at_reported_resolution'])
+        # A final-direction-only discrepancy must not be lost among source moments.
+        rows[1]['sums'][8]=rows[1]['histories']
+        self.assertFalse(eev.confidence_report(rows,final)['compatible_at_reported_resolution'])
+        with self.assertRaises(ValueError): eev.confidence_report(rows[:-1],final)
+        broken=copy.deepcopy(rows); broken[0]['sums'][11]=float('nan')
+        with self.assertRaises(ValueError): eev.confidence_report(broken,final)
+        altered=copy.deepcopy(final); altered['alpha']=.1
+        with self.assertRaisesRegex(ValueError,'Frozen'): eev.confidence_report(rows,altered)
+
+    def test_final_ledger_is_exclusive(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'ledger.json'
+            eev.reserve(path,{'revision':'first'})
+            with self.assertRaises(FileExistsError): eev.reserve(path,{'revision':'second'})
+            self.assertIn('first',path.read_text())
+
+    def test_server_archive_rejects_escape_and_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for index,name in enumerate(('../outside','root/link')):
+                archive=root/(str(index)+'.tar.gz')
+                with tarfile.open(archive,'w:gz') as out:
+                    member=tarfile.TarInfo(name)
+                    if index: member.type=tarfile.SYMTYPE; member.linkname='/etc/passwd'
+                    out.addfile(member)
+                with self.assertRaises(ValueError): server.extract_archive(archive,root/('extract'+str(index)))
+
+    @unittest.skipUnless(sys.platform.startswith('linux'),'Linux process-tree watchdog')
+    def test_server_deadline_kills_worker_in_separate_session(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); pidfile=root/'worker.pid'
+            script=root/'parent.py'
+            script.write_text("import subprocess,sys,time\np=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)'],start_new_session=True)\nopen(sys.argv[1],'w').write(str(p.pid))\ntime.sleep(60)\n")
+            supervisor=server.Supervisor(root,seconds=1)
+            with self.assertRaises(subprocess.TimeoutExpired):
+                supervisor.execute('deadline',[sys.executable,str(script),str(pidfile)],root,os.environ.copy())
+            pid=int(pidfile.read_text()); status=Path('/proc')/str(pid)/'stat'
+            self.assertTrue(not status.exists() or status.read_text().split()[2]=='Z')
+
     def test_field_pilot_reservations_are_separate_and_match_revised_model(self):
         with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
             cases,grid,design=field_pilot.inputs(Path(a),'pilot')
