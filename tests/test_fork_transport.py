@@ -69,6 +69,25 @@ class TransportDiagnosticTests(unittest.TestCase):
             with self.assertRaises(FileExistsError): eev.reserve(path,{'revision':'second'})
             self.assertIn('first',path.read_text())
 
+    def test_server_fixture_workflow_has_no_final_collection(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); archive=root/'input.tar.gz'
+            with tarfile.open(archive,'w:gz') as out:
+                member=tarfile.TarInfo('snapshot/file'); member.size=1
+                out.addfile(member,io.BytesIO(b'x'))
+            revision='a'*40; calls=[]
+            def execute(supervisor,name,command,cwd,env):
+                calls.append((name,command))
+                if name=='clone': Path(command[-1]).mkdir()
+            args=SimpleNamespace(data_dir=root/'results',revision=revision,repository='candidate.bundle',
+                workers=2,fixture_only=True,reference_archive=archive,gtest_archive=archive)
+            with patch.object(server.platform,'platform',return_value='workflow-fixture'),patch.object(server.Supervisor,'execute',execute),patch.object(server,'GTEST_SHA256',server.sha256(archive)),patch.object(server.subprocess,'run',return_value=SimpleNamespace(returncode=0)),patch.object(server.subprocess,'check_output',return_value=revision+'\n'):
+                self.assertEqual(server.run(args),0)
+            self.assertEqual([name for name,_ in calls],['clone','checkout','versions','configure','build','ctest','python-guards','fixture'])
+            self.assertFalse((args.data_dir/'eev-field-ensemble-v1.reservation.json').exists())
+            self.assertEqual(server.LIMIT,28800)
+
     def test_server_archive_rejects_escape_and_links(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
