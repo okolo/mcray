@@ -1,0 +1,573 @@
+{
+  "date": "2026-11-06",
+  "scope": "Server-tool preflight only; final 162M reservation not consumed.",
+  "fixture_runs": [
+    {
+      "environment": "native",
+      "revision": "adf59009711f617bc205ef5e0c3d957591546b98",
+      "dirty": false,
+      "mode": "fixture",
+      "histories": 18000,
+      "verified_archives": 18,
+      "final_reservation_spent": false,
+      "command_prefix": [],
+      "compiler": "Homebrew clang version 22.1.5\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.5/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.5/etc/clang/arm64-apple-darwin25.cfg",
+      "artifact_sha256": {
+        "inputs.json": "de5983610b389233bd687ddf5b5537cb8fc4485021ecb38d53ab0fc7a656df78",
+        "manifest.json": "59cc89d33cffc03dab348fb2cfd7406adc9dcd348ab5e8e3044018448c33376e",
+        "compile-command.json": "b47f0760a042067297f2ce35c523835a221034df1402d1ee0326483e0e84280b",
+        "compile.log": "8a7169cc3af85a171215a6bc52c962f98e962c4c80c9394ddc93028ca76aaf99",
+        "report.json": "34385c397c97d4d993f92bd83b56c4cd06734c96943ffb9157f91905c5a8dfb3",
+        "metadata.tar.gz": "3bf18284885a0de648b63f13066598db7396f621df6913587be519dc94caa995"
+      },
+      "verified_streams": [
+        {
+          "case": "pencil_z_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "0add5db2c8824035b66e456d718ddcab71e539eea49a7e99324e2fd41074970f",
+          "gzip_sha256": "53a3b4cd73e3e97fe3d275922626cdfdb8bd738702a771b805e590ca8128ec3c",
+          "gzip_bytes": 4265
+        },
+        {
+          "case": "pencil_z_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "6263f47d62b644d0781877208ec5514318075a6e4e8c2f40ef62364968697b9d",
+          "gzip_sha256": "4383a88f3c196a0a172e06f114c65198e2f5d5aeed57c56f9bbfe71f5dcaa60d",
+          "gzip_bytes": 4258
+        },
+        {
+          "case": "pencil_z_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "5f9b7094d9b8df48b5096a040d3a6d4073398999fdad7cc14a453490ff92dae0",
+          "gzip_sha256": "6d4ecebc0b92ae0451631b6d0a58c36be3bf06f2ce3d6cc0995bc6cd898673af",
+          "gzip_bytes": 5778
+        },
+        {
+          "case": "pencil_z_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "623ff74cbb953d51ecf8a19ffb371c79c76fabae36ac5fb7db56a3db8bf98f55",
+          "gzip_sha256": "7b1c84709d7b787bda11c54299489bbdedd0215e19290e412e2224ad21a9fb59",
+          "gzip_bytes": 5776
+        },
+        {
+          "case": "pencil_z_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "d24ab1343a47f445c87a70103b092aec61cb886b948fa90df26adb423366e3bd",
+          "gzip_sha256": "27c7c9d8bc9da8d55ac73f067803b66da513686337f4dcad89353c72ea948dc1",
+          "gzip_bytes": 5691
+        },
+        {
+          "case": "pencil_z_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "920520da9f403caf5138d5cb61e157b93e77f981e5736d11ff401410ac1cf746",
+          "gzip_sha256": "755a8a903e4af7324798d8e0f69562c3d8c510f47ea89d7142110d84a2c59a55",
+          "gzip_bytes": 5688
+        },
+        {
+          "case": "cone_z_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "4e2a1e36b528a7ec13ce2f4804c6eec9379e6641c424563804ebdc197e4ffca5",
+          "gzip_sha256": "51f3476c72c801c7fde072246cda7f19ba68258cdf46f5f8757383d12c4eed8f",
+          "gzip_bytes": 109609
+        },
+        {
+          "case": "cone_z_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "14f2a211d66d7a0eae23bee9c75518f07aa064cbb9d52d14f87bb6ba07db33d0",
+          "gzip_sha256": "f487361d946ec09abd2634dc91c0299b9f455b12b50f3cef54313bef0be64228",
+          "gzip_bytes": 166966
+        },
+        {
+          "case": "cone_z_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "34de079c8bf240c2723d20e38e348129da5a3e79f382e9df63a638c206eb1437",
+          "gzip_sha256": "dd4b7539883697cc3fabae4ad4267c3da0c1ea07b963d970fdf0dd55f8514653",
+          "gzip_bytes": 165631
+        },
+        {
+          "case": "cone_z_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "2c27a79af2820b304589e5607e61705db61911f33a7636fa5f8ac23adcda973c",
+          "gzip_sha256": "6dbd19a465af9de61a6a8e64d573f2de79dde22df856e7b231a25ca939b30d9a",
+          "gzip_bytes": 108763
+        },
+        {
+          "case": "cone_z_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "5fe56b2a2c77b88a607ab2413b2bac5f699e449d0ba4e778a27b3d46b0a9afb2",
+          "gzip_sha256": "29b04d33a8144b41db605c84b69c1b54fd95f8fb427428b0a4429e68d67e68d7",
+          "gzip_bytes": 167912
+        },
+        {
+          "case": "cone_z_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "2654d34479a6c305560b3708c51f307b80ccaa50998d86377f6a2de9a2c6aad9",
+          "gzip_sha256": "a0eeb4029143dca443e12ade768a601a29146a95bc153b852427e43f82b7eee5",
+          "gzip_bytes": 165109
+        },
+        {
+          "case": "cone_rotated_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "48dac07610f549722445b6cc21c67d87f151c5b6b860912edd5ecebb5644850a",
+          "gzip_sha256": "822e28b967bad501725944ac27abfb9bf975e18269eb1c58fd40833cc845e088",
+          "gzip_bytes": 165399
+        },
+        {
+          "case": "cone_rotated_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "66a4017f542356354c772c1e7230b7514b4fd4d9d80c901fab585dbaa2ee116b",
+          "gzip_sha256": "de8f01a9abe66ac913e04682d5ad1b5b49c335bc4704b751384793d79936a630",
+          "gzip_bytes": 162654
+        },
+        {
+          "case": "cone_rotated_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "b7484fe3973842835fc8794e59379116ccf2517fd4c1eec70de4880da56d4e81",
+          "gzip_sha256": "597eeca97d75093b9ddbc2fe18d259288b4cbddaf85f41d049ee84b2061344b1",
+          "gzip_bytes": 108540
+        },
+        {
+          "case": "cone_rotated_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "f09ca6bc4c78d585f05bd2f317110d5638434cf40d1e51b2c05d98880a1b6b61",
+          "gzip_sha256": "ccf72b601ab0270c7f017353ef7f0d61257af756949d6a721251770ea31f55a7",
+          "gzip_bytes": 106793
+        },
+        {
+          "case": "cone_rotated_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "4845311964efc92e0e0f71d50c45e9feeb58273b2d51227eecefefdd4669172b",
+          "gzip_sha256": "232e6083a5b6dbe241b8933cc3edf72ef5aa8f9820add918e98180e66b517c6f",
+          "gzip_bytes": 165151
+        },
+        {
+          "case": "cone_rotated_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "86c094aa571ab7873027507bbfa36aec754c828757747ac9746b432305dbaad6",
+          "gzip_sha256": "db4c95207bbc6c7cfd153263841294c8b303bff00db43b4bcb57f1b1e96819c3",
+          "gzip_bytes": 163175
+        }
+      ]
+    },
+    {
+      "environment": "linux-release",
+      "revision": "adf59009711f617bc205ef5e0c3d957591546b98",
+      "dirty": false,
+      "mode": "fixture",
+      "histories": 18000,
+      "verified_archives": 18,
+      "final_reservation_spent": false,
+      "command_prefix": [
+        "docker",
+        "run",
+        "--rm",
+        "--pull=never",
+        "--network",
+        "none",
+        "--read-only",
+        "--platform",
+        "linux/amd64",
+        "--entrypoint",
+        "/usr/bin/timeout",
+        "-v",
+        "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+        "-v",
+        "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-ensemble-linux-release-tmp:/tmp",
+        "-e",
+        "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-ensemble-linux-release-tmp",
+        "-w",
+        "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+        "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+        "300"
+      ],
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "artifact_sha256": {
+        "inputs.json": "de5983610b389233bd687ddf5b5537cb8fc4485021ecb38d53ab0fc7a656df78",
+        "manifest.json": "588c9d9ccfefd72e4e004581e169c364b4308ce4b311b75808b2db30cf3362a7",
+        "compile-command.json": "fd312e141da295790ea0e763f0400438ebfe191ee647946fcaacf03f824a23d0",
+        "compile.log": "fd78153e398c5e009562e02602277cfd8f12d013041e191d33de3edee1c834e3",
+        "report.json": "db7cc02a44fb2d369dd98ea42e3abba3776cc47b6737863991095714048f8a2e",
+        "metadata.tar.gz": "d5bc7fc7c2e985d4b1985ca43e994f297317c342a4ce1853211179b516b8fccf"
+      },
+      "verified_streams": [
+        {
+          "case": "pencil_z_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "32d9e31473cb2d0262b87e3be3d2108656cf1291a1249a0b153a9fd7eec9d6e8",
+          "gzip_sha256": "05d0785b8da13616b0340f44ad27e2f8459a865e88ec46eb98d07ca50b8a39e7",
+          "gzip_bytes": 5694
+        },
+        {
+          "case": "pencil_z_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "e032fbf8d5920a1970019caeae3fe8625094e31e1188c933dba588774090d220",
+          "gzip_sha256": "325f020730e62634631fcdfc9d10dc6fc05fb84c969b8b6dd9c9ab6681c5e7fb",
+          "gzip_bytes": 4113
+        },
+        {
+          "case": "pencil_z_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "aa0ed1563c6296aa2871ae5a447838b1b2def7cc43eee9ea8cad24500c2dce45",
+          "gzip_sha256": "fa764b0780274cad5b13015542ed4473765672f264ee1ffdc1854f9d92ba902e",
+          "gzip_bytes": 5676
+        },
+        {
+          "case": "pencil_z_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "2a0959644fe210da30c7e544540cf251d705175b454c0cc35f4df65fb3f6d4f3",
+          "gzip_sha256": "4a86acb37508482085bcc29e1c0494048881fef44d7f66ef20d78b94c68b7e69",
+          "gzip_bytes": 4262
+        },
+        {
+          "case": "pencil_z_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "80142f5d999f438cb21b6740d9c1deaa5cd5a8c63c22d5ee860b1f916853bc21",
+          "gzip_sha256": "2828d2a4516d5ee44dbd3bb2484b64a69ee84e0a6a215569b38fd36e017d6455",
+          "gzip_bytes": 5699
+        },
+        {
+          "case": "pencil_z_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "31dc178bf37e3d095fa366d53774b3515929ce3632dae7dab356331b16e4884b",
+          "gzip_sha256": "6151ce519d8ad1046e29958e4a12464d691490728a2ae4e88af9698033c64637",
+          "gzip_bytes": 5685
+        },
+        {
+          "case": "cone_z_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "c0da23df9a23af5ebdcb0401fa811c4a22f1d9e158f3c37899fcd8db9820c03d",
+          "gzip_sha256": "c1d17579359aa4faec7d017f2ce25b2d7c53b346a6d533cb0a0c59e111515a82",
+          "gzip_bytes": 167068
+        },
+        {
+          "case": "cone_z_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "5a243b27a688e66ca5af33ca09d7a09d9a5e150dec8df38eecb5ff49d02addb6",
+          "gzip_sha256": "c8098a7c5d5e88b9a6bdd42fd7ba157686d5925de8feb79c67edd4348bd7ab12",
+          "gzip_bytes": 124455
+        },
+        {
+          "case": "cone_z_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "862c107a4b217ac8c57459b74c9db18dc343bae57d0324ef930c5480d33152f1",
+          "gzip_sha256": "a68e90de41989e973dc6171e395100e6170e3e2df006fb8ec68e9a494f408ee8",
+          "gzip_bytes": 106872
+        },
+        {
+          "case": "cone_z_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "3dcc127ea7211917eb1b3db4f55fa8268a6d7045fbaea06c5adc2b3df693c546",
+          "gzip_sha256": "aff3a8584f4f52afb7a23ce496fdb5d5077446f6d333522eed3bcf15b8386f55",
+          "gzip_bytes": 165250
+        },
+        {
+          "case": "cone_z_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "ae207657e9466e3895104f7bd997054aaabc32b9648ef38e6729b60388f13253",
+          "gzip_sha256": "f1ffc2e881d2edc8a7e5dd533bede89ad72bc8ad95995dbc0ba66389ca61de6f",
+          "gzip_bytes": 167567
+        },
+        {
+          "case": "cone_z_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "db9ffc78ffae722bc35ae286f1c25cfb444418603e90dcc215bdbc6f12bc79c6",
+          "gzip_sha256": "4977e6ab3d23ef7eea293801262f82ef129fb3babb3b6c43dcd1ff1d611f31ee",
+          "gzip_bytes": 165300
+        },
+        {
+          "case": "cone_rotated_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "db3fe366e6b9a138ecd2bbb6a78df8fdb3256039a82cb79d67c0f4f8d1467f5f",
+          "gzip_sha256": "a5d36e128b35165c8a5c3c525584e5d7038d5b497a0d8d5f3178d51e45cef917",
+          "gzip_bytes": 165944
+        },
+        {
+          "case": "cone_rotated_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "e939fe120e319967125772099fa42ae39634dcd4778e65db401cfa3fff69a7ca",
+          "gzip_sha256": "e7e7b1b949c71f55ae53978b188c848935fb1d90f9943b3865e538ca37d27b1e",
+          "gzip_bytes": 123766
+        },
+        {
+          "case": "cone_rotated_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "fae2ad18057ddf1a4b1396d729198ffc35b350f70ff2f6eb7b852132e1fac869",
+          "gzip_sha256": "a94405009c2aac9b452a321f3f5a4002bda4de0b3ab1b4590d18b1fc33318787",
+          "gzip_bytes": 105131
+        },
+        {
+          "case": "cone_rotated_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "f6da4309e7a171a1589dcf7072a961727e9c1d1e37856c46d2d3ec9edb460b49",
+          "gzip_sha256": "b02b97c81f55acd946a8ba5ccdd5b1c9248df731fc2fe3f58a6794d5c996fa0b",
+          "gzip_bytes": 163519
+        },
+        {
+          "case": "cone_rotated_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "301975ced61b18eacd29779a7f0521c77a4698763429525b1e401c498f7353b1",
+          "gzip_sha256": "59ebcce410b2449ea8493232132d5db51b3cf5886435ba4b2f2a441f4b09778e",
+          "gzip_bytes": 165279
+        },
+        {
+          "case": "cone_rotated_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "a8f6047f3bd8c16ac31e0454f092587cc3fc06dedd0e92330e2630ebe739fbf0",
+          "gzip_sha256": "aff90c84f0ef600cebe858932573c3de4b74c96581e1b041f387853149fada47",
+          "gzip_bytes": 163876
+        }
+      ]
+    },
+    {
+      "environment": "linux-sanitizers",
+      "revision": "adf59009711f617bc205ef5e0c3d957591546b98",
+      "dirty": false,
+      "mode": "fixture",
+      "histories": 18000,
+      "verified_archives": 18,
+      "final_reservation_spent": false,
+      "command_prefix": [
+        "docker",
+        "run",
+        "--rm",
+        "--pull=never",
+        "--network",
+        "none",
+        "--read-only",
+        "--platform",
+        "linux/amd64",
+        "--entrypoint",
+        "/usr/bin/timeout",
+        "-v",
+        "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+        "-v",
+        "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-ensemble-linux-sanitizers-tmp:/tmp",
+        "-e",
+        "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/eev-ensemble-linux-sanitizers-tmp",
+        "-e",
+        "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1",
+        "-e",
+        "UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1",
+        "-w",
+        "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+        "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+        "300"
+      ],
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "artifact_sha256": {
+        "inputs.json": "de5983610b389233bd687ddf5b5537cb8fc4485021ecb38d53ab0fc7a656df78",
+        "manifest.json": "aeac684ae38aba72c1d75b184c23fd398b0365e51941a7fc3d81885b93d4f14b",
+        "compile-command.json": "9edd026a198dc55a8b87ebfa1ad3fa459e5c3cdeb1d3a5c1c90170d0ffcb0ef8",
+        "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "report.json": "0e922d08eaaf6b0ded60fec16aaf5437db26b9543b7192d6b1352f3f198b68a7",
+        "metadata.tar.gz": "85adc7a3c8ed035da67caebaf010a37625e7d4a7131ee3e5ab6db0fbf0fd74c9"
+      },
+      "verified_streams": [
+        {
+          "case": "pencil_z_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "32d9e31473cb2d0262b87e3be3d2108656cf1291a1249a0b153a9fd7eec9d6e8",
+          "gzip_sha256": "05d0785b8da13616b0340f44ad27e2f8459a865e88ec46eb98d07ca50b8a39e7",
+          "gzip_bytes": 5694
+        },
+        {
+          "case": "pencil_z_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "e032fbf8d5920a1970019caeae3fe8625094e31e1188c933dba588774090d220",
+          "gzip_sha256": "325f020730e62634631fcdfc9d10dc6fc05fb84c969b8b6dd9c9ab6681c5e7fb",
+          "gzip_bytes": 4113
+        },
+        {
+          "case": "pencil_z_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "aa0ed1563c6296aa2871ae5a447838b1b2def7cc43eee9ea8cad24500c2dce45",
+          "gzip_sha256": "fa764b0780274cad5b13015542ed4473765672f264ee1ffdc1854f9d92ba902e",
+          "gzip_bytes": 5676
+        },
+        {
+          "case": "pencil_z_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "2a0959644fe210da30c7e544540cf251d705175b454c0cc35f4df65fb3f6d4f3",
+          "gzip_sha256": "4a86acb37508482085bcc29e1c0494048881fef44d7f66ef20d78b94c68b7e69",
+          "gzip_bytes": 4262
+        },
+        {
+          "case": "pencil_z_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "80142f5d999f438cb21b6740d9c1deaa5cd5a8c63c22d5ee860b1f916853bc21",
+          "gzip_sha256": "2828d2a4516d5ee44dbd3bb2484b64a69ee84e0a6a215569b38fd36e017d6455",
+          "gzip_bytes": 5699
+        },
+        {
+          "case": "pencil_z_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "31dc178bf37e3d095fa366d53774b3515929ce3632dae7dab356331b16e4884b",
+          "gzip_sha256": "6151ce519d8ad1046e29958e4a12464d691490728a2ae4e88af9698033c64637",
+          "gzip_bytes": 5685
+        },
+        {
+          "case": "cone_z_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "c0da23df9a23af5ebdcb0401fa811c4a22f1d9e158f3c37899fcd8db9820c03d",
+          "gzip_sha256": "c1d17579359aa4faec7d017f2ce25b2d7c53b346a6d533cb0a0c59e111515a82",
+          "gzip_bytes": 167068
+        },
+        {
+          "case": "cone_z_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "5a243b27a688e66ca5af33ca09d7a09d9a5e150dec8df38eecb5ff49d02addb6",
+          "gzip_sha256": "c8098a7c5d5e88b9a6bdd42fd7ba157686d5925de8feb79c67edd4348bd7ab12",
+          "gzip_bytes": 124455
+        },
+        {
+          "case": "cone_z_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "862c107a4b217ac8c57459b74c9db18dc343bae57d0324ef930c5480d33152f1",
+          "gzip_sha256": "a68e90de41989e973dc6171e395100e6170e3e2df006fb8ec68e9a494f408ee8",
+          "gzip_bytes": 106872
+        },
+        {
+          "case": "cone_z_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "3dcc127ea7211917eb1b3db4f55fa8268a6d7045fbaea06c5adc2b3df693c546",
+          "gzip_sha256": "aff3a8584f4f52afb7a23ce496fdb5d5077446f6d333522eed3bcf15b8386f55",
+          "gzip_bytes": 165250
+        },
+        {
+          "case": "cone_z_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "ae207657e9466e3895104f7bd997054aaabc32b9648ef38e6729b60388f13253",
+          "gzip_sha256": "f1ffc2e881d2edc8a7e5dd533bede89ad72bc8ad95995dbc0ba66389ca61de6f",
+          "gzip_bytes": 167567
+        },
+        {
+          "case": "cone_z_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "db9ffc78ffae722bc35ae286f1c25cfb444418603e90dcc215bdbc6f12bc79c6",
+          "gzip_sha256": "4977e6ab3d23ef7eea293801262f82ef129fb3babb3b6c43dcd1ff1d611f31ee",
+          "gzip_bytes": 165300
+        },
+        {
+          "case": "cone_rotated_electron",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "db3fe366e6b9a138ecd2bbb6a78df8fdb3256039a82cb79d67c0f4f8d1467f5f",
+          "gzip_sha256": "a5d36e128b35165c8a5c3c525584e5d7038d5b497a0d8d5f3178d51e45cef917",
+          "gzip_bytes": 165944
+        },
+        {
+          "case": "cone_rotated_photon",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "e939fe120e319967125772099fa42ae39634dcd4778e65db401cfa3fff69a7ca",
+          "gzip_sha256": "e7e7b1b949c71f55ae53978b188c848935fb1d90f9943b3865e538ca37d27b1e",
+          "gzip_bytes": 123766
+        },
+        {
+          "case": "cone_rotated_photon",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "fae2ad18057ddf1a4b1396d729198ffc35b350f70ff2f6eb7b852132e1fac869",
+          "gzip_sha256": "a94405009c2aac9b452a321f3f5a4002bda4de0b3ab1b4590d18b1fc33318787",
+          "gzip_bytes": 105131
+        },
+        {
+          "case": "cone_rotated_electron",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "f6da4309e7a171a1589dcf7072a961727e9c1d1e37856c46d2d3ec9edb460b49",
+          "gzip_sha256": "b02b97c81f55acd946a8ba5ccdd5b1c9248df731fc2fe3f58a6794d5c996fa0b",
+          "gzip_bytes": 163519
+        },
+        {
+          "case": "cone_rotated_proton",
+          "implementation": "fork",
+          "histories": 1000,
+          "raw_sha256": "301975ced61b18eacd29779a7f0521c77a4698763429525b1e401c498f7353b1",
+          "gzip_sha256": "59ebcce410b2449ea8493232132d5db51b3cf5886435ba4b2f2a441f4b09778e",
+          "gzip_bytes": 165279
+        },
+        {
+          "case": "cone_rotated_proton",
+          "implementation": "modern",
+          "histories": 1000,
+          "raw_sha256": "a8f6047f3bd8c16ac31e0454f092587cc3fc06dedd0e92330e2630ebe739fbf0",
+          "gzip_sha256": "aff90c84f0ef600cebe858932573c3de4b74c96581e1b041f387853149fada47",
+          "gzip_bytes": 163876
+        }
+      ]
+    }
+  ],
+  "python_tests": {
+    "native_ran": 28,
+    "native_skipped": 1,
+    "linux_ran": 28,
+    "linux_skipped": 0,
+    "linux_architecture": "arm64 container for Python process-tree tests; not the amd64 numerical environment"
+  },
+  "server_workflow": "Mocked clone/configure/build/check phases; real phase sequencing, status/metadata archive and fixture-only isolation.",
+  "bootstrap_limit": "Fresh Ubuntu 22.04 clone/build/CTest end-to-end execution was not performed in this session.",
+  "legacy_fixture": {
+    "histories": 6000,
+    "mode": "fixture"
+  },
+  "log_sha256": {
+    "eev-server-guard-tests.log": "a9b4c8b8c8590479dc03c44130705ebe8ff5177b28dfd798395261d84e9ef5e4",
+    "eev-server-linux-python-final.log": "3192e6e58812c75c48bd3fd7edb212a37cec95381abc8445854a52c2d337defb",
+    "eev-server-legacy-fixture.log": "364aaf12c1285ef33224e4d41cee1abfb7bbf9c82c2f11643cc3e26b1245919b"
+  },
+  "source_sha256": {
+    "run_eev_field_server.py": "8f5e055975007bc50b02eaf90d21d548884a0ac34bfb1999acfd8eacef4ed4a6",
+    "eev_field_ensemble.py": "3728ebefb8e63ef69c95e28198b884ba214aee4bf31e3c921148cf2c209864ec",
+    "eev_field_ensemble.cpp": "1884db84a9391c3e3f5db99d22744517b67214516c56502f1707add7ec2dcde0",
+    "source_observer_ensemble.py": "c32af4fb62c07f28f54e9debae48235b4af1036f8b9164724560ba2767427e11"
+  }
+}

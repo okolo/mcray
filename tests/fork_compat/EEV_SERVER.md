@@ -127,3 +127,6 @@ eight-hour watchdog covers final verification/packaging too. A machine failure
 or SIGKILL can leave incomplete gzip/metadata; such output is never a successful
 comparison. Ordinary script interruption is recorded as failure. There is no
 automatic resume, history replacement or implicit increase of sample count.
+
+See the [preflight evidence](../../docs/validation/eev_field_server_preflight.md)
+for the actual checks and the fresh-server bootstrap reproduction limit.
