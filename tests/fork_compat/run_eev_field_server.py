@@ -145,6 +145,9 @@ def run(args):
         supervisor.execute('checkout', ['git', 'checkout', '--detach', args.revision], checkout, env)
         commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=checkout, text=True).strip()
         if commit != args.revision: raise ValueError('Resolved revision differs from request')
+        candidate_launcher = checkout/'tests/fork_compat/run_eev_field_server.py'
+        if sha256(candidate_launcher) != manifest['runner_sha256']:
+            raise ValueError('Launcher differs from the selected commit; transfer the paired script and REVISION')
         manifest['commit'] = commit; save()
         supervisor.execute('versions', ['bash', '-c',
             'uname -a; cat /etc/os-release; g++ --version; gfortran --version; cmake --version; '

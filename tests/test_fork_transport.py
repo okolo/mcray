@@ -79,7 +79,10 @@ class TransportDiagnosticTests(unittest.TestCase):
             revision='a'*40; calls=[]
             def execute(supervisor,name,command,cwd,env):
                 calls.append((name,command))
-                if name=='clone': Path(command[-1]).mkdir()
+                if name=='clone':
+                    candidate=Path(command[-1])/'tests/fork_compat'
+                    candidate.mkdir(parents=True)
+                    (candidate/'run_eev_field_server.py').write_bytes(Path(server.__file__).read_bytes())
             args=SimpleNamespace(data_dir=root/'results',revision=revision,repository='candidate.bundle',
                 workers=2,fixture_only=True,reference_archive=archive,gtest_archive=archive)
             with patch.object(server.platform,'platform',return_value='workflow-fixture'),patch.object(server.Supervisor,'execute',execute),patch.object(server,'GTEST_SHA256',server.sha256(archive)),patch.object(server.subprocess,'run',return_value=SimpleNamespace(returncode=0)),patch.object(server.subprocess,'check_output',return_value=revision+'\n'):
