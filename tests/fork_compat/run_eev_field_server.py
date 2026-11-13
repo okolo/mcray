@@ -31,12 +31,23 @@ def sha256(path):
 
 def tree_pids(pid):
     """Include workers that deliberately started their own process sessions."""
+    # Process-wide PPIDs include children spawned by any thread and do not
+    # depend on the optional /proc/<pid>/task/<tid>/children interface.
+    children = {}
+    for stat in Path('/proc').glob('[0-9]*/stat'):
+        try:
+            fields = stat.read_bytes().rsplit(b')', 1)[1].split()
+        except (FileNotFoundError, ProcessLookupError, PermissionError):
+            continue
+        parent = int(fields[1])
+        children.setdefault(parent, []).append(int(stat.parent.name))
     result = [pid]
-    try:
-        children = Path('/proc/{}/task/{}/children'.format(pid, pid)).read_text().split()
-    except FileNotFoundError:
-        children = []
-    for child in children: result.extend(tree_pids(int(child)))
+    seen = {pid}
+    for parent in result:
+        for child in children.get(parent, ()):
+            if child not in seen:
+                seen.add(child)
+                result.append(child)
     return result
 
 

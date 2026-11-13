@@ -2,10 +2,12 @@
 import copy
 from decimal import Decimal
 import math
+import signal
 from pathlib import Path
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from unittest.mock import patch
 
@@ -107,12 +109,42 @@ class TransportDiagnosticTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory); pidfile=root/'worker.pid'
             script=root/'parent.py'
-            script.write_text("import subprocess,sys,time\np=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)'],start_new_session=True)\nopen(sys.argv[1],'w').write(str(p.pid))\ntime.sleep(60)\n")
-            supervisor=server.Supervisor(root,seconds=1)
+            script.write_text(
+                "import subprocess, sys, threading, time\n"
+                "def launch():\n"
+                "    worker = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'], start_new_session=True)\n"
+                "    with open(sys.argv[1], 'w') as output:\n"
+                "        output.write(str(worker.pid))\n"
+                "    time.sleep(60)\n"
+                "thread = threading.Thread(target=launch)\n"
+                "thread.start()\n"
+                "thread.join()\n"
+                "time.sleep(60)\n"
+            )
+            supervisor = server.Supervisor(root, seconds=2)
             with self.assertRaises(subprocess.TimeoutExpired):
-                supervisor.execute('deadline',[sys.executable,str(script),str(pidfile)],root,os.environ.copy())
-            pid=int(pidfile.read_text()); status=Path('/proc')/str(pid)/'stat'
-            self.assertTrue(not status.exists() or status.read_text().split()[2]=='Z')
+                supervisor.execute('deadline', [sys.executable, str(script), str(pidfile)], root, os.environ.copy())
+            pid = int(pidfile.read_text())
+            status = Path('/proc') / str(pid) / 'stat'
+            # SIGKILL delivery is asynchronous for a non-child PID. It can
+            # briefly remain visible before exiting or becoming a zombie.
+            deadline = time.monotonic() + 2
+            try:
+                while True:
+                    try:
+                        state = status.read_text().rsplit(')', 1)[1].split()[0]
+                    except (FileNotFoundError, ProcessLookupError):
+                        break
+                    if state == 'Z':
+                        break
+                    self.assertLess(time.monotonic(), deadline, 'Worker survived the watchdog')
+                    time.sleep(.01)
+            except BaseException:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                raise
 
     def test_field_pilot_reservations_are_separate_and_match_revised_model(self):
         with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:

@@ -54,3 +54,19 @@ REVISION, the pinned reference/GoogleTest archives, SHA256SUMS and the server
 instructions. It supports unpushed committed code without this private
 workspace or a remote branch update. The full eight-hour test must be started
 on the external server; its final reservations remain unconsumed locally.
+
+## Server attempt and watchdog correction
+
+The Ubuntu 22.04 amd64 attempt `20261106T093212Z-419817cb` used revision
+`85d5ea5`. All 253 CTest cases passed. The Python watchdog assertion failed
+and the launcher exited after 124 seconds, before either the fixture or the
+final ensemble. This attempt consumed no final seed reservation.
+
+The corrected watchdog uses process-wide parent IDs from `/proc/*/stat`.
+The old task-specific `children` traversal could miss a worker launched by
+another thread. The regression now exercises that path and waits briefly
+for the worker to exit after asynchronous signal delivery. The server log
+records the failed assertion but does not establish which condition caused
+it. The revised regression fails with the old traversal and passes with the
+correction. All 28 Python checks passed in an offline Linux arm64 container.
+The corrected launcher still requires a server run on Ubuntu amd64.
