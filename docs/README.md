@@ -33,6 +33,7 @@ run from the mcray repository root unless explicitly stated otherwise.
 
 ## Validation results
 
+- [EeV field ensemble on native Ubuntu 22.04](validation/eev_field_ensemble_results.md)
 - [EeV server-runner preflight and limits](validation/eev_field_server_preflight.md)
 
 - [1 EeV three-species field/source cost pilot](validation/fork_eev_field_source_pilot.md)
