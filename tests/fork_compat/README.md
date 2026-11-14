@@ -103,3 +103,19 @@ runner defaults to a fixture replay; final collection requires explicit mode.
 `vmf.py` compares the actual original Jet.cpp weight with the restored modern
 Jet.cpp on fixed directions, separately retaining cancellation/range controls.
 It does not rerun cone/observer ensembles or claim cascade equivalence.
+
+The [fixed-state field/observer coupling diagnostic](COUPLED.md) combines the
+actual historical engine move, deflector and observer with the modern engine
+on 729 shared initialized states. It reports every hit/error/refinement change;
+source sampling and statistical acceptance are outside its scope.
+
+The [electron/photon field/source cost pilot](FIELD_SOURCE_PILOT.md) uses
+1 PeV primaries and the same tabulated-field coupling driver. Its small
+software fixture has disjoint seeds; final statistical acceptance is separate.
+
+The [1 EeV electron/photon/proton cost pilot](EEV_FIELD_SOURCE_PILOT.md)
+retains the field/geometry controls with separately reserved source streams.
+
+The [eight-hour Ubuntu 22.04 launcher](EEV_SERVER.md) runs the
+[frozen EeV ensemble](EEV_FIELD_ENSEMBLE.md), with fixtures separated from
+the persistent final seed reservation.

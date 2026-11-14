@@ -1,0 +1,2372 @@
+{
+  "run_id": "20261113T202246Z-94c347cb",
+  "server_status": {
+    "started_utc": "2026-11-13T20:22:46.969659+00:00",
+    "requested_revision": "78570988b942555ff93254a920596137bc2feccb",
+    "runner_sha256": "33295b482422fab422ea40661a84407c41bcbc2a4fdf86e64921d6945303cc43",
+    "host": "Linux-5.15.0-202-generic-x86_64-with-glibc2.35",
+    "workers": 16,
+    "fixture_only": false,
+    "max_seconds": 28800,
+    "status": "completed",
+    "commit": "78570988b942555ff93254a920596137bc2feccb",
+    "reference_archive_sha256": "0666f7a42e299e98d273118dbec59567c842233795d110956cc59bba6a67860b",
+    "compatible_at_reported_resolution": true,
+    "reference_revision": "e1fc71f613efe7fecf3210e15339c34814245cd4",
+    "exit_code": 0,
+    "elapsed_seconds": 1135.2480211229995,
+    "finished_utc": "2026-11-13T20:41:42.217656+00:00"
+  },
+  "inputs": {
+    "schema": 1,
+    "mode": "final",
+    "protocol": "EEV_FIELD_ENSEMBLE.md",
+    "cases": [
+      {
+        "name": "pencil_z_electron",
+        "species": 0,
+        "half_angle_degrees": 0,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2010101,
+        "modern_seed": 2010102,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "pencil_z_photon",
+        "species": 3,
+        "half_angle_degrees": 0,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2010103,
+        "modern_seed": 2010104,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "pencil_z_proton",
+        "species": 2,
+        "half_angle_degrees": 0,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2010105,
+        "modern_seed": 2010106,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "cone_z_electron",
+        "species": 0,
+        "half_angle_degrees": 20,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2010107,
+        "modern_seed": 2010108,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "cone_z_photon",
+        "species": 3,
+        "half_angle_degrees": 20,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2010109,
+        "modern_seed": 2010110,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "cone_z_proton",
+        "species": 2,
+        "half_angle_degrees": 20,
+        "theta": 0,
+        "phi": 0,
+        "fork_seed": 2010111,
+        "modern_seed": 2010112,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "cone_rotated_electron",
+        "species": 0,
+        "half_angle_degrees": 20,
+        "theta": 0.4,
+        "phi": 0.7,
+        "fork_seed": 2010113,
+        "modern_seed": 2010114,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "cone_rotated_photon",
+        "species": 3,
+        "half_angle_degrees": 20,
+        "theta": 0.4,
+        "phi": 0.7,
+        "fork_seed": 2010115,
+        "modern_seed": 2010116,
+        "count": 9000000,
+        "accuracy": 40
+      },
+      {
+        "name": "cone_rotated_proton",
+        "species": 2,
+        "half_angle_degrees": 20,
+        "theta": 0.4,
+        "phi": 0.7,
+        "fork_seed": 2010117,
+        "modern_seed": 2010118,
+        "count": 9000000,
+        "accuracy": 40
+      }
+    ],
+    "energy_eV": 1e+18,
+    "accuracy": 40,
+    "alpha": 0.05,
+    "family_size": 144,
+    "total_histories": 162000000,
+    "observable_names": [
+      "hit",
+      "arrival_0.092",
+      "arrival_0.094",
+      "arrival_0.096",
+      "arrival_0.098",
+      "position_x",
+      "position_y",
+      "position_z",
+      "final_direction_x",
+      "final_direction_y",
+      "final_direction_z",
+      "emitted_direction_x",
+      "emitted_direction_y",
+      "emitted_direction_z"
+    ],
+    "observable_widths": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "coordinate_scale_Mpc": 0.25,
+    "arrival_thresholds_Mpc": [
+      0.092,
+      0.094,
+      0.096,
+      0.098
+    ],
+    "source_z": 0.01,
+    "hubble_km_s_Mpc": 70,
+    "omega_lambda": 0.7,
+    "observer_radius_Mpc": 0.01,
+    "observer_distance_Mpc": 0.1,
+    "duration_Mpc": 0.2,
+    "interactions": [],
+    "rate_path": "constant"
+  },
+  "report": {
+    "mode": "final",
+    "streams": [
+      {
+        "case": "pencil_z_photon",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 9000000,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 1,
+        "sums": [
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          0,
+          0,
+          3240000.0000000005,
+          0,
+          0,
+          9000000,
+          0,
+          0,
+          9000000
+        ],
+        "wall_seconds": 152.174560739,
+        "raw_sha256": "7ea24f5e5e06f4622105ff134da5da9586a4525b9462b959e35327c9a450dd9d",
+        "gzip_sha256": "2fd65a692a492e69fb1183c1086d94924a9642ae770d12f23e01b01c42538ace",
+        "gzip_bytes": 34427650,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "pencil_z_photon",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 9000000,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 2,
+        "sums": [
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          0,
+          0,
+          3240360.0000000005,
+          0,
+          0,
+          9000000,
+          0,
+          0,
+          9000000
+        ],
+        "wall_seconds": 188.661758939,
+        "raw_sha256": "d0a34e7707b747c60a2681550b406e4d5f2d54f2c2f5c69521139a253a02cf4a",
+        "gzip_sha256": "50d54b1199c02ed4c2b5a5590f527a51e93ac590e459054d0813f16c28c2b82b",
+        "gzip_bytes": 42654532,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_rotated_photon",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 748234,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 1549,
+        "max_positive_end_error_Mpc": 9.983816733676018e-06,
+        "max_engine_moves": 2198,
+        "sums": [
+          748234,
+          291551,
+          507825,
+          652839,
+          731270,
+          1984173.1155228699,
+          1671924.3722075336,
+          6137761.779138447,
+          2599023.723407045,
+          2190023.5904054674,
+          8039687.918394853,
+          2599023.723407045,
+          2190023.5904054674,
+          8039687.918394853
+        ],
+        "wall_seconds": 314.043208828,
+        "raw_sha256": "2608387d442edf360b5d2cb126ee69821c141b6986d322b934e944e1c202d56c",
+        "gzip_sha256": "d6ac7e7e6407e18280fc4819eb0969e9d82122b199633e41109d4bf11d549636",
+        "gzip_bytes": 1106386876,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_z_photon",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 747523,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 1488,
+        "max_positive_end_error_Mpc": 9.99561036450751e-06,
+        "max_engine_moves": 2034,
+        "sums": [
+          747523,
+          291266,
+          507466,
+          652061,
+          730126,
+          -291.1921348112946,
+          135.96298898979006,
+          6664025.833937073,
+          -318.77614154925584,
+          173.56800363207958,
+          8728626.688500753,
+          -318.77614154925584,
+          173.56800363207958,
+          8728626.688500753
+        ],
+        "wall_seconds": 314.158867367,
+        "raw_sha256": "8b8a36e2380cf26d2466aacdb125a59d393412ccd1e044fdcb33edf075c9cf01",
+        "gzip_sha256": "634a762aa299614c438fbf91eaae4d752cdb710920b702803a7cd9fde7243cab",
+        "gzip_bytes": 1113841890,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_z_photon",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 748610,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 2034,
+        "sums": [
+          748610,
+          291984,
+          508306,
+          653493,
+          731361,
+          -226.7404565170094,
+          -378.3278191711083,
+          6663597.665819521,
+          -320.51562863272034,
+          -453.4360796727963,
+          8728677.567880783,
+          -320.51562863272034,
+          -453.4360796727963,
+          8728677.567880783
+        ],
+        "wall_seconds": 407.68552786,
+        "raw_sha256": "a8b70702752ecda19c32b2d0754f23377544daac211a0008a92994031fcc8610",
+        "gzip_sha256": "b021b8891ac7519476a93d78705067e41438c4c060fac5cb474648aefd07941e",
+        "gzip_bytes": 961436626,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_rotated_photon",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 746809,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 2198,
+        "sums": [
+          746809,
+          290828,
+          507175,
+          651934,
+          729578,
+          1985708.100999042,
+          1671722.5368239225,
+          6138010.108436987,
+          2600765.283883145,
+          2189548.3077506567,
+          8039296.45205894,
+          2600765.283883145,
+          2189548.3077506567,
+          8039296.45205894
+        ],
+        "wall_seconds": 412.461943222,
+        "raw_sha256": "fdeeba66b2540d53b58f933478cdb39d48c529a4c59cfd219c19b8bd32797f81",
+        "gzip_sha256": "457c4433f822bcdc278b73175f5c66a3a1b40e9496e20d36110cbe548eab952a",
+        "gzip_bytes": 947980859,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "pencil_z_electron",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 9000000,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 82,
+        "sums": [
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          29406.943689031017,
+          -137513.06838373863,
+          3268680.0106089143,
+          167167.5120187182,
+          -755693.3964837978,
+          8966659.495789737,
+          0,
+          0,
+          9000000
+        ],
+        "wall_seconds": 584.489980864,
+        "raw_sha256": "2a388065fbbaffe1516924d17b0535ce5b0a788a96e124497f2fd75a90a1181b",
+        "gzip_sha256": "e260ba8fbb6b55c051d83e148a6f820fddf38ca21f018c3cff543711ead40e51",
+        "gzip_bytes": 45423695,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "pencil_z_proton",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 9000000,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 82,
+        "sums": [
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          -25753.200792696465,
+          138292.83639498663,
+          3268679.834372914,
+          -136435.66289866838,
+          762386.255018308,
+          8966613.212804964,
+          0,
+          0,
+          9000000
+        ],
+        "wall_seconds": 590.560265159,
+        "raw_sha256": "0b9e091d2930f09d295b62f907f6ebef636fadc3a3bb763ed5b543c117cbd6d3",
+        "gzip_sha256": "4250d2f236e6d3ba751b44e2fb139f233d5228e0f64f2b5f30df01ceb781b856",
+        "gzip_bytes": 45418664,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "pencil_z_proton",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 9000000,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 82,
+        "sums": [
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          -25753.20079269647,
+          138292.83639498663,
+          3268679.834372914,
+          -136435.66289866838,
+          762386.2550183081,
+          8966613.212804964,
+          0,
+          0,
+          9000000
+        ],
+        "wall_seconds": 617.171215775,
+        "raw_sha256": "0d75d9e8213420296ee46dcc9b7a8c20a3ec770fd5a3dadf88e78250c01dbbe1",
+        "gzip_sha256": "112db096bd3351c2de3cb323587b20d0d16d63afcbd54a3d89598c33106988a1",
+        "gzip_bytes": 45505888,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "pencil_z_electron",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 9000000,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 82,
+        "sums": [
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          9000000,
+          29406.94368903102,
+          -137513.06838373863,
+          3268680.0106089143,
+          167167.5120187182,
+          -755693.3964837978,
+          8966659.495789737,
+          0,
+          0,
+          9000000
+        ],
+        "wall_seconds": 615.856986104,
+        "raw_sha256": "f5f6123cc7cc8b5a11be59de354a2e1f697609c1e3d46a291c1c56233bb64835",
+        "gzip_sha256": "74709554bf67bef617c04509e50013e942930d5fa54bb4c19a746c7b8f9fe5a6",
+        "gzip_bytes": 45584204,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_z_electron",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 749220,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 2045,
+        "sums": [
+          749220,
+          287389,
+          505124,
+          651009,
+          730455,
+          141809.2007479795,
+          -613772.4674226203,
+          6623532.641359476,
+          377848.3519228194,
+          -1526324.7813651422,
+          8580109.9660631,
+          -813.9954922351063,
+          993.7021355817349,
+          8728601.82581495
+        ],
+        "wall_seconds": 723.794368765,
+        "raw_sha256": "40830abb969529ef502deae2822d9c2f63223c685850db18fc884cac33623159",
+        "gzip_sha256": "9d05f12b7ec702fc251d874d3f8dfbb66e9f5ea1f650e4e50593a2751e64d2d1",
+        "gzip_bytes": 1481360622,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_z_proton",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 747014,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 2045,
+        "sums": [
+          747014,
+          287206,
+          503840,
+          648829,
+          728193,
+          -105401.82968889058,
+          623464.0195675169,
+          6623349.25853627,
+          -238524.52807629903,
+          1560821.4413911381,
+          8575839.108383888,
+          -797.6181561217534,
+          314.3230611287361,
+          8728521.135646993
+        ],
+        "wall_seconds": 731.040053966,
+        "raw_sha256": "1ced329bd37d0bf81aa00d4e2ed345f9b8fb4460080de30ae335f56b25837705",
+        "gzip_sha256": "530e6bb479892a15bd12c12e1078c4124f78ac71ab3dd080d8f97c9539d69486",
+        "gzip_bytes": 1483260756,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_rotated_electron",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 748914,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 2188,
+        "sums": [
+          748914,
+          288472,
+          505413,
+          651577,
+          730519,
+          2036997.1957989074,
+          1185015.7860109024,
+          6226307.700532663,
+          2750789.953110798,
+          964929.8073320235,
+          8224075.51101879,
+          2599479.0891097584,
+          2189847.177703727,
+          8039645.390326797
+        ],
+        "wall_seconds": 738.010404959,
+        "raw_sha256": "cc639d724986e0d43e50d125a1064b932a32df4bd10638ad41de97a2c0684dca",
+        "gzip_sha256": "31ef01079285292a801ea1ac20550c81e19a7ecbf326b17215cf6d4099637f64",
+        "gzip_bytes": 1465606017,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_z_proton",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 747172,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 1424,
+        "max_positive_end_error_Mpc": 9.994922536489317e-06,
+        "max_engine_moves": 2045,
+        "sums": [
+          747172,
+          287043,
+          503574,
+          649376,
+          728327,
+          -104664.95611561934,
+          623272.2450829356,
+          6623341.658727289,
+          -237611.52228480723,
+          1560564.666244313,
+          8575953.08838061,
+          137.32541260575883,
+          145.63721143829346,
+          8728555.150470689
+        ],
+        "wall_seconds": 780.973050307,
+        "raw_sha256": "5be560516a1a116de6d34c00801b42e7760110f9b6103074bfe7bd988e71d039",
+        "gzip_sha256": "add986002cd8d152813ded4675d2ba00fb7e1c7236aab241358a1ca5bb7a1145",
+        "gzip_bytes": 1500207063,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_z_electron",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 749658,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 1293,
+        "max_positive_end_error_Mpc": 9.996792628588072e-06,
+        "max_engine_moves": 2045,
+        "sums": [
+          749658,
+          287757,
+          504696,
+          650773,
+          730654,
+          142595.44409886346,
+          -613948.4070691009,
+          6623282.455377714,
+          378800.8325181393,
+          -1526450.3244429105,
+          8579985.96731063,
+          130.17178742967636,
+          717.1916503733578,
+          8728555.370551597
+        ],
+        "wall_seconds": 781.867822138,
+        "raw_sha256": "c8e691c9e7d4be00b6d6ad463938958f1680888c45f6f0bc996e973ed22418a1",
+        "gzip_sha256": "6613280a762ff9bcd1e34e67e61683dcc836e4810c9594d9818d615e19aaec0a",
+        "gzip_bytes": 1503144739,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_rotated_electron",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 749002,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 1528,
+        "max_positive_end_error_Mpc": 9.992828547495824e-06,
+        "max_engine_moves": 2188,
+        "sums": [
+          749002,
+          288805,
+          505287,
+          651627,
+          730714,
+          2037349.604402573,
+          1184270.9427258829,
+          6226285.393688783,
+          2751314.893053058,
+          964011.8633519516,
+          8223996.790715064,
+          2599919.036234639,
+          2188878.7477816152,
+          8039758.098289912
+        ],
+        "wall_seconds": 797.172692667,
+        "raw_sha256": "750286c63980fcd5af116ed0ec2c67aec11e03d994328f38a340bc94b5ea30c8",
+        "gzip_sha256": "c353b0e4a488fd5f5cf8faabc97005e68639df4f8dc7f678451bfb338cc861de",
+        "gzip_bytes": 1487328105,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_rotated_proton",
+        "implementation": "modern",
+        "histories": 9000000,
+        "hits": 748815,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 0,
+        "max_positive_end_error_Mpc": 0,
+        "max_engine_moves": 2166,
+        "sums": [
+          748815,
+          289050,
+          505960,
+          651380,
+          730350,
+          1964484.914552797,
+          2146169.1254452546,
+          5987162.240650841,
+          2568675.227151648,
+          3369824.464380965,
+          7624536.562679671,
+          2600228.820777937,
+          2189738.997821809,
+          8039448.176032414
+        ],
+        "wall_seconds": 739.861379717,
+        "raw_sha256": "5d336dff0fff887c5222ba098616abbabac20e77e6bf58db2b4f53eb356ffaa4",
+        "gzip_sha256": "ee3af1b902da1312cc51b2fd58658662d9aed0319a3fcc2c9daa02fae15aba55",
+        "gzip_bytes": 1466222315,
+        "raw_lines": 9000000
+      },
+      {
+        "case": "cone_rotated_proton",
+        "implementation": "fork",
+        "histories": 9000000,
+        "hits": 748044,
+        "failures": 0,
+        "emitted_weight": 9000000,
+        "past_end_histories": 1494,
+        "max_positive_end_error_Mpc": 9.99616509716063e-06,
+        "max_engine_moves": 2167,
+        "sums": [
+          748044,
+          289217,
+          505939,
+          651070,
+          729729,
+          1963974.1317013747,
+          2146758.742683034,
+          5987488.2441430045,
+          2567970.7270739055,
+          3370473.9963555317,
+          7624498.543322987,
+          2599471.6681432654,
+          2190249.387934009,
+          8039573.960658265
+        ],
+        "wall_seconds": 799.583832086,
+        "raw_sha256": "b0b59ed8697e10c153aec50af372bc0242a50df89b466f7062e7fcc6f36360bc",
+        "gzip_sha256": "438a570c144787c71a8028219a1d3c40952ec33844a11dff128fef68e43a9644",
+        "gzip_bytes": 1482771536,
+        "raw_lines": 9000000
+      }
+    ],
+    "confidence_level": 0.95,
+    "simultaneous_family_size": 144,
+    "method": "Two-sided Hoeffding plus union bound; untruncated intervals.",
+    "coordinate_scale_Mpc": 0.25,
+    "differences": [
+      {
+        "case": "pencil_z_electron",
+        "observable": "hit",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "arrival_0.092",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "arrival_0.094",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "arrival_0.096",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "arrival_0.098",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "position_x",
+        "difference": -4.0421986745463476e-19,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019617104502267562,
+          0.0019617104502267554
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "position_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "position_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "final_direction_x",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "final_direction_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "final_direction_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "emitted_direction_x",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "emitted_direction_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_electron",
+        "observable": "emitted_direction_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "hit",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "arrival_0.092",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "arrival_0.094",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "arrival_0.096",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "arrival_0.098",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "position_x",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "position_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "position_z",
+        "difference": 4e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019217104502267557,
+          0.002001710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "final_direction_x",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "final_direction_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "final_direction_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "emitted_direction_x",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "emitted_direction_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_photon",
+        "observable": "emitted_direction_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "hit",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "arrival_0.092",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "arrival_0.094",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "arrival_0.096",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "arrival_0.098",
+        "difference": 0.0,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.000980855225113378,
+          0.000980855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "position_x",
+        "difference": 4.0421986745463476e-19,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019617104502267554,
+          0.0019617104502267562
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "position_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "position_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "final_direction_x",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "final_direction_y",
+        "difference": -1.2935035758548312e-17,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226769,
+          0.001961710450226743
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "final_direction_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "emitted_direction_x",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "emitted_direction_y",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "pencil_z_proton",
+        "observable": "emitted_direction_z",
+        "difference": 0.0,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961710450226756,
+          0.001961710450226756
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "hit",
+        "difference": -4.8666666666666666e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010295218917800446,
+          0.0009321885584467112
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "arrival_0.092",
+        "difference": -4.088888888888889e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010217441140022668,
+          0.000939966336224489
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "arrival_0.094",
+        "difference": 4.7555555555555553e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009332996695578223,
+          0.0010284107806689334
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "arrival_0.096",
+        "difference": 2.6222222222222222e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009546330028911557,
+          0.0010070774473356
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "arrival_0.098",
+        "difference": -2.211111111111111e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.001002966336224489,
+          0.0009587441140022668
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "position_x",
+        "difference": -8.736037232043843e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.002049070822547194,
+          0.0018743500779063174
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "position_y",
+        "difference": 1.954884960895611e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019421616006177996,
+          0.001981259299835712
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "position_z",
+        "difference": 2.7798442418066165e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019339120078086895,
+          0.001989508892644822
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "final_direction_x",
+        "difference": -0.00010583117725776456,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020675416274845205,
+          0.0018558792729689913
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "final_direction_y",
+        "difference": 1.3949230863143586e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019477612193636122,
+          0.0019756596810898996
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "final_direction_z",
+        "difference": 1.3777639163451062e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019479328110633047,
+          0.0019754880893902067
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "emitted_direction_x",
+        "difference": -0.00010490747551830918,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.002066617925745065,
+          0.0018568029747084466
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "emitted_direction_y",
+        "difference": 3.072338724537523e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019309870629813806,
+          0.001992433837472131
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_electron",
+        "observable": "emitted_direction_z",
+        "difference": 5.161695928002398e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019565487542987535,
+          0.001966872146154758
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "hit",
+        "difference": 0.00012077777777777778,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0008600774473356001,
+          0.0011016330028911557
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "arrival_0.092",
+        "difference": 7.977777777777778e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009010774473356001,
+          0.0010606330028911557
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "arrival_0.094",
+        "difference": 9.333333333333333e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0008875218917800446,
+          0.0010741885584467112
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "arrival_0.096",
+        "difference": 0.00015911111111111112,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0008217441140022667,
+          0.001139966336224489
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "arrival_0.098",
+        "difference": 0.00013722222222222223,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0008436330028911557,
+          0.0011180774473356
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "position_x",
+        "difference": 7.16129758825391e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001954549152638502,
+          0.0019688717478150096
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "position_y",
+        "difference": -5.714342312898871e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020188538733557446,
+          0.0019045670270977672
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "position_z",
+        "difference": -4.757423528356271e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020092846855103187,
+          0.0019141362149431931
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "final_direction_x",
+        "difference": -1.9327634260716625e-07,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961903726569363,
+          0.0019615171738841487
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "final_direction_y",
+        "difference": -6.966712036720842e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020313775705939644,
+          0.0018920433298595474
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "final_direction_z",
+        "difference": 5.653264447839724e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001956057185778916,
+          0.0019673637146745957
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "emitted_direction_x",
+        "difference": -1.9327634260716625e-07,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001961903726569363,
+          0.0019615171738841487
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "emitted_direction_y",
+        "difference": -6.966712036720842e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020313775705939644,
+          0.0018920433298595474
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_photon",
+        "observable": "emitted_direction_z",
+        "difference": 5.653264447839724e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001956057185778916,
+          0.0019673637146745957
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "hit",
+        "difference": -1.7555555555555556e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009984107806689335,
+          0.0009632996695578223
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "arrival_0.092",
+        "difference": 1.8111111111111112e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009627441140022668,
+          0.000998966336224489
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "arrival_0.094",
+        "difference": 2.9555555555555556e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009512996695578223,
+          0.0010104107806689334
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "arrival_0.096",
+        "difference": -6.0777777777777775e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010416330028911558,
+          0.0009200774473356001
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "arrival_0.098",
+        "difference": -1.4888888888888888e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009957441140022668,
+          0.000965966336224489
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "position_x",
+        "difference": -8.187484147458194e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020435852917013377,
+          0.001879835608752174
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "position_y",
+        "difference": 2.1308276064590448e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019404021741621653,
+          0.001983018726291346
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "position_z",
+        "difference": 8.444232200789783e-07,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019608660270066768,
+          0.001962554873446835
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "final_direction_x",
+        "difference": -0.0001014450879435333,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020631555381702893,
+          0.0018602653622832226
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "final_direction_y",
+        "difference": 2.8530571869471007e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019331798783572848,
+          0.001990241022096227
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "final_direction_z",
+        "difference": -1.2664444080243508e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001974374894306999,
+          0.0019490460061465124
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "emitted_direction_x",
+        "difference": -0.00010388261874750136,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.002065593068974257,
+          0.0018578278314792544
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "emitted_direction_y",
+        "difference": 1.8742872187826957e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019429675780389289,
+          0.001980453322414583
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_z_proton",
+        "observable": "emitted_direction_z",
+        "difference": -3.779424855071637e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019654898750818273,
+          0.0019579310253716843
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "hit",
+        "difference": -9.777777777777777e-06,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009906330028911557,
+          0.0009710774473356001
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "arrival_0.092",
+        "difference": -3.7e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010178552251133778,
+          0.0009438552251133779
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "arrival_0.094",
+        "difference": 1.4e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009668552251133779,
+          0.0009948552251133778
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "arrival_0.096",
+        "difference": -5.555555555555556e-06,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009864107806689334,
+          0.0009752996695578224
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "arrival_0.098",
+        "difference": -2.1666666666666667e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010025218917800445,
+          0.0009591885584467112
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "position_x",
+        "difference": -3.915651151840575e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020008669617451614,
+          0.00192255393870835
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "position_y",
+        "difference": 8.276036500216772e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0018789500852245881,
+          0.0020444708152289235
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "position_z",
+        "difference": 2.4785382088480724e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001959231912017908,
+          0.0019641889884356037
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "final_direction_x",
+        "difference": -5.832666025114142e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020200371104778974,
+          0.0019033837899756145
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "final_direction_y",
+        "difference": 0.00010199377556354738,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0018597166746632085,
+          0.002063704225790303
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "final_direction_z",
+        "difference": 8.746700414042505e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019529637498127133,
+          0.001970457150640798
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "emitted_direction_x",
+        "difference": -4.888301387563762e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020105934641023934,
+          0.0019128274363511182
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "emitted_direction_y",
+        "difference": 0.00010760332467908867,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0018541071255476671,
+          0.0020693137749058445
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_electron",
+        "observable": "emitted_direction_z",
+        "difference": -1.2523107012733817e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019742335572394895,
+          0.0019491873432140219
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "hit",
+        "difference": -0.00015833333333333332,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0011391885584467111,
+          0.0008225218917800446
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "arrival_0.092",
+        "difference": -8.033333333333334e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010611885584467112,
+          0.0009005218917800446
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "arrival_0.094",
+        "difference": -7.222222222222222e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010530774473356001,
+          0.0009086330028911557
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "arrival_0.096",
+        "difference": -0.00010055555555555555,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0010814107806689335,
+          0.0008802996695578223
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "arrival_0.098",
+        "difference": -0.000188,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.001168855225113378,
+          0.0007928552251133779
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "position_x",
+        "difference": 0.00017055394179689594,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0017911565084298598,
+          0.002132264392023652
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "position_y",
+        "difference": -2.2426153734559193e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001984136603961315,
+          0.0019392842964921966
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "position_z",
+        "difference": 2.7592144282224277e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019341183059445315,
+          0.00198930259450898
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "final_direction_x",
+        "difference": 0.0001935067195666747,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0017682037306600811,
+          0.0021552171697934307
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "final_direction_y",
+        "difference": -5.28091838678552e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020145196340946112,
+          0.0019089012663589006
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "final_direction_z",
+        "difference": -4.349625954590738e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.002005206709772663,
+          0.0019182141906808484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "emitted_direction_x",
+        "difference": 0.0001935067195666747,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0017682037306600811,
+          0.0021552171697934307
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "emitted_direction_y",
+        "difference": -5.28091838678552e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020145196340946112,
+          0.0019089012663589006
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_photon",
+        "observable": "emitted_direction_z",
+        "difference": -4.349625954590738e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.002005206709772663,
+          0.0019182141906808484
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "hit",
+        "difference": 8.566666666666667e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0008951885584467113,
+          0.0010665218917800445
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "arrival_0.092",
+        "difference": -1.8555555555555557e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009994107806689334,
+          0.0009622996695578224
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "arrival_0.094",
+        "difference": 2.333333333333333e-06,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009785218917800445,
+          0.0009831885584467113
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "arrival_0.096",
+        "difference": 3.444444444444445e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009464107806689334,
+          0.0010152996695578223
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "arrival_0.098",
+        "difference": 6.9e-05,
+        "half_width": 0.000980855225113378,
+        "interval": [
+          -0.0009118552251133779,
+          0.001049855225113378
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "position_x",
+        "difference": 5.675365015804871e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001904956800068707,
+          0.0020184641003848044
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "position_y",
+        "difference": -6.551302641992353e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020272234766466795,
+          0.0018961974238068324
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "position_z",
+        "difference": -3.622261024038825e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019979330604671442,
+          0.0019254878399863676
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "final_direction_x",
+        "difference": 7.82777864158464e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0018834326638109094,
+          0.002039988236642602
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "final_direction_y",
+        "difference": -7.217021939629275e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020338806696230485,
+          0.0018895402308304631
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "final_direction_z",
+        "difference": 4.224372964869771e-06,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.001957486077261886,
+          0.0019659348231916255
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "emitted_direction_x",
+        "difference": 8.412807051904707e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0018775823797077087,
+          0.0020458385207458027
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "emitted_direction_y",
+        "difference": -5.671001246669847e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0020184204626934542,
+          0.0019050004377600574
+        ],
+        "contains_zero": true
+      },
+      {
+        "case": "cone_rotated_proton",
+        "observable": "emitted_direction_z",
+        "difference": -1.3976069539061022e-05,
+        "half_width": 0.001961710450226756,
+        "interval": [
+          -0.0019756865197658167,
+          0.0019477343806876947
+        ],
+        "contains_zero": true
+      }
+    ],
+    "hit_fractions": [
+      {
+        "case": "pencil_z_electron",
+        "implementation": "fork",
+        "fraction": 1.0,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.9993064306189601,
+          1.00069356938104
+        ]
+      },
+      {
+        "case": "pencil_z_electron",
+        "implementation": "modern",
+        "fraction": 1.0,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.9993064306189601,
+          1.00069356938104
+        ]
+      },
+      {
+        "case": "pencil_z_photon",
+        "implementation": "fork",
+        "fraction": 1.0,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.9993064306189601,
+          1.00069356938104
+        ]
+      },
+      {
+        "case": "pencil_z_photon",
+        "implementation": "modern",
+        "fraction": 1.0,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.9993064306189601,
+          1.00069356938104
+        ]
+      },
+      {
+        "case": "pencil_z_proton",
+        "implementation": "fork",
+        "fraction": 1.0,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.9993064306189601,
+          1.00069356938104
+        ]
+      },
+      {
+        "case": "pencil_z_proton",
+        "implementation": "modern",
+        "fraction": 1.0,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.9993064306189601,
+          1.00069356938104
+        ]
+      },
+      {
+        "case": "cone_z_electron",
+        "implementation": "fork",
+        "fraction": 0.08329533333333333,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.0826017639522934,
+          0.08398890271437326
+        ]
+      },
+      {
+        "case": "cone_z_electron",
+        "implementation": "modern",
+        "fraction": 0.08324666666666666,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08255309728562674,
+          0.08394023604770659
+        ]
+      },
+      {
+        "case": "cone_z_photon",
+        "implementation": "fork",
+        "fraction": 0.08305811111111111,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08236454173007118,
+          0.08375168049215104
+        ]
+      },
+      {
+        "case": "cone_z_photon",
+        "implementation": "modern",
+        "fraction": 0.08317888888888889,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08248531950784896,
+          0.08387245826992881
+        ]
+      },
+      {
+        "case": "cone_z_proton",
+        "implementation": "fork",
+        "fraction": 0.08301911111111111,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08232554173007119,
+          0.08371268049215104
+        ]
+      },
+      {
+        "case": "cone_z_proton",
+        "implementation": "modern",
+        "fraction": 0.08300155555555555,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08230798617451562,
+          0.08369512493659548
+        ]
+      },
+      {
+        "case": "cone_rotated_electron",
+        "implementation": "fork",
+        "fraction": 0.08322244444444445,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08252887506340452,
+          0.08391601382548437
+        ]
+      },
+      {
+        "case": "cone_rotated_electron",
+        "implementation": "modern",
+        "fraction": 0.08321266666666667,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08251909728562674,
+          0.0839062360477066
+        ]
+      },
+      {
+        "case": "cone_rotated_photon",
+        "implementation": "fork",
+        "fraction": 0.0831371111111111,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08244354173007118,
+          0.08383068049215103
+        ]
+      },
+      {
+        "case": "cone_rotated_photon",
+        "implementation": "modern",
+        "fraction": 0.08297877777777778,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08228520839673785,
+          0.0836723471588177
+        ]
+      },
+      {
+        "case": "cone_rotated_proton",
+        "implementation": "fork",
+        "fraction": 0.083116,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08242243061896007,
+          0.08380956938103992
+        ]
+      },
+      {
+        "case": "cone_rotated_proton",
+        "implementation": "modern",
+        "fraction": 0.08320166666666666,
+        "half_width": 0.000693569381039927,
+        "interval": [
+          0.08250809728562673,
+          0.08389523604770659
+        ]
+      }
+    ],
+    "detected_differences": [],
+    "compatible_at_reported_resolution": true,
+    "scope": "Frozen numerical algorithms/observable family only; no full physical-equivalence claim.",
+    "elapsed_seconds": 1007.1889349690173
+  },
+  "executable_sha256": "00c185df038416bd21720a32bcd95c353c337ce9652a351e6a99d586e6a65065",
+  "reference_sha256": {
+    "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+    "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+    "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+    "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+    "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+    "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+    "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+    "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+    "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+    "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+    "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+    "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+    "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+    "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+    "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+    "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+    "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+  },
+  "integrity": {
+    "local_compressed_sha256_matches": 18,
+    "local_summary_matches": 18,
+    "recomputed_report_matches": true,
+    "server_decoded_sha256_verified": 18
+  },
+  "source_artifact_sha256": {
+    "server-status.json": "f1e04b990acd503a34abc02f0a3fdb85f49c5fb1345dcb20fb3f2cb17cf2790e",
+    "ensemble/inputs.json": "747c625a30d9145099f6fe1cf3ee2555af7cec3dbc1007595b6ef4a5537fc35c",
+    "ensemble/report.json": "acc1e89c8d96c12c4502cb03c7322ca5d3b379a1a865e1cf0dd40a1566251acb",
+    "ensemble/manifest.json": "d3fe27dbc5cb58a2d15ccb07fc5cdfb1bf7d7d3ae710630dd72bc1cbe47b450e",
+    "ctest.log": "a91b6eb3004abf2a09126dbaf546bac9695b43d2061d6f887e641284de59f912",
+    "python-guards.log": "cf2a3096a38af53447f717558254086630331c83eae3939686c158dd206eed29",
+    "ensemble.log": "3618f80d9da188dfe7a2ac05745a41a69ad592e883e8c6adc3fb9491c633179e"
+  }
+}

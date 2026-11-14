@@ -29,8 +29,17 @@ run from the mcray repository root unless explicitly stated otherwise.
 - [Nuclear transport release notes and known limitations](validation/nuclear_release_notes.md)
 - [Docker Linux amd64](../docker/README.md)
 
+- [Eight-hour EeV comparison on Ubuntu 22.04](../tests/fork_compat/EEV_SERVER.md)
+
 ## Validation results
 
+- [EeV field ensemble on native Ubuntu 22.04](validation/eev_field_ensemble_results.md)
+- [EeV server-runner preflight and limits](validation/eev_field_server_preflight.md)
+
+- [1 EeV three-species field/source cost pilot](validation/fork_eev_field_source_pilot.md)
+- [Electron/photon/proton refinement at 1 EeV](validation/fork_eev_species_comparison.md)
+- [1 PeV electron/photon field/source cost pilot](validation/fork_field_source_pilot.md)
+- [Fixed-state historical field/observer/engine coupling](validation/fork_field_observer_comparison.md)
 - [Historical sphere observer and ballistic stopping](validation/fork_observer_comparison.md)
 - [Source/observer cost pilot](validation/fork_source_observer_pilot.md)
 - [Frozen source/observer ensemble results](validation/fork_source_observer_ensemble.md)

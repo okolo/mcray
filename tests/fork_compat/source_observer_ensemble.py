@@ -105,9 +105,10 @@ def confidence_report(rows, design):
 
 class Collection:
     """Each child owns one RNG stream; no shared historical iostream/RNG state."""
-    def __init__(self, output, executable, cases):
+    def __init__(self, output, executable, cases, validator=None, prefix=()):
         self.output, self.executable, self.cases = output, executable, cases
         self.lock, self.processes, self.stopped = threading.Lock(), [], threading.Event()
+        self.validator, self.prefix = validator or validate_summary, tuple(prefix)
 
     def stop(self):
         with self.lock:
@@ -126,7 +127,7 @@ class Collection:
         with stem.with_suffix('.log').open('wb') as log:
             with self.lock:
                 if self.stopped.is_set(): raise RuntimeError('Collection cancelled')
-                process = subprocess.Popen([str(self.executable), str(self.cases), case['name'],
+                process = subprocess.Popen([*self.prefix, str(self.executable), str(self.cases), case['name'],
                     implementation, str(summary_path)], stdout=subprocess.PIPE, stderr=log,
                     cwd=ROOT, env=env, start_new_session=True)
                 self.processes.append(process)
@@ -146,7 +147,7 @@ class Collection:
                     os.killpg(process.pid, signal.SIGKILL); process.wait()
         if lines != case['count']: raise ValueError('Missing or excess raw primary records')
         row = json.loads(summary_path.read_text())
-        validate_summary(row, case, implementation)
+        self.validator(row, case, implementation)
         # Read back the compressed artifact, verifying its CRC, complete bytes
         # and hash without loading a history collection into memory.
         verified = hashlib.sha256()

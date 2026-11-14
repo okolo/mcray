@@ -1,0 +1,1109 @@
+{
+  "date": "2026-11-01",
+  "base_revision": "e82f8493fbe54cc21f852ad6b8ee80efb1765db3",
+  "adapter_revision": "f53b53351fdbdbc38d2280142c881afac978b50a",
+  "reference_revision": "e1fc71f613efe7fecf3210e15339c34814245cd4",
+  "scope": "Bounded fixed-state deterministic coupling; no physical or statistical equivalence verdict.",
+  "inputs": {
+    "cases": 729,
+    "initial_directions": 27,
+    "species": [
+      "electron",
+      "positron",
+      "proton"
+    ],
+    "energy_eV": 1e+18,
+    "accuracy": [
+      10,
+      20,
+      40
+    ],
+    "fields": [
+      "none",
+      "oblique constant",
+      "existing saved grid"
+    ],
+    "constant_field_G": [
+      2e-10,
+      3e-10,
+      5e-10
+    ],
+    "constant_scale_Mpc": 0.1,
+    "observer": {
+      "mode": "strict inside",
+      "radius_Mpc": 0.01,
+      "distance_Mpc": 0.1
+    },
+    "source_position_Mpc": [
+      0,
+      0,
+      0
+    ],
+    "source_profiles": [
+      "pencil_z",
+      "cone_z",
+      "cone_rotated"
+    ],
+    "source_sampling": false,
+    "interactions": [],
+    "duration_Mpc": 0.2,
+    "rate_path": "constant",
+    "cosmology": {
+      "hubble_km_s_Mpc": 70,
+      "omega_lambda": 0.7,
+      "source_z": 0.01
+    },
+    "acceptance": "None: all errors, hit differences and refinement changes retained.",
+    "tangent_scope": "Floating-point/grazing controls, separate from interior/near-rim rows.",
+    "reused_grid_sha256": "11219136c8f1ef7ef692776de20d63fd6ddbb133adc200d534ef15b7f29e0746",
+    "case_sha256": "58f78d4812d4eb9f0fc2644726983db498687b3900b1d152181f8883f090cdff"
+  },
+  "runs": [
+    {
+      "environment": "native",
+      "compiler": "Homebrew clang version 22.1.5\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.5/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.5/etc/clang/arm64-apple-darwin25.cfg",
+      "raw_directory": "build/checks/coupled-final-native",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+          "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+          "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+          "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+          "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+          "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+          "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+          "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+          "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+          "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+        },
+        "revision": "f53b53351fdbdbc38d2280142c881afac978b50a",
+        "dirty": false,
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "COUPLED.md": "f9a3c326f760415dacc7a7db356f469eaf580a3ab846a3a51ecfadccf20cda48",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "coupled_api.h": "14a50e99ce5eb59b8e63aa5f22aaa0f45cc5a336034bed66c2f35889b33a3cc7",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "74dc8b705c7518f99c6baa17961129a27fb3cf5e79ad17217b7ff188a42f319e",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "coupled_compare.cpp": "0ba80d2efd39f809a63e04c569c96866f98f15d70920eb22f9f13d5ba35d8ef0",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "coupled_reference.cpp.in": "b007cb4f8329dd3125e64bd95b9008cc1b0cd4007f97f97c9c23af73d8692f3a",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "coupled.py": "0fa44dcabd76724b6ca24f340e19bfe66e9d418a7e6b31d53ba50e6b7a107243",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "production_sha256": {
+          "PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec",
+          "Deflection3D.cpp": "90d479648b6272479b7070a1be8c2884d6360ea75680af97a5ba7f1313a503e2",
+          "GridMagneticField.cpp": "5c46a7619936777a3a33dd94eb9b9371079025f5d50d2147764fbf127e3eeddc",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea"
+        },
+        "linked_core_sha256": "6784b031a00bb8be612f7c1649e08438cd05222a88b9d02dfda4cbaf65dddbad",
+        "command_prefix": []
+      },
+      "artifact_sha256": {
+        "inputs.json": "3bebfa284b57c32c472dad38d3f13f41269a918a60a5b390da368d76202b5a43",
+        "coupled.cases": "58f78d4812d4eb9f0fc2644726983db498687b3900b1d152181f8883f090cdff",
+        "manifest.json": "2cdb51f550bf6b5158b52616ee5c23fb8b4ea295538925ee67b855df76e17f34",
+        "trajectories.jsonl": "c553a703ed609c5a1cd4f953fc1c39f72f0667dbefbb5a835a562de02cac0a58",
+        "report.json": "b6bb78b69b0c9b01949b3a6db66ed5d9baf9a673591b38a6626e88861abfa6c9",
+        "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e",
+        "compile-command.json": "fe77569a867dd91a3845b9d2e610bcaea0c44ffe15113990ad26b22f757efc9a",
+        "compile.log": "5eaa84b31a0fc0aa72daf8fd26b88543e3ff04b90bd0a219b65f696c69728b0c",
+        "compiler-version.txt": "7fd92963bd53fe1d5cb8fc6cd497f4d32fda57d7f5e0a98fddf2d2fabd5420f8",
+        "execution.log": "5e92ed3d1043c7a1a0c10dd89622764cf58af5915f88518b896b6d1fad6bd939"
+      },
+      "cases": 729,
+      "groups": 243,
+      "refinement_pairs": 486,
+      "tangent_cases": 216,
+      "tangent_hit_differences": 0,
+      "hit_differences": 0,
+      "states": {
+        "fork": {
+          "hits": 360,
+          "past_end": 0,
+          "max_moves": 2097,
+          "zero_scale_calls": 0
+        },
+        "modern": {
+          "hits": 360,
+          "past_end": 0,
+          "max_moves": 2097,
+          "zero_scale_calls": 0
+        }
+      },
+      "fields": [
+        {
+          "field": 0,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 0,
+          "max_direction_difference": 0,
+          "max_time_difference_Mpc": 0
+        },
+        {
+          "field": 1,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 0,
+          "max_direction_difference": 0,
+          "max_time_difference_Mpc": 0
+        },
+        {
+          "field": 2,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 5.391898107550362e-16,
+          "max_direction_difference": 7.221785298249066e-16,
+          "max_time_difference_Mpc": 0
+        }
+      ],
+      "refinements": [
+        {
+          "field": 0,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          }
+        },
+        {
+          "field": 0,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          }
+        },
+        {
+          "field": 1,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.022239853339219e-05,
+            "max_direction_change": 6.760376834444149e-05,
+            "max_time_change_Mpc": 1.0173637980170902e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.022239853339219e-05,
+            "max_direction_change": 6.760376834444149e-05,
+            "max_time_change_Mpc": 1.0173637980170902e-05
+          }
+        },
+        {
+          "field": 1,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.628990506708523e-06,
+            "max_direction_change": 3.6276867029551775e-05,
+            "max_time_change_Mpc": 1.311035865009246e-07
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.628990506708523e-06,
+            "max_direction_change": 3.6276867029551775e-05,
+            "max_time_change_Mpc": 1.311035865009246e-07
+          }
+        },
+        {
+          "field": 2,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.371138582934473e-05,
+            "max_direction_change": 0.0003279854744276336,
+            "max_time_change_Mpc": 1.2266941504371354e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.3711385829343575e-05,
+            "max_direction_change": 0.00032798547442766733,
+            "max_time_change_Mpc": 1.2266941504371354e-05
+          }
+        },
+        {
+          "field": 2,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.7986095569301357e-05,
+            "max_direction_change": 0.00017625508648236085,
+            "max_time_change_Mpc": 1.3615559646032449e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.7986095569302472e-05,
+            "max_direction_change": 0.00017625508648226904,
+            "max_time_change_Mpc": 1.3615559646032449e-05
+          }
+        }
+      ],
+      "max_position_difference_Mpc": 5.391898107550362e-16,
+      "max_direction_difference": 7.221785298249066e-16,
+      "max_time_difference_Mpc": 0,
+      "nonzero_time_differences": 0,
+      "unequal_engine_move_counts": 0,
+      "equal_move_count_max_position_difference_Mpc": 5.391898107550362e-16,
+      "equal_move_count_max_time_difference_Mpc": 0,
+      "worst_position_case": {
+        "profile": "cone_z",
+        "ray": "tangent_8",
+        "field": 2,
+        "particle": 1,
+        "accuracy": 40,
+        "fork": {
+          "hit": false,
+          "past_end": false,
+          "end_error_Mpc": 0,
+          "moves": 2027,
+          "flight_Mpc": 0.20000000000000132,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": 1,
+          "energy": 1000000000000,
+          "initial_rate": 5.714107816743395e-36,
+          "scale_Mpc": 0.13333333333333336,
+          "field_calls": 2080,
+          "scale_calls": 2027,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0.016833191710851583,
+            0.01768798600001039,
+            0.19822939789016625
+          ],
+          "direction": [
+            0.07104616203562238,
+            0.177675348781533,
+            0.9815212240677064
+          ],
+          "direction_norm_error": 0
+        },
+        "modern": {
+          "hit": false,
+          "past_end": false,
+          "end_error_Mpc": 0,
+          "moves": 2027,
+          "flight_Mpc": 0.20000000000000132,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": 1,
+          "energy": 1000000000000,
+          "initial_rate": 5.714107816743395e-36,
+          "scale_Mpc": 0.13333333333333336,
+          "field_calls": 2080,
+          "scale_calls": 2027,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0.01683319171085155,
+            0.017687986000010304,
+            0.19822939789016572
+          ],
+          "direction": [
+            0.07104616203562245,
+            0.17767534878153268,
+            0.9815212240677065
+          ],
+          "direction_norm_error": 0
+        },
+        "same_hit": true,
+        "difference_position_Mpc": 5.391898107550362e-16,
+        "difference_direction": 3.3219841332160006e-16,
+        "difference_time_Mpc": 0
+      }
+    },
+    {
+      "environment": "linux-release",
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "raw_directory": "build/checks/coupled-final-linux-release",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+          "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+          "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+          "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+          "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+          "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+          "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+          "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+          "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+          "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+        },
+        "revision": "f53b53351fdbdbc38d2280142c881afac978b50a",
+        "dirty": false,
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "COUPLED.md": "f9a3c326f760415dacc7a7db356f469eaf580a3ab846a3a51ecfadccf20cda48",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "coupled_api.h": "14a50e99ce5eb59b8e63aa5f22aaa0f45cc5a336034bed66c2f35889b33a3cc7",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "74dc8b705c7518f99c6baa17961129a27fb3cf5e79ad17217b7ff188a42f319e",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "coupled_compare.cpp": "0ba80d2efd39f809a63e04c569c96866f98f15d70920eb22f9f13d5ba35d8ef0",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "coupled_reference.cpp.in": "b007cb4f8329dd3125e64bd95b9008cc1b0cd4007f97f97c9c23af73d8692f3a",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "coupled.py": "0fa44dcabd76724b6ca24f340e19bfe66e9d418a7e6b31d53ba50e6b7a107243",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "production_sha256": {
+          "PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec",
+          "Deflection3D.cpp": "90d479648b6272479b7070a1be8c2884d6360ea75680af97a5ba7f1313a503e2",
+          "GridMagneticField.cpp": "5c46a7619936777a3a33dd94eb9b9371079025f5d50d2147764fbf127e3eeddc",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea"
+        },
+        "linked_core_sha256": "3e33072756ecac49138989505a300ca5c176bc31e7363cc782a7cd8bb574b8c2",
+        "command_prefix": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull=never",
+          "--network",
+          "none",
+          "--read-only",
+          "--platform",
+          "linux/amd64",
+          "--entrypoint",
+          "/usr/bin/timeout",
+          "-v",
+          "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+          "-v",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/coupled-linux-release-tmp:/tmp",
+          "-e",
+          "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/coupled-linux-release-tmp",
+          "-w",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+          "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+          "240"
+        ]
+      },
+      "artifact_sha256": {
+        "inputs.json": "3bebfa284b57c32c472dad38d3f13f41269a918a60a5b390da368d76202b5a43",
+        "coupled.cases": "58f78d4812d4eb9f0fc2644726983db498687b3900b1d152181f8883f090cdff",
+        "manifest.json": "36d421bb61bcb9797b8c62a6f00648527af500619d2e0975cab24c2063c344af",
+        "trajectories.jsonl": "ba1371b8813eae3b4583b4a4069d5b43105365c3ddc86d67f8f5a889337e0fbb",
+        "report.json": "99531dfc31678d63ebf97e9d1e389f27ba44d354b535370d3ea527f508a8f7dc",
+        "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e",
+        "compile-command.json": "fde41671d310ce06cb11e13fc60632931cd6dbb12a198aaf1fea18a3853a4a1a",
+        "compile.log": "fd78153e398c5e009562e02602277cfd8f12d013041e191d33de3edee1c834e3",
+        "compiler-version.txt": "8d6e704227c739386853b14c98257428d8ffbffd817517db0b2e088d28c773f6",
+        "execution.log": "589444ea78e908e21305ec8cbd2b698ce6db4d51d8c4da2c50cdef5c92baa180"
+      },
+      "cases": 729,
+      "groups": 243,
+      "refinement_pairs": 486,
+      "tangent_cases": 216,
+      "tangent_hit_differences": 0,
+      "hit_differences": 0,
+      "states": {
+        "fork": {
+          "hits": 360,
+          "past_end": 0,
+          "max_moves": 2097,
+          "zero_scale_calls": 0
+        },
+        "modern": {
+          "hits": 360,
+          "past_end": 0,
+          "max_moves": 2097,
+          "zero_scale_calls": 0
+        }
+      },
+      "fields": [
+        {
+          "field": 0,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994471e-06,
+          "max_direction_difference": 0,
+          "max_time_difference_Mpc": 9.999999999991029e-06
+        },
+        {
+          "field": 1,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 1.952659158838144e-17,
+          "max_direction_difference": 7.003982223186618e-18,
+          "max_time_difference_Mpc": 7.372857272311986e-18
+        },
+        {
+          "field": 2,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 2.2975159392766894e-17,
+          "max_direction_difference": 2.2724547458788563e-17,
+          "max_time_difference_Mpc": 1.4745714544623972e-17
+        }
+      ],
+      "refinements": [
+        {
+          "field": 0,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          }
+        },
+        {
+          "field": 0,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          }
+        },
+        {
+          "field": 1,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.0222398533468772e-05,
+            "max_direction_change": 6.760376834428625e-05,
+            "max_time_change_Mpc": 1.0173637977459394e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.022239853346872e-05,
+            "max_direction_change": 6.760376834428582e-05,
+            "max_time_change_Mpc": 1.0173637977455707e-05
+          }
+        },
+        {
+          "field": 1,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.6289905066034296e-06,
+            "max_direction_change": 3.627686702984799e-05,
+            "max_time_change_Mpc": 1.311035806859487e-07
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.628990506603387e-06,
+            "max_direction_change": 3.627686702984847e-05,
+            "max_time_change_Mpc": 1.311035806785761e-07
+          }
+        },
+        {
+          "field": 2,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.3711385829427546e-05,
+            "max_direction_change": 0.0003279854744278629,
+            "max_time_change_Mpc": 1.2266941506480147e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.3711385829427546e-05,
+            "max_direction_change": 0.00032798547442786465,
+            "max_time_change_Mpc": 1.2266941506480147e-05
+          }
+        },
+        {
+          "field": 2,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.7514375855591884e-05,
+            "max_direction_change": 0.00017318473927190688,
+            "max_time_change_Mpc": 1.3615559641776915e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.751437585559232e-05,
+            "max_direction_change": 0.00017318473927191053,
+            "max_time_change_Mpc": 1.3615559641784287e-05
+          }
+        }
+      ],
+      "max_position_difference_Mpc": 9.999999999994471e-06,
+      "max_direction_difference": 2.2724547458788563e-17,
+      "max_time_difference_Mpc": 9.999999999991029e-06,
+      "nonzero_time_differences": 176,
+      "unequal_engine_move_counts": 18,
+      "equal_move_count_max_position_difference_Mpc": 2.2975159392766894e-17,
+      "equal_move_count_max_time_difference_Mpc": 1.4745714544623972e-17,
+      "worst_position_case": {
+        "profile": "pencil_z",
+        "ray": "axis_0",
+        "field": 0,
+        "particle": 0,
+        "accuracy": 10,
+        "fork": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.11,
+          "moves": 1,
+          "flight_Mpc": 0.09000000000000001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09000000000000001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "modern": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.10999000000000002,
+          "moves": 2,
+          "flight_Mpc": 0.09001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "same_hit": true,
+        "difference_position_Mpc": 9.999999999994471e-06,
+        "difference_direction": 0,
+        "difference_time_Mpc": 9.999999999991029e-06
+      }
+    },
+    {
+      "environment": "linux-sanitizers",
+      "compiler": "c++ (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0\nCopyright (C) 2021 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+      "raw_directory": "build/checks/coupled-final-linux-sanitizers",
+      "manifest": {
+        "reference_sha256": {
+          "src/MCPropag/Deflection3D.cpp": "1c0f28d5b5b08873fa256d4720b0b7d3af0a52159dd457a4109114127808c35b",
+          "src/MCPropag/Deflection3D.h": "160792977e8f1009ec59f1df90c7c34b49e99b4be57c1e5c8f8b5b431806db39",
+          "src/CRbeam.cpp": "0e32d6e14b2902af765a3f22cbf3111ee429384c76fa29c278619e6f491f054a",
+          "src/MCPropag/Jet.cpp": "d32189795f3e080cd0c67dab7b04eed363557b6c1e7d6acf564506e16e2a805b",
+          "src/MCPropag/Jet.h": "22729b9cdfb23979b3cd003e4a9ba01bbe5353e0f520a327bfcd7d7dd49470db",
+          "src/MCPropag/Randomizer.cpp": "72574ac9421f123cd0bfd4367650c4ce129f8bbcc48e71f4278df58aed1f50d3",
+          "src/MCPropag/Randomizer.h": "d59d803da44fb4586e35ab3fe563d2213b92db2ce10869096558aa1db95cdc57",
+          "src/MCPropag/Units.cpp": "c154577c285c8ab032b648f417385326dd88cfe13cf227e6b2d23e83b068106b",
+          "src/MCPropag/Particle.h": "c91d2aad5a3fc25504de10d57631c1dac8ddb54d47a9963a3b34970fdfc9118f",
+          "src/MCPropag/Particle.cpp": "1476bcf5a511f5e7e69daf5f233d5391fef30b510397d68f74a3b298716b1b5f",
+          "src/MCPropag/Cosmology.h": "91b1ecee636551512c627ef1ea46c68ec2bbb379dc47bd8b205ae185e9324be9",
+          "src/MCPropag/Units.h": "9b512d955748c8f82bb1fe742b7f7015abc001bfeb3a26140248acd0e882d323",
+          "src/MCPropag/Observer.cpp": "c241486fa0c33ffef974d12604581d88547ec8c719d3451b4741fd25e2a67047",
+          "src/MCPropag/Observer.h": "926c0a6668b07b5d8eabb60fb2fb1a496b191a41c10f9f291539f2eb480e9f70",
+          "src/MCPropag/ParticleStack.cpp": "7d0fa04623518f0644fcc831e8be630d9cd15b7bdc270a5beea1c8118d417bbe",
+          "src/MCPropag/ParticleStack.h": "a50415880e380efd25a9b899cf31c13a880062f0b1c23712d6cd552fc65eff5b",
+          "src/MCPropag/PropagationEngine.cpp": "84ba243c517d153d30b41da04f4b610967135c6a70d2275b4650d86d9dec675f"
+        },
+        "revision": "f53b53351fdbdbc38d2280142c881afac978b50a",
+        "dirty": false,
+        "adapter_sha256": {
+          "observer.py": "d19836586835444351c9d96bf18a5604b96dc65e184349cef7074002747fe1cf",
+          "fork_api.h": "23886be773bc4ae8990464b5ecd30d540f14ead788a13aff63765cd537663a25",
+          "run.py": "58f79946baa02d672d4f580b371b1a4069397e58a3287e3c3a654866ea2aa464",
+          "source_observer_ensemble.json": "639037f47791565fe3867430da1f20f69dee3d82796266b87601f51ffc0b8dd1",
+          "observer_modern.cpp": "137f16881bb1992a052802853dec1c3ef933a97cf4ffa1c1006932e00484cbef",
+          "observer_compare.cpp": "a08a7da5d5cf3294af56ceafcae93094c012dbffc816937f1a064c0aad3074a6",
+          "transport_compare.cpp": "0035069c18091c572c7d7a1ee70a459aebfb06a494f631cb1b2344d139f3d2af",
+          "source_observer_ensemble.py": "1f0fdd3fafdc7b945a0b5680719a6fb08f4b88e4a2d2a3d41924fce803a6ca28",
+          "compare.cpp": "fcf135cfbc3b3cc88919cee7cf3de1ddf4a0237f83a5f61e1ba91ad8737a4c77",
+          "transport.py": "2a172e13a6b525d23a7e07af3a4ff88e79a13ac624c323f386a0e20951edf608",
+          "observer_reference.cpp.in": "7e082e31cd931219a1926a520e336404bf432b5bf4618f612b948be7f38ca01c",
+          "COUPLED.md": "f9a3c326f760415dacc7a7db356f469eaf580a3ab846a3a51ecfadccf20cda48",
+          "source_observer_pilot.py": "728ddfdf7378ecaa2578640f465a5ca6ed7538c0fac60941c5c41302b9e3b656",
+          "coupled_api.h": "14a50e99ce5eb59b8e63aa5f22aaa0f45cc5a336034bed66c2f35889b33a3cc7",
+          "transport_reference.cpp.in": "091cbda8d764c12de71b63ae1cad65b6fd2edac86a4d1ab144e3bc2fe781c1fb",
+          "reference.json": "a7383ca58802db0bf33f68ddb0728e93c99a1349f1a70bfd7feb73a3a8e91ed5",
+          "README.md": "74dc8b705c7518f99c6baa17961129a27fb3cf5e79ad17217b7ff188a42f319e",
+          "observer_api.h": "a8844994bf9fabe559b7784fb48b06d4d8c9da34fc9367cd43213da149ce417c",
+          "coupled_compare.cpp": "0ba80d2efd39f809a63e04c569c96866f98f15d70920eb22f9f13d5ba35d8ef0",
+          "SOURCE_OBSERVER_ENSEMBLE.md": "e52be41cf502a7a061001de996636b06695b050da6bb738ee0c0d572e0005fa7",
+          "transport_api.h": "cb43eb08fb3ae20619a740fd69373fc22011a4442cf0b77204e6ffbf3b1ec7ce",
+          "transport_reference.json": "c1a3ce69c5bb39131da625d3ac225104aa823e3283100545f50fea8fbd2d0617",
+          "TRANSPORT.md": "cff081bb6ff00226abbed3d772493106e743a13a016fb5f0ae6b7dda80b771e8",
+          "observer_reference.json": "92a6149cb63b2c08555ce002c2f491ab19f3c80b1204711783ee89617a28ba05",
+          "reference_wrapper.cpp.in": "2e547a5b747218a72b8c869bcaf4049370f8974f1961de73594ad0e29d5c7d50",
+          "vmf_compare.cpp": "9533c0498453f3ccbb1c284b9f3d4bd580e36c0a7f9ac9c9948bda5aeb1d3063",
+          "source_observer_ensemble.cpp": "dfc7272990ce9bf3453b31aa8c233063286af07067c0e4299b9efe02583910a5",
+          "OBSERVER.md": "2a0186f06f7bc191bd5e385baea515d11f163ad39fddbea4be909cc47bc0b8da",
+          "observer_modern.h": "4309e57cb91083582efb2882c49123e13a2a5000e28debf720d7abd83cbfad4c",
+          "coupled_reference.cpp.in": "b007cb4f8329dd3125e64bd95b9008cc1b0cd4007f97f97c9c23af73d8692f3a",
+          "source_observer_pilot.cpp": "bed11a2703142c4f3e91662df597b236717683977839e4586fdf352eb481b814",
+          "SOURCE_OBSERVER_PILOT.md": "b5d12a3a0fdc80ada0dfc41f9b258b5d15e1a56c9ef1f8b977a160088c70d71d",
+          "coupled.py": "0fa44dcabd76724b6ca24f340e19bfe66e9d418a7e6b31d53ba50e6b7a107243",
+          "vmf.py": "693e2a25c0160e10054783cd175c4ea99cc65f6ee633c7234d69121dddf46a12"
+        },
+        "production_sha256": {
+          "PropagationEngine.cpp": "b86343a28e0a1710d7725e50b308f7490e7e9555f501d1d4ab5b8b754e4c10ec",
+          "Deflection3D.cpp": "90d479648b6272479b7070a1be8c2884d6360ea75680af97a5ba7f1313a503e2",
+          "GridMagneticField.cpp": "5c46a7619936777a3a33dd94eb9b9371079025f5d50d2147764fbf127e3eeddc",
+          "SpatialGeometry.cpp": "47fe20be716bacb923fcca0ccd16183da52337d14f04210e7aa7dc24528e0907",
+          "Particle.cpp": "c5799438db61cc76071ae98edc86efe33b0c2468206486657c1faa4ab08879ea"
+        },
+        "linked_core_sha256": "270021e122a96e9e1d9310993585143e1497505c37ca2f4149f804a8f37befa2",
+        "command_prefix": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull=never",
+          "--network",
+          "none",
+          "--read-only",
+          "--platform",
+          "linux/amd64",
+          "--entrypoint",
+          "/usr/bin/timeout",
+          "-v",
+          "/Users/ok/git/mcray_nuclei:/Users/ok/git/mcray_nuclei",
+          "-v",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/coupled-linux-sanitizers-tmp:/tmp",
+          "-e",
+          "TMPDIR=/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology/build/checks/coupled-linux-sanitizers-tmp",
+          "-e",
+          "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1",
+          "-e",
+          "UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1",
+          "-w",
+          "/Users/ok/git/mcray_nuclei/validation/mcray-yaml-cosmology",
+          "sha256:37682238eeaf9f01f7eddea17d4e55551d2e317307dfa5c8ea8dd0dc8084baf6",
+          "240"
+        ]
+      },
+      "artifact_sha256": {
+        "inputs.json": "3bebfa284b57c32c472dad38d3f13f41269a918a60a5b390da368d76202b5a43",
+        "coupled.cases": "58f78d4812d4eb9f0fc2644726983db498687b3900b1d152181f8883f090cdff",
+        "manifest.json": "53a6253b0a206ce1baa3fca7ee479cf8a565f191edf1703d5a96183ecc86d5b3",
+        "trajectories.jsonl": "ba1371b8813eae3b4583b4a4069d5b43105365c3ddc86d67f8f5a889337e0fbb",
+        "report.json": "99531dfc31678d63ebf97e9d1e389f27ba44d354b535370d3ea527f508a8f7dc",
+        "fragment-sha256.json": "591728324e1b13b60ecdaff94441182c3de75973e26f0416f3b19ea62aa9e53e",
+        "compile-command.json": "98a1d3c7e5b2b5a73f016f036d47ab9b12a9ce0dc349324115791b593bf02727",
+        "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "compiler-version.txt": "8d6e704227c739386853b14c98257428d8ffbffd817517db0b2e088d28c773f6",
+        "execution.log": "9519b1cea32a737e13a35954a29bc0eb619412bded712c72183134a2b62bb280"
+      },
+      "cases": 729,
+      "groups": 243,
+      "refinement_pairs": 486,
+      "tangent_cases": 216,
+      "tangent_hit_differences": 0,
+      "hit_differences": 0,
+      "states": {
+        "fork": {
+          "hits": 360,
+          "past_end": 0,
+          "max_moves": 2097,
+          "zero_scale_calls": 0
+        },
+        "modern": {
+          "hits": 360,
+          "past_end": 0,
+          "max_moves": 2097,
+          "zero_scale_calls": 0
+        }
+      },
+      "fields": [
+        {
+          "field": 0,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 9.999999999994471e-06,
+          "max_direction_difference": 0,
+          "max_time_difference_Mpc": 9.999999999991029e-06
+        },
+        {
+          "field": 1,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 1.952659158838144e-17,
+          "max_direction_difference": 7.003982223186618e-18,
+          "max_time_difference_Mpc": 7.372857272311986e-18
+        },
+        {
+          "field": 2,
+          "cases": 243,
+          "hit_differences": 0,
+          "max_position_difference_Mpc": 2.2975159392766894e-17,
+          "max_direction_difference": 2.2724547458788563e-17,
+          "max_time_difference_Mpc": 1.4745714544623972e-17
+        }
+      ],
+      "refinements": [
+        {
+          "field": 0,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          }
+        },
+        {
+          "field": 0,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 0.0,
+            "max_direction_change": 0.0,
+            "max_time_change_Mpc": 0.0
+          }
+        },
+        {
+          "field": 1,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.0222398533468772e-05,
+            "max_direction_change": 6.760376834428625e-05,
+            "max_time_change_Mpc": 1.0173637977459394e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.022239853346872e-05,
+            "max_direction_change": 6.760376834428582e-05,
+            "max_time_change_Mpc": 1.0173637977455707e-05
+          }
+        },
+        {
+          "field": 1,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.6289905066034296e-06,
+            "max_direction_change": 3.627686702984799e-05,
+            "max_time_change_Mpc": 1.311035806859487e-07
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.628990506603387e-06,
+            "max_direction_change": 3.627686702984847e-05,
+            "max_time_change_Mpc": 1.311035806785761e-07
+          }
+        },
+        {
+          "field": 2,
+          "accuracy_pair": [
+            10,
+            20
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.3711385829427546e-05,
+            "max_direction_change": 0.0003279854744278629,
+            "max_time_change_Mpc": 1.2266941506480147e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 3.3711385829427546e-05,
+            "max_direction_change": 0.00032798547442786465,
+            "max_time_change_Mpc": 1.2266941506480147e-05
+          }
+        },
+        {
+          "field": 2,
+          "accuracy_pair": [
+            20,
+            40
+          ],
+          "cases": 81,
+          "fork": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.7514375855591884e-05,
+            "max_direction_change": 0.00017318473927190688,
+            "max_time_change_Mpc": 1.3615559641776915e-05
+          },
+          "modern": {
+            "hit_changes": 0,
+            "max_position_change_Mpc": 1.751437585559232e-05,
+            "max_direction_change": 0.00017318473927191053,
+            "max_time_change_Mpc": 1.3615559641784287e-05
+          }
+        }
+      ],
+      "max_position_difference_Mpc": 9.999999999994471e-06,
+      "max_direction_difference": 2.2724547458788563e-17,
+      "max_time_difference_Mpc": 9.999999999991029e-06,
+      "nonzero_time_differences": 176,
+      "unequal_engine_move_counts": 18,
+      "equal_move_count_max_position_difference_Mpc": 2.2975159392766894e-17,
+      "equal_move_count_max_time_difference_Mpc": 1.4745714544623972e-17,
+      "worst_position_case": {
+        "profile": "pencil_z",
+        "ray": "axis_0",
+        "field": 0,
+        "particle": 0,
+        "accuracy": 10,
+        "fork": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.11,
+          "moves": 1,
+          "flight_Mpc": 0.09000000000000001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09000000000000001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "modern": {
+          "hit": true,
+          "past_end": false,
+          "end_error_Mpc": -0.10999000000000002,
+          "moves": 2,
+          "flight_Mpc": 0.09001,
+          "beta": 1,
+          "mass": 0.511,
+          "charge": -1,
+          "energy": 1000000000000,
+          "initial_rate": 0,
+          "scale_Mpc": 0.1,
+          "field_calls": 0,
+          "scale_calls": 0,
+          "zero_scale_calls": 0,
+          "position_Mpc": [
+            0,
+            0,
+            0.09001
+          ],
+          "direction": [
+            0,
+            0,
+            1
+          ],
+          "direction_norm_error": 0
+        },
+        "same_hit": true,
+        "difference_position_Mpc": 9.999999999994471e-06,
+        "difference_direction": 0,
+        "difference_time_Mpc": 9.999999999991029e-06
+      }
+    }
+  ],
+  "python_guards": {
+    "passed": 19,
+    "log_sha256": "bc76a6a0993e9c4d2f78fc5a85d0fb7985bfa5da4f4d284e54d5134a0e5a5fa8"
+  },
+  "linux_boundary_control": {
+    "result": {
+      "old_first_step_Mpc": 0.09000000000000001,
+      "modern_first_step_Mpc": 0.09000000000000001,
+      "old_minus_modern_first_step_Mpc": 5.52964295423399e-18,
+      "modern_first_distance_minus_radius_Mpc": 0,
+      "old_membership_at_modern_first": false,
+      "modern_membership_at_modern_first": false,
+      "old_distance_minus_radius_Mpc": -5.52964295423399e-18,
+      "old_membership_at_old_first": true,
+      "modern_membership_at_old_first": true
+    },
+    "artifact_sha256": {
+      "boundary.cpp": "25fcc6bf48ae24ec41eb28d8440b5ac549bb0ed8da37b1657c0ce4fd2af36374",
+      "result.json": "d87ce67c525ba24478d7914b62f9dcb1df386029f869e9dc3de6a8c92fc5d381",
+      "compile-command.json": "55075668d4bbd506a53e181bc499c9050538b4f3c90d144e2275e3c84a56c7df",
+      "execution.log": "b2d82d11d2dabf3502a57c24f20ac19d894de308dd2251c4957dfa45d7ca77b9"
+    }
+  }
+}

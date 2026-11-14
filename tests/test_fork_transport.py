@@ -1,10 +1,13 @@
 """Self-contained guards for the optional historical transport diagnostic."""
 import copy
+from decimal import Decimal
 import math
+import signal
 from pathlib import Path
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from unittest.mock import patch
 
@@ -14,6 +17,14 @@ import observer
 import source_observer_pilot as pilot
 import source_observer_ensemble as ensemble
 import vmf as vmf_probe
+import coupled
+import field_source_pilot as field_pilot
+import eev_field_ensemble as eev
+import run_eev_field_server as server
+import subprocess
+import tarfile
+import io
+import os
 
 
 def row():
@@ -27,6 +38,228 @@ def row():
 
 
 class TransportDiagnosticTests(unittest.TestCase):
+    def test_eev_final_family_and_disjoint_reservations(self):
+        final,fixture=eev.design_for('final'),eev.design_for('fixture')
+        self.assertEqual(final['total_histories'],162000000)
+        self.assertEqual(fixture['total_histories'],18000)
+        self.assertEqual(final['accuracy'],40)
+        seeds=lambda d:{c[k] for c in d['cases'] for k in ('fork_seed','modern_seed')}
+        self.assertEqual(seeds(final),set(range(2010101,2010119)))
+        self.assertFalse(seeds(final)&seeds(fixture))
+        rows=[dict(case=c['name'],implementation=impl,histories=c['count'],failures=0,
+                   emitted_weight=c['count'],hits=c['count'],past_end_histories=0,
+                   max_engine_moves=1,sums=[c['count']]*5+[0]*9)
+              for c in final['cases'] for impl in ('fork','modern')]
+        report=eev.confidence_report(rows,final)
+        self.assertEqual(len(report['differences']),126)
+        self.assertEqual(len(report['hit_fractions']),18)
+        self.assertAlmostEqual(report['differences'][0]['half_width'],.000980855225113378)
+        self.assertTrue(report['compatible_at_reported_resolution'])
+        # A final-direction-only discrepancy must not be lost among source moments.
+        rows[1]['sums'][8]=rows[1]['histories']
+        self.assertFalse(eev.confidence_report(rows,final)['compatible_at_reported_resolution'])
+        with self.assertRaises(ValueError): eev.confidence_report(rows[:-1],final)
+        broken=copy.deepcopy(rows); broken[0]['sums'][11]=float('nan')
+        with self.assertRaises(ValueError): eev.confidence_report(broken,final)
+        altered=copy.deepcopy(final); altered['alpha']=.1
+        with self.assertRaisesRegex(ValueError,'Frozen'): eev.confidence_report(rows,altered)
+
+    def test_final_ledger_is_exclusive(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'ledger.json'
+            eev.reserve(path,{'revision':'first'})
+            with self.assertRaises(FileExistsError): eev.reserve(path,{'revision':'second'})
+            self.assertIn('first',path.read_text())
+
+    def test_server_fixture_workflow_has_no_final_collection(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); archive=root/'input.tar.gz'
+            with tarfile.open(archive,'w:gz') as out:
+                member=tarfile.TarInfo('snapshot/file'); member.size=1
+                out.addfile(member,io.BytesIO(b'x'))
+            revision='a'*40; calls=[]
+            def execute(supervisor,name,command,cwd,env):
+                calls.append((name,command))
+                if name=='clone':
+                    candidate=Path(command[-1])/'tests/fork_compat'
+                    candidate.mkdir(parents=True)
+                    (candidate/'run_eev_field_server.py').write_bytes(Path(server.__file__).read_bytes())
+            args=SimpleNamespace(data_dir=root/'results',revision=revision,repository='candidate.bundle',
+                workers=2,fixture_only=True,reference_archive=archive,gtest_archive=archive)
+            with patch.object(server.platform,'platform',return_value='workflow-fixture'),patch.object(server.Supervisor,'execute',execute),patch.object(server,'GTEST_SHA256',server.sha256(archive)),patch.object(server.subprocess,'run',return_value=SimpleNamespace(returncode=0)),patch.object(server.subprocess,'check_output',return_value=revision+'\n'):
+                self.assertEqual(server.run(args),0)
+            self.assertEqual([name for name,_ in calls],['clone','checkout','versions','configure','build','ctest','python-guards','fixture'])
+            self.assertFalse((args.data_dir/'eev-field-ensemble-v1.reservation.json').exists())
+            self.assertEqual(server.LIMIT,28800)
+
+    def test_server_archive_rejects_escape_and_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for index,name in enumerate(('../outside','root/link')):
+                archive=root/(str(index)+'.tar.gz')
+                with tarfile.open(archive,'w:gz') as out:
+                    member=tarfile.TarInfo(name)
+                    if index: member.type=tarfile.SYMTYPE; member.linkname='/etc/passwd'
+                    out.addfile(member)
+                with self.assertRaises(ValueError): server.extract_archive(archive,root/('extract'+str(index)))
+
+    @unittest.skipUnless(sys.platform.startswith('linux'),'Linux process-tree watchdog')
+    def test_server_deadline_kills_worker_in_separate_session(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory); pidfile=root/'worker.pid'
+            script=root/'parent.py'
+            script.write_text(
+                "import subprocess, sys, threading, time\n"
+                "def launch():\n"
+                "    worker = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'], start_new_session=True)\n"
+                "    with open(sys.argv[1], 'w') as output:\n"
+                "        output.write(str(worker.pid))\n"
+                "    time.sleep(60)\n"
+                "thread = threading.Thread(target=launch)\n"
+                "thread.start()\n"
+                "thread.join()\n"
+                "time.sleep(60)\n"
+            )
+            supervisor = server.Supervisor(root, seconds=2)
+            with self.assertRaises(subprocess.TimeoutExpired):
+                supervisor.execute('deadline', [sys.executable, str(script), str(pidfile)], root, os.environ.copy())
+            pid = int(pidfile.read_text())
+            status = Path('/proc') / str(pid) / 'stat'
+            # SIGKILL delivery is asynchronous for a non-child PID. It can
+            # briefly remain visible before exiting or becoming a zombie.
+            deadline = time.monotonic() + 2
+            try:
+                while True:
+                    try:
+                        state = status.read_text().rsplit(')', 1)[1].split()[0]
+                    except (FileNotFoundError, ProcessLookupError):
+                        break
+                    if state == 'Z':
+                        break
+                    self.assertLess(time.monotonic(), deadline, 'Worker survived the watchdog')
+                    time.sleep(.01)
+            except BaseException:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                raise
+
+    def test_field_pilot_reservations_are_separate_and_match_revised_model(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            cases,grid,design=field_pilot.inputs(Path(a),'pilot')
+            _,_,fixture=field_pilot.inputs(Path(b),'fixture')
+            self.assertEqual(design['particles'],['electron','photon'])
+            self.assertEqual(design['energy_eV'],1e15)
+            self.assertEqual(design['total_histories'],12000)
+            self.assertEqual(fixture['total_histories'],24)
+            self.assertEqual({c['species'] for c in design['cases']},{0,3})
+            self.assertEqual({c['accuracy'] for c in design['cases']},{20})
+            seeds=lambda d:{c[k] for c in d['cases'] for k in ('fork_seed','modern_seed')}
+            self.assertEqual(seeds(design),set(range(2005101,2005113)))
+            self.assertFalse(seeds(design)&seeds(fixture))
+            self.assertFalse(seeds(design)&set(range(2003101,2003107)))
+            self.assertFalse(seeds(design)&set(range(2004101,2004107)))
+            self.assertEqual(field_pilot.kernels.digest(grid),design['grid_sha256'])
+            self.assertEqual(len(cases.read_text().splitlines()),6)
+
+    def test_eev_pilot_preserves_old_design_and_reserves_new_streams(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b,tempfile.TemporaryDirectory() as c:
+            cases,grid,design=field_pilot.inputs(Path(a),'pilot','eev')
+            _,_,fixture=field_pilot.inputs(Path(b),'fixture','eev')
+            old_cases,old_grid,old=field_pilot.inputs(Path(c),'pilot')
+            self.assertEqual(design['energy_eV'],1e18)
+            self.assertEqual(design['particles'],['electron','photon','proton'])
+            self.assertEqual(design['total_histories'],18000)
+            self.assertEqual(fixture['total_histories'],36)
+            self.assertEqual(len(cases.read_text().splitlines()),9)
+            self.assertEqual(grid.read_bytes(),old_grid.read_bytes())
+            seeds=lambda d:{v[k] for v in d['cases'] for k in ('fork_seed','modern_seed')}
+            self.assertEqual(seeds(design),set(range(2007101,2007119)))
+            self.assertEqual(seeds(fixture),set(range(2008101,2008119)))
+            self.assertFalse(seeds(design)&(seeds(old)|seeds(fixture)))
+            self.assertEqual(old['energy_eV'],1e15)
+            self.assertEqual(old['total_histories'],12000)
+            self.assertEqual(len(old_cases.read_text().splitlines()),6)
+
+    def test_field_pilot_rejects_incomplete_and_invalid_final_states(self):
+        design=dict(cases=[dict(name='electron',count=2)],purpose='Cost only',mode='fixture')
+        rows=[]
+        for impl in ('fork','modern'):
+            for i in range(2):
+                rows.append(dict(record='history',case='electron',implementation=impl,primary=i,
+                    weight=1,direction=[0,0,1],historical_steps=2,
+                    flight=dict(hit=False,past_end=False,end_error_Mpc=0,position_Mpc=[0,0,.2],
+                                direction=[0,0,1],moves=2,field_calls=8,zero_scale_calls=0)))
+            rows.append(dict(record='timing',case='electron',implementation=impl,compute_seconds=1))
+        report=field_pilot.summarize(rows,design)
+        self.assertEqual(report['histories'],4)
+        self.assertEqual(report['groups'][0]['max_engine_moves'],2)
+        self.assertNotIn('compatible_at_reported_resolution',report)
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            field_pilot.summarize(rows[:-1],design)
+        with self.assertRaisesRegex(ValueError,'Duplicate'):
+            field_pilot.summarize(rows+[rows[0]],design)
+        for bad in ([0,0], [0,0,float('nan')]):
+            broken=copy.deepcopy(rows); broken[0]['flight']['direction']=bad
+            with self.assertRaises(ValueError): field_pilot.summarize(broken,design)
+        broken=copy.deepcopy(rows); broken[0]['weight']=.5
+        with self.assertRaises(ValueError): field_pilot.summarize(broken,design)
+
+    def test_requested_eev_species_matrix_keeps_energy_and_refinements(self):
+        with tempfile.TemporaryDirectory() as directory:
+            cases,_,design=coupled.inputs(Path(directory),('electron','photon','proton'))
+            self.assertEqual(design['species'],['electron','photon','proton'])
+            self.assertEqual(design['energy_eV'],1e18)
+            rows=[line.split() for line in cases.read_text().splitlines()]
+            self.assertEqual(len(rows),729)
+            self.assertEqual({int(row[3]) for row in rows},{0,2,3})
+            coverage={tuple(row[:4]):set() for row in rows}
+            for row in rows: coverage[tuple(row[:4])].add(int(row[4]))
+            self.assertTrue(all(values=={10,20,40} for values in coverage.values()))
+        for species in ((),('electron','electron'),('muon',)):
+            with self.assertRaises(ValueError): coupled.inputs(Path('.'),species)
+
+    def test_coupled_matrix_reuses_existing_fields_and_freezes_all_refinements(self):
+        with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
+            cases,grid,design=coupled.inputs(Path(a))
+            other,other_grid,other_design=coupled.inputs(Path(b))
+            self.assertEqual(design,other_design)
+            self.assertEqual(design['cases'],729)
+            self.assertEqual(design['initial_directions'],27)
+            self.assertEqual(cases.read_bytes(),other.read_bytes())
+            self.assertEqual(grid.read_bytes(),other_grid.read_bytes())
+            self.assertEqual(transport.kernels.digest(grid),design['reused_grid_sha256'])
+            self.assertFalse(design['source_sampling'])
+            rows=[line.split() for line in cases.read_text().splitlines()]
+            self.assertEqual(len({tuple(row[:5]) for row in rows}),729)
+            self.assertEqual({row[4] for row in rows},{'10','20','40'})
+            self.assertEqual(sum(row[1].startswith('tangent') for row in rows),216)
+
+    def test_coupled_report_preserves_disagreements_and_decimal_refinement(self):
+        rows=[]
+        for accuracy in (10,20,40):
+            state=dict(hit=True,past_end=False,zero_scale_calls=0,
+                       position_Mpc=[Decimal('0.1')+Decimal(accuracy)*Decimal('1e-23'),0,0],
+                       direction=[0,0,1],flight_Mpc=Decimal('.1'))
+            rows.append(dict(profile='cone',ray='tangent_1',field=2,particle=0,accuracy=accuracy,
+                fork=copy.deepcopy(state),modern=copy.deepcopy(state),same_hit=accuracy!=10,
+                difference_position_Mpc=Decimal('1e-20'),difference_direction=0,difference_time_Mpc=0))
+        rows[0]['modern']['hit']=False
+        result=coupled.summarize(rows)
+        self.assertEqual(len(result['hit_differences']),1)
+        self.assertEqual(len(result['groups']),3)
+        self.assertGreater(result['refinements'][0]['fork']['position_change_Mpc'],0)
+        self.assertNotIn('accepted',result)
+        with self.assertRaisesRegex(ValueError,'Duplicate'):
+            coupled.summarize(rows+[rows[0]])
+        with self.assertRaisesRegex(ValueError,'Incomplete'):
+            coupled.summarize(rows[:-1])
+        broken=copy.deepcopy(rows); broken[0]['modern']['flight_Mpc']=float('nan')
+        with self.assertRaisesRegex(ValueError,'Nonfinite'):
+            coupled.summarize(broken)
+
     def test_vmf_point_design_separates_ordinary_and_numerical_controls(self):
         with tempfile.TemporaryDirectory() as a,tempfile.TemporaryDirectory() as b:
             points,count=vmf_probe.inputs(Path(a))
