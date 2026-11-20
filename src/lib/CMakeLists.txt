@@ -96,6 +96,8 @@ MathUtils.cpp
 MathUtils.h
 NeutronDecay.cpp
 NeutronDecay.h
+NuclearDecay.cpp
+NuclearDecay.h
 Nucleus.cpp
 Nucleus.h
 Output.cpp

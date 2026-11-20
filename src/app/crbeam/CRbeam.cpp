@@ -42,6 +42,7 @@
 #include "CRbeam.h"
 #include "Test.h"
 #include "NeutronDecay.h"
+#include "NuclearDecay.h"
 #include "Deflection3D.h"
 #include "SteckerEBL.h"
 #include "CmdLine.h"
@@ -491,13 +492,14 @@ int CRbeam::run()
 	//	pe.AddInteraction(new Interactions::GammaPP(backgrI));
 	//	pe.AddInteraction(new PPP(backgrI, fPPPrescaleCoef));//secondaries only
 	//}
-	//if (fPrimary >= Neutron) {
+	if (fPrimary >= Neutron) {
     //    pe.AddInteraction(new GZK(backgrI));
-    //    pe.AddInteraction(new NeutronDecay());
+        pe.AddInteraction(new NeutronDecay());
     //    pe.AddInteraction(new ProtonPPcel(backgrI));
-    //}
-	if (fPrimary >= Li6) {
+    }
+	if (fPrimary >= StartRealNuclei) {
         pe.AddInteraction(new PD(backgrI));
+        pe.AddInteraction(new NuclearDecay());
     }
 
 	double Beta = 0.1;

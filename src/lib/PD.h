@@ -25,22 +25,30 @@ namespace Interactions {
                                        Randomizer &aRandomizer) const;
 
     private:
-        Function* InitSigma(int aPrimZ, int aPrimN, double aPrimM);
-        int Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &aRandomizer) const;
+        Function* InitSigma(int aPrimZ, int aPrimN, double aPrimM, std::string src);
+        int Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &aRandomizer, std::string src) const;
+
         
         //std::vector<SafePtr<Function> > NuclSigma;
+        //std::string                     TableLifetime = "tables/nuclear_decay.txt";
 
         ParticleType                    fParticleType;
         SmartPtr<BackgroundIntegral>	fBackground;
         SafePtr<Function>               fSigma;
 
         std::string                     TablesDir;
-        std::string                     TableSumXS;
-        std::string                     TableThinXS;
-        std::string                     TableEps;
 
-        int                             MaxNBranches = 50;
+
+        std::string                     TalysTableSumXS;
+        std::string                     TalysTableThinXS;
+        std::string                     TalysTableEps;
+        
+        std::string                     ExternalTableSumXS;
+        std::string                     ExternalTableThinXS;
+        std::string                     ExternalTableEps;
+
+        //int                             MaxNBranches = 32;
     };
 }
 
-#endif //MCRAY_GZK_H
+#endif 

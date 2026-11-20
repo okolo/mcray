@@ -555,6 +555,9 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
     }
 
     double Particle::Mass(ParticleType aType){
+        
+        bool Nucleus_Sum = true;
+        
         if(aType<EndLightParticle)
             return MassesMeV[aType]/units.Eunit;
         if(aType<EndNuclei){
@@ -562,7 +565,41 @@ const char* Particle::ParticleNames[ParticleTypeEOF] =
             return meanNucleonMassMeV*Interactions::CNucleus::getA(aType);
         }
         if(aType<EndRealNuclei)
-            return NucleonStructure[aType-StartRealNuclei][0]*Particle::Mass(Proton)+NucleonStructure[aType-StartRealNuclei][1]*Particle::Mass(Neutron);
+            if (Nucleus_Sum)
+            {
+                return NucleonStructure[aType-StartRealNuclei][0]*Particle::Mass(Proton)+NucleonStructure[aType-StartRealNuclei][1]*Particle::Mass(Neutron);
+            }
+            else    
+            {
+                std::string TableMass = "tables/nuclear_mass.txt";
+
+                int aPrimZ = Particle::ElectricCharge(aType);
+                int aPrimN = Particle::AtomicMass(aType)-aPrimZ;
+                
+                std::ifstream file(TableMass.c_str());
+                if (file.eof())
+                        Exception::Throw("Failed to open file " + TableMass);
+
+                std::string line;
+
+                while (std::getline(file, line)) {
+                    if (line[0] == '#')
+                        continue;
+                    std::istringstream iss(line);
+
+                    int Z, N;
+                    iss >> Z;
+                    iss >> N;
+
+                    if(Z != aPrimZ || N != aPrimN)
+                        continue;
+                    
+                    double aPrimMass;
+
+                    iss >> aPrimMass; // kg in data file
+                    return aPrimMass*units.lightspeed*units.lightspeed*1e-4/(1.0e6 * 1.602176634e-19);
+                }
+            }
         NOT_IMPLEMENTED // treat other particles when added
         return 0.;
     }

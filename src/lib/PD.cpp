@@ -4,6 +4,7 @@
 #include "PD.h"
 #include "TableFunction.h"
 #include "Randomizer.h"
+#include "NuclearDecay.h"
 
 #include <sstream>
 #include <fstream>
@@ -15,19 +16,28 @@ using namespace Utils;
 namespace Interactions {
 
 std::vector<SafePtr<Function> > NuclSigma;
-bool first_init = 1;
+bool PD_init = 1;
 
 PD::PD(mcray::BackgroundIntegral *aBackground):
         fBackground(aBackground)
 {
     TablesDir = "tables/PD/";
-    TableSumXS = TablesDir+"xs_pd_sum.txt";
-    TableThinXS = TablesDir+"xs_pd_thin.txt";
-    TableEps = TablesDir+"eps.txt";
+    
+    TalysTableSumXS = TablesDir+"TALYS/xs_pd_sum.txt";
+    TalysTableThinXS = TablesDir+"TALYS/xs_pd_thin.txt";
+    TalysTableEps = TablesDir+"TALYS/eps.txt";
+
+    ExternalTableSumXS = TablesDir+"external/xs_pd_sum.txt";
+    ExternalTableThinXS = TablesDir+"external/xs_pd_thin.txt";
+    ExternalTableEps = TablesDir+"external/eps.txt";
+
 
     NuclSigma.resize(EndRealNuclei-StartRealNuclei);
 
-    if (first_init)
+    //change to reading from file
+    //SecondIsotopes = {{1,1}, {1,2}, {2, 1}, {2,2}, {3,3}, {3,4}, {4,3}, {4,5}, {4,6}, {4,7}, {5,5}, {5,6}, {6,4}, {6,5}}
+
+    if (PD_init)
     {
         for (int i=StartRealNuclei; ParticleType(i)<EndRealNuclei; i++)
         {
@@ -35,14 +45,40 @@ PD::PD(mcray::BackgroundIntegral *aBackground):
             int N = Particle::AtomicMass(ParticleType(i))-Z;
             double M = Particle::Mass(ParticleType(i));
 
-            NuclSigma[i-StartRealNuclei] = InitSigma(Z, N, M);
+            if (i<=C11)
+            {NuclSigma[i-StartRealNuclei] = InitSigma(Z, N, M, "external");
+            //std::cout<<i;
+            }
+            else
+            {NuclSigma[i-StartRealNuclei] = InitSigma(Z, N, M, "TALYS");}
+            
         }
-        first_init = 0;
+        PD_init = 0;
     }
 }
 
-Function* PD::InitSigma(int aPrimZ, int aPrimN, double aPrimM)                          //TODO: initialise all sigmas at once
+Function* PD::InitSigma(int aPrimZ, int aPrimN, double aPrimM, std::string src)                          //TODO: initialise all sigmas at once
 {
+    std::string TableSumXS;
+    std::string TableThinXS;
+    std::string TableEps;
+
+    if (src == "TALYS")
+    {
+        TableSumXS = TalysTableSumXS;
+        TableThinXS = TalysTableThinXS;
+        TableEps = TalysTableEps;
+    }
+    else
+    {
+        TableSumXS = ExternalTableSumXS;
+        TableThinXS = ExternalTableThinXS;
+        TableEps = ExternalTableEps;
+    }
+    
+
+
+
     Utils::TableReader reader(TableEps, 1);
     std::vector<double>& s = reader.getColumn(0);
     std::vector<double> sigma(s.size(), 0.0);
@@ -103,8 +139,25 @@ Function* PD::InitSigma(int aPrimZ, int aPrimN, double aPrimM)                  
 	return new LinearFunc(sCut, sigmaCut, new LogScale(), new LogScale(), 0., 0.);
 }
 
-int PD::Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &aRandomizer) const
-{
+int PD::Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &aRandomizer, std::string src) const
+{    
+    std::string TableSumXS;
+    std::string TableThinXS;
+    std::string TableEps;
+    
+    if (src == "TALYS")
+    {
+        TableSumXS = TalysTableSumXS;
+        TableThinXS = TalysTableThinXS;
+        TableEps = TalysTableEps;
+    }
+    else
+    {
+        TableSumXS = ExternalTableSumXS;
+        TableThinXS = ExternalTableThinXS;
+        TableEps = ExternalTableEps;
+    }
+
     Utils::TableReader reader(TableEps, 1);
 
     std::vector<double>& s = reader.getColumn(0);
@@ -156,7 +209,7 @@ int PD::Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &
     double aRand = aRandomizer.Rand();
     int aBranch = 0;
     
-    for (int i=0; i <= 17; i++)
+    for (int i=0; i < MaxNBranches; i++)
     {
         branchSigma[i] /= TotalSigma;
         if(aRand>0 && aRand<branchSigma[i])
@@ -170,17 +223,16 @@ int PD::Branching(int aPrimZ, int aPrimN, double aPrimM, double aS, Randomizer &
     return aBranch;
 }
 
-
 double PD::Rate(const mcray::Particle &aParticle) const {
     if(aParticle.Type<StartRealNuclei || aParticle.Type>EndRealNuclei)
         return 0.;
     
-    if(aParticle.Type<Li6)
-        return 0.;                                                                  //UNTILL proper crossections are added
+    //if(aParticle.Type<Li6)
+    //    return 0.;                                                                  //UNTILL proper crossections are added
 
 
     //const Function* sigma = NuclSigma[aParticle.Type-StartRealNuclei];
-    //std::cout<<fBackground->GetRateS(*sigma, aParticle)<<std::endl;
+    //std::cout<<fBackground->GetRateS(*NuclSigma[aParticle.Type-StartRealNuclei], aParticle)<<std::endl;
     return fBackground->GetRateS(*NuclSigma[aParticle.Type-StartRealNuclei], aParticle);
 }
 
@@ -202,14 +254,19 @@ void PD::SampleSecondaries(mcray::Particle &aParticle,
                                           mcray::Randomizer &aRandomizer) const {
     ASSERT(aParticle.Type>=StartRealNuclei && aParticle.Type<EndRealNuclei);
     //ASSERT(aParticle.Type>=Li6 && aParticle.Type<EndRealNuclei);                         //UNTILL proper crossections are added
+    std::string src;
+    if (aParticle.Type<=C11)
+    {src = "external";}
+    else
+    {src = "TALYS";}
+
 
     int aPrimZ = Particle::ElectricCharge(aParticle.Type);
     int aPrimN = Particle::AtomicMass(aParticle.Type)-aPrimZ;
     double aPrimM = Particle::Mass(aParticle.Type);
     //std::cout<<"S = "<<aS<<std::endl;
     //std::cout<<"Sigma(S) = "<<NuclSigma[aParticle.Type-StartRealNuclei]->f(aS)<<std::endl;
-
-    int Branch = Branching(aPrimZ, aPrimN, aPrimM, aS, aRandomizer);
+    int Branch = Branching(aPrimZ, aPrimN, aPrimM, aS, aRandomizer, src);
     //std::cout<<Branch<<std::endl;
     int nNeutron = Branch /100000 %10;
 	int nProton = Branch /10000 %10;
@@ -225,9 +282,8 @@ void PD::SampleSecondaries(mcray::Particle &aParticle,
     int mainSecN = aPrimN-dN;
 
     ParticleType mainSecType;
-    bool hasMainSec = (mainSecZ>0 && mainSecN>0);
+    bool hasMainSec = (mainSecZ>0 || mainSecN>0);
     bool invalidBranch = false;
-
 
     if (hasMainSec)
     {
@@ -250,28 +306,35 @@ void PD::SampleSecondaries(mcray::Particle &aParticle,
                 }
                 if (i==EndRealNuclei-1)
                 {
-                    hasMainSec = false;
+                    mainSecType = ParticleTypeEOF;                 
                 }
             }
         }
     }
     ASSERT(mainSecType.Type>=StartRealNuclei && mainSecType.Type<EndRealNuclei);
-
+    
+    Particle mainSec = aParticle;
     if (hasMainSec)
     {
-        Particle mainSec = aParticle;
-        mainSec.Type = mainSecType;
-        mainSec.fCascadeProductionTime = aParticle.Time;
-        mainSec.Energy *= (mainSec.Mass()/aParticle.Mass());        //same gamma factor
-        aSecondaries.push_back(mainSec);
+        if (mainSecType == ParticleTypeEOF)
+        {
+            UnstableDecay(mainSecZ, mainSecN, mainSec, aSecondaries, aRandomizer);
+        }
+        else
+        {
+            mainSec.Type = mainSecType;
+            mainSec.fCascadeProductionTime = aParticle.Time;
+            mainSec.Energy *= (mainSec.Mass()/aParticle.Mass());        //same gamma factor
+            aSecondaries.push_back(mainSec);
+        }
     }
     else 
     {
         if(mainSecZ>0 || mainSecN>0)
         {
-            //std::cout<<std::endl<<"PD:\tinvalid channel "<<Branch<<" for "<<aParticle.ToString()<<std::endl;
+            std::cout<<std::endl<<"PD:\tinvalid channel "<<Branch<<" for "<<aParticle.ToString()<<std::endl;
             //std::cout<<"\tMay be secondary particle is an unstable short-living nuclei?"<<std::endl;
-            //std::cout<<"\tPhotoDesintegration cancelled"<<std::endl<<std::endl;
+            std::cout<<"\tPhotoDesintegration cancelled"<<std::endl<<std::endl;
             Particle survivedPrim = aParticle;
             survivedPrim.Ninteractions -= 1;
             survivedPrim.Weight *= 0;                               //allows to exclude all future secondaries, but not previous
